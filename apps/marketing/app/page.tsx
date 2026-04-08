@@ -1,209 +1,255 @@
+import type { CSSProperties } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { palette, radii, spacing } from '@education/design';
 
 import { productCards, siteMeta } from '@/lib/site';
+import styles from './home.module.css';
+
+const approachItems = [
+  {
+    body: 'Each app stays tightly scoped so kids can build confidence without distractions or overload.',
+    iconClassName: styles.iconCoral,
+    title: 'One skill at a time',
+  },
+  {
+    body: 'We design around seeing, interacting, and understanding — not just memorizing or drilling.',
+    iconClassName: styles.iconBlue,
+    title: 'Visual and intuitive',
+  },
+  {
+    body: 'No clutter. No bloated curriculum. Just simple tools that help important ideas click.',
+    iconClassName: styles.iconTeal,
+    title: 'Calm and clear',
+  },
+] as const;
+
+const roadmapItems = [
+  { name: 'Fraction Finder', status: 'In progress' },
+  { name: 'Letter Bingo', status: 'Planned' },
+  { name: 'Place Value', status: 'Planned' },
+] as const;
 
 export default function HomePage() {
   return (
-    <main
-      style={{
-        display: 'grid',
-        gap: spacing.xxl,
-      }}>
-      <section
-        style={{
-          display: 'grid',
-          gap: spacing.lg,
-          paddingTop: spacing.md,
-        }}>
-        <nav
-          style={{
-            alignItems: 'center',
-            display: 'flex',
-            justifyContent: 'space-between',
-          }}>
-          <div
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              letterSpacing: 0.2,
-            }}>
-            {siteMeta.title}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: spacing.md,
-            }}>
-            <Link href="/support">Support</Link>
-            <Link href="/privacy">Privacy</Link>
-          </div>
+    <main className={styles.page}>
+      <header className={styles.header}>
+        <div className={styles.wordmark}>{siteMeta.title}</div>
+        <nav className={styles.nav}>
+          <a className={styles.navLink} href="#product-suite">
+            Apps
+          </a>
+          <a className={styles.navLink} href="#about">
+            About
+          </a>
+          <Link className={styles.navLink} href="/support">
+            Contact
+          </Link>
         </nav>
+      </header>
 
-        <div
-          style={{
-            background: 'rgba(255, 249, 242, 0.88)',
-            border: `1px solid ${palette.ring}`,
-            borderRadius: radii.xl,
-            boxShadow: '0 18px 40px rgba(18, 53, 91, 0.08)',
-            display: 'grid',
-            gap: spacing.lg,
-            padding: spacing.xxl,
-          }}>
-          <div
-            style={{
-              color: palette.coral,
-              fontSize: 14,
-              fontWeight: 700,
-              letterSpacing: 1.2,
-              textTransform: 'uppercase',
-            }}>
-            Calm learning tools
-          </div>
-          <h1
-            style={{
-              fontSize: 'clamp(42px, 7vw, 76px)',
-              lineHeight: 0.94,
-              margin: 0,
-            }}>
-            BrightBench apps
+      <section className={styles.hero}>
+        <div className={styles.heroCopy}>
+          <h1 className={styles.headline}>
+            <span className={styles.headlinePrimary}>Small apps.</span>
             <br />
-            that teach by feel.
+            <span className={`${styles.noWrap} ${styles.headlineSecondary}`}>
+              Big learning moments.
+            </span>
           </h1>
-          <p
-            style={{
-              color: palette.inkMuted,
-              fontSize: 20,
-              lineHeight: 1.5,
-              margin: 0,
-              maxWidth: 760,
-            }}>
-            BrightBench is a suite of focused learning tools for kids that feel
-            warm, polished, and easy to understand without turning into noisy
-            curriculum dashboards.
+          <p className={styles.lead}>Simple learning apps for tricky concepts.</p>
+          <p className={styles.body}>
+            Some skills need more than repetition. They need the right visual,
+            the right interaction, and the right kind of practice.
           </p>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: spacing.md,
-            }}>
-            <Link
-              href="#products"
-              style={{
-                background: palette.coral,
-                borderRadius: radii.pill,
-                color: palette.white,
-                fontWeight: 700,
-                padding: '14px 22px',
-              }}>
-              See the apps
-            </Link>
-            <Link
-              href="/support"
-              style={{
-                background: palette.surfaceMuted,
-                borderRadius: radii.pill,
-                color: palette.ink,
-                fontWeight: 700,
-                padding: '14px 22px',
-              }}>
-              Contact support
-            </Link>
+          <p className={styles.body}>
+            Brightbench is building a suite of simple, thoughtful apps that
+            help kids understand tough concepts with clarity and confidence.
+          </p>
+          <a className={styles.primaryButton} href="#product-suite">
+            Explore the apps
+          </a>
+        </div>
+
+        <div className={styles.heroArt} aria-hidden="true">
+          <div className={styles.heroIllustration}>
+            <div className={styles.heroPanel} />
+            <div className={styles.heroArch} />
+            <div className={styles.heroNotebook} />
+            <div className={styles.heroPath} />
+            <div className={styles.heroPathDots} />
+            <div className={styles.heroAccentStar} />
+            <div className={styles.heroAccentPill} />
+            <div className={styles.heroFoxFrame}>
+              <Image
+                alt=""
+                className={styles.heroFox}
+                fill
+                priority
+                sizes="(max-width: 900px) 224px, 304px"
+                src="/mascots/brightbench-fox-sitting.png"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      <section
-        id="products"
-        style={{
-          display: 'grid',
-          gap: spacing.lg,
-        }}>
-        <div
-          style={{
-            display: 'grid',
-            gap: spacing.sm,
-          }}>
-          <div
-            style={{
-              color: palette.inkMuted,
-              fontSize: 14,
-              fontWeight: 700,
-              letterSpacing: 1.1,
-              textTransform: 'uppercase',
-            }}>
-            Product suite
-          </div>
-          <h2
-            style={{
-              fontSize: 40,
-              margin: 0,
-            }}>
-            Focused apps for specific skills
-          </h2>
+      <section className={styles.suiteSection} id="product-suite">
+        <div className={styles.suiteHeader}>
+          <div className={styles.eyebrow}>Product suite</div>
+          <h2 className={styles.sectionTitle}>Focused apps for key skills</h2>
+          <p className={styles.sectionText}>
+            Each Brightbench app is built around one concept and one goal:
+            helping kids truly understand it.
+          </p>
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gap: spacing.md,
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          }}>
-          {productCards.map((product, index) => {
-            const accent = [
-              '#D95D67',
-              '#E49A33',
-              '#2D8F87',
-              '#556CD6',
-              '#8A5BD1',
-            ][index % 5];
+        <div className={styles.cardGrid}>
+          {productCards.map((product) => (
+            <article
+              className={`${styles.suiteCard} ${
+                product.name === 'Time Tutor' ? styles.timeTutorCard : ''
+              }`}
+              key={product.name}
+              style={{ '--card-accent': product.accent } as CSSProperties}>
+              <div className={styles.cardAccent} />
+              <h3 className={styles.cardTitle}>{product.name}</h3>
+              <p className={styles.cardBody}>{product.blurb}</p>
+              <div className={styles.cardFooter}>
+                {product.name === 'Time Tutor' && product.appStoreUrl ? (
+                  <a
+                    className={styles.appStoreButton}
+                    href={product.appStoreUrl}
+                    rel="noreferrer"
+                    target="_blank">
+                    <Image
+                      alt="Download on the App Store"
+                      className={styles.appStoreBadge}
+                      height={40}
+                      src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+                      unoptimized
+                      width={120}
+                    />
+                  </a>
+                ) : null}
+                <div className={styles.status}>{product.status}</div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
-            return (
-              <Link
-                href={product.href}
-                key={product.href}
-                style={{
-                  background: palette.surface,
-                  border: `2px solid ${accent}`,
-                  borderRadius: radii.xl,
-                  boxShadow: '0 18px 40px rgba(18, 53, 91, 0.08)',
-                  color: palette.ink,
-                  display: 'grid',
-                  gap: spacing.sm,
-                  padding: spacing.lg,
-                }}>
-                <div
-                  style={{
-                    background: accent,
-                    borderRadius: radii.pill,
-                    height: 12,
-                    width: 64,
-                  }}
+      <section className={styles.section}>
+        <div className={styles.sectionTitleBlock}>
+          <div className={styles.eyebrow}>Our approach</div>
+          <h2 className={styles.sectionTitle}>Focused by design</h2>
+        </div>
+        <div className={styles.approachGrid}>
+          {approachItems.map((item) => (
+            <article className={styles.approachCard} key={item.title}>
+              <span className={`${styles.approachIcon} ${item.iconClassName}`} />
+              <h3 className={styles.approachTitle}>{item.title}</h3>
+              <p className={styles.sectionText}>{item.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.roadmap}>
+          <div className={styles.roadmapTop}>
+            <div className={styles.roadmapIntro}>
+              <h2 className={styles.sectionTitle}>More focused apps are on the way</h2>
+              <p className={styles.sectionText}>
+                We’re actively building the next set of Brightbench apps around
+                other tricky elementary concepts, including fractions, early
+                literacy, and place value.
+              </p>
+              <p className={styles.supportingLine}>
+                If a concept is hard to teach well, it deserves a better tool.
+              </p>
+            </div>
+            <div className={styles.roadmapFoxWrap} aria-hidden="true">
+              <div className={styles.roadmapFoxHalo} />
+              <div className={styles.roadmapFoxFrame}>
+                <Image
+                  alt=""
+                  className={styles.roadmapFox}
+                  fill
+                  sizes="96px"
+                  src="/mascots/brightbench-fox-jumping.png"
                 />
-                <div style={{ fontSize: 28, fontWeight: 700 }}>{product.name}</div>
+              </div>
+            </div>
+          </div>
+          <div className={styles.roadmapRows}>
+            {roadmapItems.map((item) => (
+              <div className={styles.roadmapRow} key={item.name}>
+                <div className={styles.roadmapName}>{item.name}</div>
                 <div
-                  style={{
-                    color: palette.inkMuted,
-                    lineHeight: 1.5,
-                  }}>
-                  {product.blurb}
+                  className={`${styles.roadmapStatus} ${
+                    item.status === 'In progress'
+                      ? styles.roadmapInProgress
+                      : styles.roadmapPlanned
+                  }`}>
+                  {item.status}
                 </div>
-                <div
-                  style={{
-                    color: accent,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    letterSpacing: 0.4,
-                    marginTop: spacing.xs,
-                  }}>
-                  {product.status}
-                </div>
-              </Link>
-            );
-          })}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
+
+      <section className={`${styles.section} ${styles.aboutSection}`} id="about">
+        <div className={styles.aboutCopy}>
+          <div className={styles.eyebrow}>About</div>
+          <h2 className={styles.sectionTitle}>A better kind of learning app</h2>
+          <p className={styles.sectionText}>
+            Brightbench is a growing suite of educational apps for elementary
+            learners. We believe the hardest concepts to teach deserve tools
+            that are simpler, more visual, and more thoughtfully designed.
+          </p>
+          <p className={styles.sectionText}>
+            Our goal is not to build a giant curriculum platform. It is to
+            create focused apps that help important ideas feel clear, intuitive,
+            and even fun.
+          </p>
+        </div>
+
+        <div className={styles.aboutFoxWrap} aria-hidden="true">
+          <div className={styles.aboutFoxHalo} />
+          <div className={styles.aboutFoxFrame}>
+            <Image
+              alt=""
+              className={styles.aboutFox}
+              fill
+              sizes="102px"
+              src="/mascots/brightbench-fox-magnifying-glass.png"
+            />
+          </div>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerBrand}>
+          <div className={styles.wordmark}>{siteMeta.title}</div>
+          <p className={styles.footerLine}>Small apps. Big learning moments.</p>
+        </div>
+
+        <nav className={styles.footerNav}>
+          <a className={styles.navLink} href="#product-suite">
+            Apps
+          </a>
+          <a className={styles.navLink} href="#about">
+            About
+          </a>
+          <Link className={styles.navLink} href="/support">
+            Contact
+          </Link>
+          <Link className={styles.navLink} href="/privacy">
+            Privacy Policy
+          </Link>
+        </nav>
+      </footer>
     </main>
   );
 }

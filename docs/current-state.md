@@ -63,6 +63,11 @@ Status:
 
 Notes:
 - Next.js App Router
+- homepage is now aligned to the BrightBench suite brand line:
+  - Small apps. Big learning moments.
+- product suite section keeps the outlined app-card visual language
+- Time Tutor is presented as the only live app with a direct App Store CTA
+- Grammar Guide is no longer presented in the marketing lineup
 - local production build already succeeds
 - Vercel linking/config is still pending
 
@@ -94,7 +99,6 @@ For Time Tutor specifics, always read:
 ## Remaining Open Work
 - Link and configure Vercel projects for the monorepo
 - Add real content/apps for:
-  - Grammar Guide
   - Letter Bingo
   - Place Value
 - Expand shared support/privacy handling if needed

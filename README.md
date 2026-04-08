@@ -1,6 +1,7 @@
 # BrightBench
 
-BrightBench is the shared home for a suite of educational products.
+BrightBench is the shared home for a suite of focused educational apps built
+around the concepts that are hardest to teach and hardest to make click.
 
 ## Product Strategy
 - Technical stack: Expo-managed React Native + Expo Router
@@ -13,7 +14,6 @@ BrightBench is the shared home for a suite of educational products.
 - Marketing site
 
 ## Planned Apps
-- Grammar Guide
 - Letter Bingo
 - Place Value
 
@@ -58,7 +58,9 @@ BrightBench is the shared home for a suite of educational products.
   - Core gameplay and settings are ported
   - Contains intentional migration differences documented in `apps/time-tutor/MIGRATION_NOTES.md`
 - `apps/marketing`
-  - Next.js App Router site scaffold is working
+  - Next.js App Router site is working
+  - Homepage is positioned around the BrightBench suite brand and product philosophy
+  - Time Tutor App Store CTA is embedded directly in the suite card
   - Local build is validated
   - Vercel project linking is still the main remaining deployment task
 

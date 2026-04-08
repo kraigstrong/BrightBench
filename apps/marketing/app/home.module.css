@@ -1,0 +1,812 @@
+.page {
+  display: grid;
+  gap: 4.75rem;
+  padding: 1.25rem 0 4.5rem;
+}
+
+.header {
+  align-items: center;
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
+  padding: 0.25rem 0 0.75rem;
+}
+
+.wordmark {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+}
+
+.navLink {
+  color: #667789;
+  font-size: 0.97rem;
+  font-weight: 600;
+  transition:
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+.navLink:hover {
+  color: #12355b;
+  opacity: 1;
+}
+
+.hero {
+  align-items: start;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  padding: 0.2rem 0 0.1rem;
+}
+
+.heroCopy {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 33rem;
+}
+
+.eyebrow {
+  color: #e97a5f;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.headline {
+  font-size: clamp(3rem, 5vw, 4.85rem);
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+  margin: 0;
+  max-width: 10.8ch;
+}
+
+.headlinePrimary,
+.headlineSecondary {
+  display: inline-block;
+}
+
+.headlineSecondary {
+  font-size: 0.82em;
+  letter-spacing: -0.045em;
+}
+
+.noWrap {
+  white-space: nowrap;
+}
+
+.lead {
+  color: #12355b;
+  font-size: clamp(1rem, 1.45vw, 1.14rem);
+  font-weight: 700;
+  line-height: 1.45;
+  margin: 0;
+  max-width: 28rem;
+}
+
+.body {
+  color: #5b6c7d;
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0;
+  max-width: 32rem;
+}
+
+.primaryButton {
+  align-items: center;
+  background: #12355b;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.96rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 1.2rem;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+  width: fit-content;
+}
+
+.primaryButton:hover {
+  background: #0f2d4d;
+  box-shadow: 0 14px 28px rgba(18, 53, 91, 0.12);
+  transform: translateY(-1px);
+}
+
+.heroArt {
+  align-self: center;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+.heroIllustration {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: min(34rem, 100%);
+}
+
+.heroPanel,
+.heroArch,
+.heroNotebook,
+.heroPath,
+.heroPathDots,
+.heroAccentStar,
+.heroAccentPill {
+  position: absolute;
+}
+
+.heroPanel {
+  background: rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(18, 53, 91, 0.07);
+  border-radius: 2.25rem;
+  bottom: 14%;
+  height: 13.5rem;
+  left: 14%;
+  transform: rotate(-5deg);
+  width: 21rem;
+}
+
+.heroArch {
+  background: rgba(233, 122, 95, 0.16);
+  border-radius: 999px 999px 48% 48% / 72% 72% 28% 28%;
+  height: 16.5rem;
+  left: 18%;
+  top: 16%;
+  width: 10.5rem;
+}
+
+.heroNotebook {
+  background: rgba(241, 189, 99, 0.16);
+  border-radius: 1.3rem;
+  bottom: 17%;
+  height: 5rem;
+  right: 12%;
+  width: 11rem;
+}
+
+.heroPath {
+  border: 1.5px solid rgba(111, 165, 216, 0.28);
+  border-color: transparent transparent rgba(111, 165, 216, 0.28) transparent;
+  border-radius: 999px;
+  height: 6.5rem;
+  position: absolute;
+  right: 12%;
+  top: 14%;
+  transform: rotate(8deg);
+  width: 9.5rem;
+}
+
+.heroPathDots {
+  bottom: 17%;
+  left: 21%;
+  position: absolute;
+  width: 1.6rem;
+}
+
+.heroPathDots::before,
+.heroPathDots::after {
+  background: rgba(241, 189, 99, 0.16);
+  border-radius: 999px;
+  content: '';
+  display: block;
+  height: 0.22rem;
+  position: absolute;
+  width: 0.22rem;
+}
+
+.heroPathDots::before {
+  left: 0;
+}
+
+.heroPathDots::after {
+  left: 0.72rem;
+}
+
+.heroAccentStar {
+  color: #7b8fd5;
+  font-size: 1.05rem;
+  left: 27%;
+  top: 17%;
+}
+
+.heroAccentStar::before {
+  content: '✦';
+}
+
+.heroAccentPill {
+  background: rgba(46, 139, 139, 0.18);
+  border-radius: 999px;
+  height: 1rem;
+  left: 69%;
+  top: 24%;
+  transform: rotate(-28deg);
+  width: 4.25rem;
+}
+
+.heroFoxFrame {
+  height: 24rem;
+  position: relative;
+  transform: translate(0.8rem, 0.15rem);
+  width: 20rem;
+  z-index: 1;
+}
+
+.heroFox {
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  width: 100%;
+}
+
+.section {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.sectionTitleBlock {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.sectionTitle {
+  font-size: clamp(2.15rem, 3vw, 3rem);
+  letter-spacing: -0.035em;
+  line-height: 1.03;
+  margin: 0;
+}
+
+.sectionText {
+  color: #5b6c7d;
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0;
+}
+
+.suiteSection {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.suiteHeader {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 38rem;
+}
+
+.cardGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.suiteCard {
+  background: #fff9f2;
+  border: 1.5px solid var(--card-accent);
+  border-radius: 1.55rem;
+  box-shadow: 0 14px 28px rgba(18, 53, 91, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 100%;
+  padding: 1.15rem;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.suiteCard:hover {
+  border-color: color-mix(in srgb, var(--card-accent) 82%, #12355b 18%);
+  box-shadow: 0 18px 34px rgba(18, 53, 91, 0.11);
+  transform: translateY(-3px);
+}
+
+.timeTutorCard {
+  box-shadow: 0 16px 34px rgba(18, 53, 91, 0.1);
+}
+
+.cardAccent {
+  background: var(--card-accent);
+  border-radius: 999px;
+  height: 0.6rem;
+  width: 3.5rem;
+}
+
+.cardTitle {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.cardBody {
+  color: #5b6c7d;
+  font-size: 0.97rem;
+  line-height: 1.65;
+  margin: 0;
+  min-height: 5.1rem;
+}
+
+.cardFooter {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: auto;
+  padding-top: 0.1rem;
+}
+
+.status {
+  color: var(--card-accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.appStoreButton {
+  display: inline-flex;
+  width: fit-content;
+}
+
+.appStoreBadge {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+
+.approachGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.approachCard {
+  background: rgba(255, 249, 242, 0.8);
+  border: 1px solid #d7c4b0;
+  border-radius: 1.45rem;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.2rem;
+}
+
+.approachIcon {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  height: 2.1rem;
+  justify-content: center;
+  position: relative;
+  width: 2.1rem;
+}
+
+.iconCoral {
+  background: rgba(233, 122, 95, 0.14);
+}
+
+.iconCoral::before {
+  background: #e97a5f;
+  border-radius: 0.38rem;
+  content: '';
+  height: 0.7rem;
+  width: 0.9rem;
+}
+
+.iconBlue {
+  background: rgba(111, 165, 216, 0.14);
+}
+
+.iconBlue::before {
+  border: 2px solid #6fa5d8;
+  border-radius: 999px;
+  content: '';
+  height: 0.85rem;
+  width: 0.85rem;
+}
+
+.iconTeal {
+  background: rgba(46, 139, 139, 0.14);
+}
+
+.iconTeal::before {
+  background: #2e8b8b;
+  border-radius: 999px;
+  content: '';
+  height: 0.38rem;
+  width: 1rem;
+}
+
+.approachTitle {
+  font-size: 1.08rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.roadmap {
+  background: rgba(255, 249, 242, 0.72);
+  border: 1px solid #decdb9;
+  border-radius: 1.85rem;
+  display: grid;
+  gap: 1.35rem;
+  padding: 1.5rem;
+}
+
+.roadmapTop {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.roadmapIntro {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 39rem;
+}
+
+.roadmapFoxWrap {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: 11.5rem;
+}
+
+.roadmapFoxWrap::before {
+  background: rgba(111, 165, 216, 0.13);
+  border-radius: 1.5rem;
+  content: '';
+  height: 6.7rem;
+  left: 1.15rem;
+  position: absolute;
+  top: 1.1rem;
+  transform: rotate(-8deg);
+  width: 8.4rem;
+}
+
+.roadmapFoxWrap::after {
+  background: rgba(241, 189, 99, 0.18);
+  border-radius: 999px;
+  bottom: 1rem;
+  content: '';
+  height: 1.2rem;
+  position: absolute;
+  right: 0.95rem;
+  width: 4.6rem;
+}
+
+.roadmapFoxHalo {
+  border: 1px dashed rgba(46, 139, 139, 0.22);
+  border-radius: 999px;
+  height: 7.9rem;
+  left: 0.8rem;
+  position: absolute;
+  top: 0.1rem;
+  width: 7.9rem;
+}
+
+.roadmapFoxFrame {
+  height: 9.5rem;
+  position: relative;
+  transform: translateY(-0.25rem);
+  width: 9.5rem;
+  z-index: 1;
+}
+
+.roadmapFox {
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  width: 100%;
+}
+
+.roadmapRows {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.roadmapRow {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.38);
+  border: 1px solid rgba(18, 53, 91, 0.08);
+  border-radius: 1rem;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0.9rem 1rem;
+}
+
+.roadmapName {
+  color: #12355b;
+  font-weight: 800;
+}
+
+.roadmapStatus {
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.38rem 0.7rem;
+  text-transform: uppercase;
+}
+
+.roadmapInProgress {
+  background: rgba(233, 122, 95, 0.12);
+  color: #c9634b;
+}
+
+.roadmapPlanned {
+  background: rgba(111, 165, 216, 0.12);
+  color: #557fb0;
+}
+
+.supportingLine {
+  color: #12355b;
+  font-weight: 700;
+  margin: 0;
+}
+
+.aboutSection {
+  align-items: center;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.aboutCopy {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 37rem;
+}
+
+.aboutFoxWrap {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: 13.5rem;
+}
+
+.aboutFoxWrap::before {
+  background: rgba(233, 122, 95, 0.13);
+  border-radius: 44% 56% 50% 50% / 46% 44% 56% 54%;
+  content: '';
+  height: 9rem;
+  left: 1.35rem;
+  position: absolute;
+  top: 0.95rem;
+  transform: rotate(14deg);
+  width: 7.2rem;
+}
+
+.aboutFoxWrap::after {
+  background: rgba(111, 165, 216, 0.18);
+  border-radius: 999px;
+  content: '';
+  height: 1.1rem;
+  position: absolute;
+  right: 1.35rem;
+  top: 2rem;
+  width: 4.5rem;
+}
+
+.aboutFoxHalo {
+  background: rgba(241, 189, 99, 0.14);
+  border-radius: 1.6rem;
+  height: 10rem;
+  left: 2.75rem;
+  position: absolute;
+  transform: rotate(-8deg);
+  width: 8.3rem;
+}
+
+.aboutFoxFrame {
+  height: 11.25rem;
+  position: relative;
+  transform: translate(0.15rem, 0.45rem);
+  width: 9.75rem;
+  z-index: 1;
+}
+
+.aboutFox {
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  width: 100%;
+}
+
+.footer {
+  align-items: start;
+  border-top: 1px solid #decdb9;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 2rem 0 0.5rem;
+}
+
+.footerBrand {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.footerLine {
+  color: #667789;
+  margin: 0;
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.15rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 1120px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .page {
+    gap: 4rem;
+  }
+
+  .hero,
+  .aboutSection,
+  .footer {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding-top: 0.15rem;
+  }
+
+  .heroCopy,
+  .aboutCopy {
+    max-width: 100%;
+  }
+
+  .heroArt {
+    justify-content: flex-start;
+  }
+
+  .heroIllustration {
+    width: min(26rem, 100%);
+  }
+
+  .heroPanel {
+    height: 11rem;
+    left: 11%;
+    width: 17rem;
+  }
+
+  .heroArch {
+    height: 13rem;
+    left: 15%;
+    width: 8.6rem;
+  }
+
+  .heroNotebook {
+    height: 4.2rem;
+    width: 9rem;
+  }
+
+  .heroPath {
+    right: 11%;
+    width: 8rem;
+  }
+
+  .heroFoxFrame {
+    height: 18rem;
+    width: 15rem;
+  }
+
+  .heroFox {
+    width: 100%;
+  }
+
+  .approachGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmapTop,
+  .footer {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmapFoxWrap {
+    justify-self: start;
+    margin-top: 0.25rem;
+  }
+
+  .roadmapFoxFrame {
+    height: 8.2rem;
+    width: 8.2rem;
+  }
+
+  .footerNav {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: 3.5rem;
+    padding-bottom: 3rem;
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .headline {
+    font-size: clamp(2.55rem, 11vw, 3.6rem);
+    max-width: 11ch;
+  }
+
+  .lead,
+  .body,
+  .sectionText {
+    max-width: 100%;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roadmapRow {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .roadmapFoxWrap,
+  .aboutFoxWrap {
+    width: 9.25rem;
+  }
+
+  .roadmapFoxFrame {
+    height: 7.8rem;
+    width: 7.8rem;
+  }
+
+  .aboutFoxFrame {
+    height: 9rem;
+    width: 7.9rem;
+  }
+}
+
+@media (hover: none) {
+  .suiteCard:hover,
+  .primaryButton:hover,
+  .navLink:hover {
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suiteCard,
+  .primaryButton,
+  .navLink {
+    transition: none;
+  }
+}

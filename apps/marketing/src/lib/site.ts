@@ -5,41 +5,47 @@ import {
 
 const supportEmail =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@timetutor.app';
+const timeTutorAppStoreUrl =
+  process.env.NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL ||
+  'https://apps.apple.com/app/time-tutor-clock-practice/id6761587276';
 
 export const siteMeta = {
   description:
-    'BrightBench builds calm, polished educational apps that help kids build understanding through play.',
+    'Small apps. Big learning moments. BrightBench builds focused educational apps for the concepts that are hardest to teach and hardest to make click.',
   supportEmail,
+  timeTutorAppStoreUrl,
   title: 'BrightBench',
 };
 
 export const productCards = [
   {
-    blurb: 'Build fraction intuition by seeing, estimating, and comparing.',
+    accent: '#E97A5F',
+    blurb:
+      'Build fraction intuition through seeing, estimating, comparing, and creating fractions.',
     href: '/products/fraction-finder',
     name: 'Fraction Finder',
     status: 'In progress',
   },
   {
-    blurb: 'Practice analog, digital, and elapsed time with calm, tactile interactions.',
+    accent: '#E7A54B',
+    appStoreUrl: timeTutorAppStoreUrl,
+    blurb:
+      'Practice analog, digital, and elapsed time with clean, tactile interactions.',
     href: '/products/time-tutor',
     name: 'Time Tutor',
-    status: 'Live app',
+    status: 'Live on the App Store',
   },
   {
-    blurb: 'Grammar support built around short, focused practice.',
-    href: '/products/grammar-guide',
-    name: 'Grammar Guide',
-    status: 'Planned',
-  },
-  {
-    blurb: 'Early literacy play for letter recognition and fluency.',
+    accent: '#6FA5D8',
+    blurb: 'Early literacy practice for letter recognition, sounds, and fluency.',
     href: '/products/letter-bingo',
     name: 'Letter Bingo',
     status: 'Planned',
   },
   {
-    blurb: 'Place-value intuition through visual grouping and movement.',
+    accent: '#9A7AD6',
+    blurb:
+      'Build place-value understanding through visual grouping, movement, and number sense.',
     href: '/products/place-value',
     name: 'Place Value',
     status: 'Planned',

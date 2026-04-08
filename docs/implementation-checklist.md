@@ -60,6 +60,7 @@
 - [x] Connect it to the platform-neutral shared design tokens
 - [x] Add product landing pages
 - [x] Add shared privacy/support pages
+- [x] Refresh the homepage around the BrightBench suite brand and live Time Tutor CTA
 - [ ] Configure Vercel deployment
 
 ## Phase 8: Release Readiness
