@@ -1,0 +1,204 @@
+import * as Haptics from 'expo-haptics';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
+
+import { GameMode, ProgressSnapshot, RecentRoundResult, SettingsSnapshot } from '@/features/game/types';
+import { loadSnapshot, saveSnapshot } from '@/lib/storage';
+
+type AppState = {
+  hydrated: boolean;
+  progress: ProgressSnapshot;
+  settings: SettingsSnapshot;
+  lastResult: RecentRoundResult | null;
+};
+
+type ProgressSnapshotInput = {
+  modeStats?: Partial<ProgressSnapshot['modeStats']>;
+  recentResults?: ProgressSnapshot['recentResults'];
+};
+
+type Action =
+  | { type: 'hydrate'; progress: ProgressSnapshot; settings: SettingsSnapshot }
+  | { type: 'record-round'; payload: RecentRoundResult }
+  | { type: 'update-settings'; payload: Partial<SettingsSnapshot> }
+  | { type: 'clear-last-result' };
+
+type AppContextValue = AppState & {
+  recordRound: (result: RecentRoundResult) => void;
+  updateSettings: (settings: Partial<SettingsSnapshot>) => void;
+  clearLastResult: () => void;
+};
+
+const defaultModeStat = {
+  played: 0,
+  correct: 0,
+  bestStreak: 0,
+  currentStreak: 0,
+};
+
+export const defaultProgress: ProgressSnapshot = {
+  modeStats: {
+    find: { ...defaultModeStat },
+    build: { ...defaultModeStat },
+    compare: { ...defaultModeStat },
+    estimate: { ...defaultModeStat },
+    pour: { ...defaultModeStat },
+  },
+  recentResults: [],
+};
+
+export const defaultSettings: SettingsSnapshot = {
+  soundEnabled: false,
+  reducedMotion: false,
+  difficultyLevel: 'easy',
+  preferredRepresentation: 'mixed',
+};
+
+const initialState: AppState = {
+  hydrated: false,
+  progress: defaultProgress,
+  settings: defaultSettings,
+  lastResult: null,
+};
+
+export function normalizeProgressSnapshot(
+  progress?: ProgressSnapshotInput | null
+): ProgressSnapshot {
+  return {
+    modeStats: {
+      find: { ...defaultModeStat, ...(progress?.modeStats?.find ?? {}) },
+      build: { ...defaultModeStat, ...(progress?.modeStats?.build ?? {}) },
+      compare: { ...defaultModeStat, ...(progress?.modeStats?.compare ?? {}) },
+      estimate: { ...defaultModeStat, ...(progress?.modeStats?.estimate ?? {}) },
+      pour: { ...defaultModeStat, ...(progress?.modeStats?.pour ?? {}) },
+    },
+    recentResults: progress?.recentResults ?? [],
+  };
+}
+
+export function normalizeSettingsSnapshot(
+  settings?: Partial<SettingsSnapshot> | null
+): SettingsSnapshot {
+  return {
+    ...defaultSettings,
+    ...settings,
+  };
+}
+
+function reducer(state: AppState, action: Action): AppState {
+  switch (action.type) {
+    case 'hydrate':
+      return {
+        ...state,
+        hydrated: true,
+        progress: action.progress,
+        settings: action.settings,
+      };
+    case 'record-round': {
+      const previous = state.progress.modeStats[action.payload.mode];
+      const played = previous.played + 1;
+      const correct = previous.correct + (action.payload.wasCorrect ? 1 : 0);
+      const currentStreak = action.payload.wasCorrect ? previous.currentStreak + 1 : 0;
+      const modeStats = {
+        ...state.progress.modeStats,
+        [action.payload.mode]: {
+          played,
+          correct,
+          currentStreak,
+          bestStreak: Math.max(previous.bestStreak, currentStreak),
+        },
+      };
+
+      return {
+        ...state,
+        progress: {
+          modeStats,
+          recentResults: [action.payload, ...state.progress.recentResults].slice(0, 12),
+        },
+        lastResult: action.payload,
+      };
+    }
+    case 'update-settings':
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          ...action.payload,
+        },
+      };
+    case 'clear-last-result':
+      return {
+        ...state,
+        lastResult: null,
+      };
+  }
+}
+
+const AppStateContext = createContext<AppContextValue | null>(null);
+
+export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  useEffect(() => {
+    loadSnapshot()
+      .then((snapshot) => {
+        dispatch({
+          type: 'hydrate',
+          progress: normalizeProgressSnapshot(snapshot?.progress),
+          settings: normalizeSettingsSnapshot(snapshot?.settings),
+        });
+      })
+      .catch(() => {
+        dispatch({
+          type: 'hydrate',
+          progress: normalizeProgressSnapshot(),
+          settings: normalizeSettingsSnapshot(),
+        });
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!state.hydrated) {
+      return;
+    }
+
+    saveSnapshot({
+      progress: state.progress,
+      settings: state.settings,
+    }).catch(() => undefined);
+  }, [state.hydrated, state.progress, state.settings]);
+
+  const value: AppContextValue = {
+    ...state,
+    recordRound: (result) => {
+      if (result.wasCorrect) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+      }
+
+      dispatch({ type: 'record-round', payload: result });
+    },
+    updateSettings: (settings) => dispatch({ type: 'update-settings', payload: settings }),
+    clearLastResult: () => dispatch({ type: 'clear-last-result' }),
+  };
+
+  return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
+}
+
+export function useAppState() {
+  const context = useContext(AppStateContext);
+
+  if (!context) {
+    throw new Error('useAppState must be used inside AppStateProvider');
+  }
+
+  return context;
+}
+
+export function accuracyForMode(progress: ProgressSnapshot, mode: GameMode) {
+  const stat = progress.modeStats[mode];
+  if (!stat.played) {
+    return 0;
+  }
+  return Math.round((stat.correct / stat.played) * 100);
+}

@@ -1,0 +1,25 @@
+:root {
+  --font-display: "Avenir Next", "Nunito Sans", "Trebuchet MS", sans-serif;
+  --font-body: "Avenir Next", "Nunito Sans", "Trebuchet MS", sans-serif;
+  --background: #f8f3e8;
+  --text: #20303a;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, #f3e6d8 0%, transparent 28%),
+    radial-gradient(circle at top right, #f0e9de 0%, transparent 30%),
+    radial-gradient(circle at center, #eee7dd 0%, transparent 20%),
+    radial-gradient(circle at bottom left, #e5eaf2 0%, transparent 24%),
+    radial-gradient(circle at bottom right, #e8e4f1 0%, transparent 26%),
+    var(--background);
+  color: var(--text);
+  font-family: var(--font-body);
+}

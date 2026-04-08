@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Time Tutor",
+    "slug": "time-tutor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "timetutor",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kraig.timetutor"
+    },
+    "android": {
+      "package": "com.kraig.timetutor",
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent",
+          "ios": {
+            "launchMode": "most-recent"
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F6EFE3"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

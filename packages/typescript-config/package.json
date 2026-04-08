@@ -1,0 +1,11 @@
+{
+  "name": "@education/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./base": "./base.json",
+    "./expo-app": "./expo-app.json",
+    "./next-app": "./next-app.json"
+  },
+  "sideEffects": false
+}

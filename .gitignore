@@ -1,0 +1,14 @@
+.DS_Store
+node_modules
+.pnpm-store
+.turbo
+dist
+.next
+.expo
+.vercel
+coverage
+*.log
+*.tsbuildinfo
+ios/build
+android/.gradle
+android/app/build

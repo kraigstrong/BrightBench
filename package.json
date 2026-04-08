@@ -1,0 +1,20 @@
+{
+  "name": "brightbench",
+  "private": true,
+  "packageManager": "npm@11.11.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "turbo run format"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.8"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@education/design": ["packages/design/src/index.ts"],
+      "@education/ui": ["packages/ui/src/index.ts"],
+      "@education/legal-pages": ["packages/legal-pages/src/index.ts"],
+      "@education/app-config": ["packages/app-config/src/index.ts"]
+    }
+  }
+}
