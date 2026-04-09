@@ -2,9 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, router } from 'expo-router';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { goBackOrReplace } from '@education/app-config';
 import { palette, radii, spacing } from '@education/design';
 import { typography } from '@education/design/native';
-import { ActionButton, Card, HeaderBar, HeaderIconButton, SettingsCogIcon } from '@education/ui';
+import {
+  ActionButton,
+  Card,
+  HeaderBar,
+  HeaderBackButton,
+  HeaderIconButton,
+  SettingsCogIcon,
+} from '@education/ui';
 import { ChoiceButton } from '@/components/ui/choice-button';
 import { fractionPalette } from '@/design/tokens';
 import { FRACTION_BY_ID } from '@/features/game/fractions';
@@ -33,6 +41,49 @@ type ModePlaySceneProps = {
   mode: GameMode;
 };
 
+function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) {
+  if (!feedback || feedback.isCorrect) {
+    return null;
+  }
+
+  switch (mode) {
+    case 'find':
+      return {
+        title: 'Not quite yet',
+        body: 'Take another look at how many equal parts are shaded.',
+      };
+    case 'build':
+      return {
+        title: 'Keep adjusting',
+        body: 'Change the shaded parts and try again.',
+        detail: feedback.detailLabel,
+      };
+    case 'estimate':
+      return {
+        title: 'Close guess',
+        body: 'Use a benchmark like one half to guide your next choice.',
+        detail: feedback.detailLabel,
+      };
+    case 'pour':
+      return {
+        title: 'Keep pouring',
+        body: 'Adjust the fill and check again when it looks right.',
+        detail: feedback.detailLabel,
+      };
+    case 'compare':
+      return {
+        title: 'Try again',
+        body: 'Look for which picture shows more of the whole.',
+      };
+    case 'line':
+      return {
+        title: 'Keep going',
+        body: 'Move the marker and check again when the spot feels better.',
+        detail: feedback.detailLabel,
+      };
+  }
+}
+
 export function ModePlayScene({ mode }: ModePlaySceneProps) {
   const { settings, recordRound } = useAppState();
   const difficultyLevel = settings.difficultyLevel;
@@ -40,12 +91,18 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
   const [feedback, setFeedback] = useState<RoundEvaluation | null>(null);
   const [isCelebrating, setIsCelebrating] = useState(false);
   const nextRoundTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const meta = MODE_META[mode];
+  const retryFeedback = retryFeedbackForMode(mode, feedback);
 
   useEffect(() => {
     if (nextRoundTimeoutRef.current) {
       clearTimeout(nextRoundTimeoutRef.current);
       nextRoundTimeoutRef.current = null;
+    }
+    if (retryFeedbackTimeoutRef.current) {
+      clearTimeout(retryFeedbackTimeoutRef.current);
+      retryFeedbackTimeoutRef.current = null;
     }
 
     setRound(generateRound(mode, { difficultyLevel }));
@@ -58,8 +115,30 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
       if (nextRoundTimeoutRef.current) {
         clearTimeout(nextRoundTimeoutRef.current);
       }
+      if (retryFeedbackTimeoutRef.current) {
+        clearTimeout(retryFeedbackTimeoutRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (!feedback || feedback.isCorrect) {
+      if (retryFeedbackTimeoutRef.current) {
+        clearTimeout(retryFeedbackTimeoutRef.current);
+        retryFeedbackTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    if (retryFeedbackTimeoutRef.current) {
+      clearTimeout(retryFeedbackTimeoutRef.current);
+    }
+
+    retryFeedbackTimeoutRef.current = setTimeout(() => {
+      setFeedback((current) => (current && !current.isCorrect ? null : current));
+      retryFeedbackTimeoutRef.current = null;
+    }, 5000);
+  }, [feedback]);
 
   function submit(input: unknown) {
     const evaluation = evaluateRound(mode, round, input);
@@ -94,21 +173,30 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
       clearTimeout(nextRoundTimeoutRef.current);
       nextRoundTimeoutRef.current = null;
     }
+    if (retryFeedbackTimeoutRef.current) {
+      clearTimeout(retryFeedbackTimeoutRef.current);
+      retryFeedbackTimeoutRef.current = null;
+    }
 
     setRound(generateRound(mode, { difficultyLevel }));
     setFeedback(null);
     setIsCelebrating(false);
   }
 
+  function clearRetryFeedback() {
+    if (retryFeedbackTimeoutRef.current) {
+      clearTimeout(retryFeedbackTimeoutRef.current);
+      retryFeedbackTimeoutRef.current = null;
+    }
+    setFeedback((current) => (current && !current.isCorrect ? null : current));
+  }
+
   return (
     <View style={styles.scene}>
       <HeaderBar
-        title={meta.shortTitle}
-        subtitle="Practice"
+        title={meta.title}
         leftAction={
-          <Link href="/modes" asChild>
-            <ActionButton compact label="Back" variant="secondary" />
-          </Link>
+          <HeaderBackButton onPress={() => goBackOrReplace(router, '/modes')} />
         }
         rightAction={
           <HeaderIconButton
@@ -121,54 +209,58 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
       />
 
       <GameScreenShell
-        title={meta.title}
         prompt={round.prompt}
         hint={meta.promptHint}
         accent={meta.accent}
-        feedback={feedback}
+        retryFeedback={retryFeedback}
         celebrationVisible={isCelebrating}
         successMessage="Nice work!"
-        feedbackLabel={feedback?.isCorrect ? 'Beautiful job' : 'Let’s look again'}
-        onNextRound={nextRound}
         footer={
           <View style={styles.footerRow}>
-            <Link href="/results" asChild>
-              <ActionButton compact label="Latest result" variant="secondary" />
-            </Link>
             <Link href="/progress" asChild>
               <ActionButton compact label="Progress" variant="secondary" />
             </Link>
           </View>
         }>
         {mode === 'find' ? (
-          <FindPlay round={round as FindRound} onSubmit={submit} disabled={Boolean(feedback) || isCelebrating} />
+          <FindPlay round={round as FindRound} onSubmit={submit} disabled={isCelebrating} />
         ) : null}
         {mode === 'build' ? (
-          <BuildPlay round={round as BuildRound} onSubmit={submit} disabled={Boolean(feedback) || isCelebrating} />
+          <BuildPlay
+            round={round as BuildRound}
+            onSubmit={submit}
+            disabled={isCelebrating}
+            onInteraction={clearRetryFeedback}
+          />
         ) : null}
         {mode === 'estimate' ? (
           <EstimatePlay
             round={round as EstimateRound}
             onSubmit={submit}
-            disabled={Boolean(feedback) || isCelebrating}
+            disabled={isCelebrating}
           />
         ) : null}
         {mode === 'pour' ? (
-          <PourPlay round={round as PourRound} onSubmit={submit} disabled={Boolean(feedback) || isCelebrating} />
+          <PourPlay
+            round={round as PourRound}
+            onSubmit={submit}
+            disabled={isCelebrating}
+            onInteraction={clearRetryFeedback}
+          />
         ) : null}
         {mode === 'compare' ? (
           <ComparePlay
             round={round as CompareRound}
             onSubmit={submit}
-            disabled={Boolean(feedback) || isCelebrating}
+            disabled={isCelebrating}
           />
         ) : null}
         {mode === 'line' ? (
           <LinePlay
             round={round as LineRound}
             onSubmit={submit}
-            disabled={Boolean(feedback) || isCelebrating}
-            feedback={feedback}
+            disabled={isCelebrating}
+            onInteraction={clearRetryFeedback}
           />
         ) : null}
       </GameScreenShell>
@@ -190,10 +282,10 @@ function FindPlay({
   return (
     <View style={styles.modeBody}>
       <View style={styles.visualStage}>
-        <FractionBar numerator={target.numerator} denominator={target.denominator} />
+        <FractionBar connected numerator={target.numerator} denominator={target.denominator} />
       </View>
       <View style={styles.answerStage}>
-        {round.options.map((optionId) => (
+        {round.options.map((optionId, index) => (
           <ChoiceButton
             key={optionId}
             disabled={disabled}
@@ -210,10 +302,12 @@ function BuildPlay({
   round,
   onSubmit,
   disabled,
+  onInteraction,
 }: {
   round: BuildRound;
   onSubmit: (input: number) => void;
   disabled: boolean;
+  onInteraction: () => void;
 }) {
   const target = FRACTION_BY_ID[round.targetFractionId];
   const [segments, setSegments] = useState<number[]>([]);
@@ -223,6 +317,7 @@ function BuildPlay({
   }, [round.id]);
 
   function toggle(index: number) {
+    onInteraction();
     setSegments((current) =>
       current.includes(index) ? current.filter((value) => value !== index) : [...current, index].sort()
     );
@@ -286,10 +381,12 @@ function PourPlay({
   round,
   onSubmit,
   disabled,
+  onInteraction,
 }: {
   round: PourRound;
   onSubmit: (input: number) => void;
   disabled: boolean;
+  onInteraction: () => void;
 }) {
   const [fill, setFill] = useState(0.12);
   const [trackHeight, setTrackHeight] = useState(1);
@@ -299,6 +396,7 @@ function PourPlay({
   }, [round.id]);
 
   function updateFill(locationY: number) {
+    onInteraction();
     const next = clamp(1 - locationY / trackHeight, 0.04, 0.96);
     setFill(next);
   }
@@ -363,12 +461,12 @@ function LinePlay({
   round,
   onSubmit,
   disabled,
-  feedback,
+  onInteraction,
 }: {
   round: LineRound;
   onSubmit: (input: number) => void;
   disabled: boolean;
-  feedback: RoundEvaluation | null;
+  onInteraction: () => void;
 }) {
   const [markerValue, setMarkerValue] = useState(0);
   const target = getFraction(round.targetFractionId);
@@ -383,8 +481,11 @@ function LinePlay({
         difficultyLevel={round.difficultyLevel}
         lineMax={round.lineMax}
         markerValue={markerValue}
-        onChange={setMarkerValue}
-        revealTarget={Boolean(feedback)}
+        onChange={(value) => {
+          onInteraction();
+          setMarkerValue(value);
+        }}
+        revealTarget={false}
         segmentCount={round.segmentCount}
         targetValue={target.value}
         disabled={disabled}
@@ -413,7 +514,6 @@ export function SettingsToggleRow({
 
 const styles = StyleSheet.create({
   scene: {
-    flex: 1,
     gap: spacing.md,
   },
   modeBody: {

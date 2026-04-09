@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { palette } from '@education/design';
-import { typography } from '@education/design/native';
+import { palette, radii } from '@education/design';
+import { shadows, typography } from '@education/design/native';
 
 type HeaderBarProps = {
   leftAction?: React.ReactNode;
@@ -37,6 +37,20 @@ export function HeaderBar({
   );
 }
 
+export function HeaderBackButton({ onPress, testID }: { onPress: () => void; testID?: string }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.backButton}
+      testID={testID}>
+      <Text numberOfLines={1} style={styles.backLabel}>
+        Back
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   shell: {
     gap: 8,
@@ -51,7 +65,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
     minHeight: 44,
-    width: 72,
+    width: 68,
   },
   rightSlot: {
     alignItems: 'flex-end',
@@ -76,5 +90,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 22,
     textAlign: 'center',
+  },
+  backButton: {
+    backgroundColor: palette.surface,
+    borderColor: palette.ring,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    minWidth: 68,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    ...shadows.card,
+  },
+  backLabel: {
+    color: palette.ink,
+    fontFamily: typography.bodyFamily,
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

@@ -3,6 +3,7 @@ export * from './app-shell';
 export * from './card';
 export * from './celebration-overlay';
 export * from './feature-card';
+export * from './feedback-callout';
 export * from './header-icon-button';
 export * from './header-bar';
 export * from './settings-cog-icon';

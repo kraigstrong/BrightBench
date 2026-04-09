@@ -1,7 +1,8 @@
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { goBackOrReplace } from '@education/app-config';
 import { palette, spacing } from '@education/design';
 import { typography } from '@education/design/native';
 import { ActionButton, AppShell, Card, HeaderBar } from '@education/ui';
@@ -21,9 +22,12 @@ export default function ProgressScreen() {
         title="Progress"
         subtitle="Small wins add up when the rounds stay short and clear."
         leftAction={
-          <Link href="/modes" asChild>
-            <ActionButton compact label="Back" variant="secondary" />
-          </Link>
+          <ActionButton
+            compact
+            label="Back"
+            onPress={() => goBackOrReplace(router, '/modes')}
+            variant="secondary"
+          />
         }
       />
 

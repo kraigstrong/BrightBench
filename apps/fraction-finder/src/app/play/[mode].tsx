@@ -1,6 +1,5 @@
 import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { StyleSheet } from 'react-native';
 
 import { AppShell } from '@education/ui';
 import { layout } from '@/design/tokens';
@@ -24,15 +23,9 @@ export default function PlayModeScreen() {
           gestureEnabled: false,
         }}
       />
-      <AppShell contentStyle={styles.content} maxWidth={layout.maxContentWidth} scroll={false}>
+      <AppShell maxWidth={layout.maxContentWidth}>
         <ModePlayScene mode={mode} />
       </AppShell>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-  },
-});

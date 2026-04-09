@@ -59,7 +59,9 @@ export function evaluateLineRound(round: LineRound, actualValue: number): RoundE
     nearestFractionId: nearest.id,
     detailLabel:
       scoreBand === 'exact'
-        ? `Right on ${target.label}`
-        : `${actualValue < target.value ? 'A little under' : 'A little over'} ${target.label}`,
+        ? undefined
+        : actualValue < target.value
+          ? 'Try a little farther right.'
+          : 'Try a little farther left.',
   };
 }

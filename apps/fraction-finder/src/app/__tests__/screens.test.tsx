@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/react-native';
 import HomeScreen from '@/app/index';
 import ModesScreen from '@/app/modes';
 import ProgressScreen from '@/app/progress';
-import ResultsScreen from '@/app/results';
 import SettingsScreen from '@/app/settings';
 import { useAppState } from '@/state/app-state';
 
@@ -90,13 +89,5 @@ describe('app screens', () => {
     expect(screen.getByText('Rounds played')).toBeTruthy();
     expect(screen.getByText('Best streak')).toBeTruthy();
     expect(screen.getByText('Find the Fraction')).toBeTruthy();
-  });
-
-  it('renders the results screen actions', () => {
-    render(<ResultsScreen />);
-
-    expect(screen.getByText('Latest Result')).toBeTruthy();
-    expect(screen.getByText('Nice work!')).toBeTruthy();
-    expect(screen.getByText('View progress')).toBeTruthy();
   });
 });

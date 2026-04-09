@@ -29,5 +29,9 @@ export function evaluateEstimateRound(round: EstimateRound, answerId: string): R
     feedbackKey: answerId === round.targetFractionId ? 'estimate-correct' : 'estimate-nearby',
     actualValue: round.actualValue,
     nearestFractionId: round.targetFractionId,
+    detailLabel:
+      answerId === round.targetFractionId
+        ? undefined
+        : 'Check whether the picture looks less than half, about half, or more than half.',
   };
 }

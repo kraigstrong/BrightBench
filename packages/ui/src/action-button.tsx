@@ -69,6 +69,7 @@ export function ActionButton({
           <View style={styles.optionCopy}>
             <View style={styles.optionTitleRow}>
               <Text
+                numberOfLines={1}
                 style={[
                   styles.label,
                   styles.leftLabel,
@@ -87,8 +88,12 @@ export function ActionButton({
         </View>
       ) : (
         <Text
+          adjustsFontSizeToFit
+          minimumFontScale={0.9}
+          numberOfLines={1}
           style={[
             styles.label,
+            compact ? styles.compactLabel : null,
             variant === 'primary' || selected ? styles.primaryLabel : null,
           ]}>
           {label}
@@ -112,8 +117,8 @@ const styles = StyleSheet.create({
   },
   compact: {
     minHeight: 44,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
   secondary: {
     backgroundColor: palette.surface,
@@ -149,6 +154,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  compactLabel: {
+    fontSize: 18,
   },
   leftLabel: {
     textAlign: 'left',

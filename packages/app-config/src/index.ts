@@ -9,6 +9,12 @@ export type EducationAppConfig = {
   slug: string;
 };
 
+type BackCapableRouter<Href> = {
+  back: () => void;
+  canGoBack?: () => boolean;
+  replace: (href: Href) => void;
+};
+
 export function buildWebExportCommand(appName: string): string {
   return `npm run web:export -w ${appName}`;
 }
@@ -32,4 +38,16 @@ export function buildBundleId(bundlePrefix: string, slug: string): string {
 
 export function buildVercelProjectName(slug: string): string {
   return slug;
+}
+
+export function goBackOrReplace<Href>(
+  router: BackCapableRouter<Href>,
+  fallbackHref: Href,
+): void {
+  if (router.canGoBack?.()) {
+    router.back();
+    return;
+  }
+
+  router.replace(fallbackHref);
 }

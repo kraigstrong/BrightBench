@@ -28,6 +28,6 @@ export function evaluatePourRound(round: PourRound, actualValue: number): RoundE
     feedbackKey: feedbackMessage(scoreBand, round.targetFractionId, nearest.id),
     actualValue,
     nearestFractionId: nearest.id,
-    detailLabel: `${actualValue < target.value ? 'A little under' : 'A little over'} ${target.label}`,
+    detailLabel: actualValue < target.value ? 'Try a little higher.' : 'Try a little lower.',
   };
 }

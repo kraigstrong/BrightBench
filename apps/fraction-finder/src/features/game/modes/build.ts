@@ -24,5 +24,10 @@ export function evaluateBuildRound(round: BuildRound, filledCount: number): Roun
     isCorrect,
     scoreBand: isCorrect ? 'exact' : 'almost',
     feedbackKey: isCorrect ? 'build-correct' : 'build-adjust',
+    detailLabel: isCorrect
+      ? undefined
+      : filledCount < target.numerator
+        ? 'Try shading a little more.'
+        : 'Try shading a little less.',
   };
 }
