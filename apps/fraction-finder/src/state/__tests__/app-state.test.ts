@@ -37,5 +37,6 @@ describe('app state normalization', () => {
     expect(progress.modeStats.find.played).toBe(4);
     expect(progress.modeStats.find.correct).toBe(3);
     expect(progress.modeStats.compare.played).toBe(0);
+    expect(progress.modeStats.line.played).toBe(0);
   });
 });

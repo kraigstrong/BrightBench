@@ -10,7 +10,7 @@ import { MODE_META } from '@/features/game/mode-meta';
 import { GameMode } from '@/features/game/types';
 
 export default function ModesScreen() {
-  const modes: GameMode[] = ['find', 'build', 'estimate', 'pour', 'compare'];
+  const modes: GameMode[] = ['find', 'build', 'estimate', 'line', 'pour', 'compare'];
 
   return (
     <AppShell maxWidth={layout.maxContentWidth}>

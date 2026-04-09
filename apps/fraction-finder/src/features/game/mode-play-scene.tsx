@@ -12,6 +12,7 @@ import { FractionBar } from '@/features/game/components/fraction-bar';
 import { FractionContainer } from '@/features/game/components/fraction-container';
 import { FractionMeter } from '@/features/game/components/fraction-meter';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
+import { NumberLine } from '@/features/game/components/number-line';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
 import { clamp, getFraction } from '@/features/game/math';
@@ -22,6 +23,7 @@ import {
   EstimateRound,
   FindRound,
   GameMode,
+  LineRound,
   PourRound,
   RoundEvaluation,
 } from '@/features/game/types';
@@ -159,6 +161,14 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
             round={round as CompareRound}
             onSubmit={submit}
             disabled={Boolean(feedback) || isCelebrating}
+          />
+        ) : null}
+        {mode === 'line' ? (
+          <LinePlay
+            round={round as LineRound}
+            onSubmit={submit}
+            disabled={Boolean(feedback) || isCelebrating}
+            feedback={feedback}
           />
         ) : null}
       </GameScreenShell>
@@ -345,6 +355,41 @@ function ComparePlay({
         </Pressable>
       </View>
       <Text style={styles.helperText}>Tap the bigger fraction.</Text>
+    </View>
+  );
+}
+
+function LinePlay({
+  round,
+  onSubmit,
+  disabled,
+  feedback,
+}: {
+  round: LineRound;
+  onSubmit: (input: number) => void;
+  disabled: boolean;
+  feedback: RoundEvaluation | null;
+}) {
+  const [markerValue, setMarkerValue] = useState(0);
+  const target = getFraction(round.targetFractionId);
+
+  useEffect(() => {
+    setMarkerValue(0);
+  }, [round.id]);
+
+  return (
+    <View style={styles.modeBody}>
+      <NumberLine
+        difficultyLevel={round.difficultyLevel}
+        lineMax={round.lineMax}
+        markerValue={markerValue}
+        onChange={setMarkerValue}
+        revealTarget={Boolean(feedback)}
+        segmentCount={round.segmentCount}
+        targetValue={target.value}
+        disabled={disabled}
+      />
+      <ChoiceButton label="Check my spot" onPress={() => onSubmit(markerValue)} disabled={disabled} />
     </View>
   );
 }

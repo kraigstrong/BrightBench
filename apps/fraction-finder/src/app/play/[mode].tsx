@@ -1,4 +1,4 @@
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
@@ -7,7 +7,7 @@ import { layout } from '@/design/tokens';
 import { ModePlayScene } from '@/features/game/mode-play-scene';
 import { GameMode } from '@/features/game/types';
 
-const VALID_MODES: GameMode[] = ['find', 'build', 'compare', 'estimate', 'pour'];
+const VALID_MODES: GameMode[] = ['find', 'build', 'compare', 'estimate', 'pour', 'line'];
 
 export default function PlayModeScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
@@ -18,9 +18,16 @@ export default function PlayModeScreen() {
   }
 
   return (
-    <AppShell contentStyle={styles.content} maxWidth={layout.maxContentWidth} scroll={false}>
-      <ModePlayScene mode={mode} />
-    </AppShell>
+    <>
+      <Stack.Screen
+        options={{
+          gestureEnabled: false,
+        }}
+      />
+      <AppShell contentStyle={styles.content} maxWidth={layout.maxContentWidth} scroll={false}>
+        <ModePlayScene mode={mode} />
+      </AppShell>
+    </>
   );
 }
 

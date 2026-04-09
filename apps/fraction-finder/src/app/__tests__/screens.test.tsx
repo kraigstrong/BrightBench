@@ -33,6 +33,7 @@ describe('app screens', () => {
           compare: { played: 1, correct: 1, bestStreak: 1, currentStreak: 1 },
           estimate: { played: 3, correct: 2, bestStreak: 2, currentStreak: 0 },
           pour: { played: 5, correct: 4, bestStreak: 3, currentStreak: 2 },
+          line: { played: 2, correct: 1, bestStreak: 1, currentStreak: 0 },
         },
         recentResults: [],
       },
@@ -69,6 +70,7 @@ describe('app screens', () => {
 
     expect(screen.getByText('Choose a Mode')).toBeTruthy();
     expect(screen.getByText('Find the Fraction')).toBeTruthy();
+    expect(screen.getByText('Place on the Number Line')).toBeTruthy();
     expect(screen.getByLabelText('Open settings')).toBeTruthy();
   });
 

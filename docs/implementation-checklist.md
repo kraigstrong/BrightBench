@@ -52,6 +52,7 @@
 - [x] Replace local tokens with shared design package
 - [x] Replace shared UI patterns with shared UI package
 - [x] Align Fraction Finder screen chrome with shared app shell, header, and action primitives
+- [x] Add a number-line placement mode to Fraction Finder with difficulty-based scaffolding
 - [x] Create new Expo-based `apps/time-tutor`
 - [x] Port Time Tutor behavior without touching the original repo
 

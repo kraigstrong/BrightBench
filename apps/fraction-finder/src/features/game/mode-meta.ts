@@ -51,4 +51,12 @@ export const MODE_META: Record<
     accent: '#7B5BC7',
     surface: '#F3EDFF',
   },
+  line: {
+    title: 'Place on the Number Line',
+    shortTitle: 'Line',
+    description: 'Drag the marker to where the fraction belongs.',
+    promptHint: 'Place the marker, then check how close you are.',
+    accent: '#2F9C95',
+    surface: '#EAF8F6',
+  },
 };

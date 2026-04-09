@@ -42,6 +42,7 @@ export const defaultProgress: ProgressSnapshot = {
     compare: { ...defaultModeStat },
     estimate: { ...defaultModeStat },
     pour: { ...defaultModeStat },
+    line: { ...defaultModeStat },
   },
   recentResults: [],
 };
@@ -70,6 +71,7 @@ export function normalizeProgressSnapshot(
       compare: { ...defaultModeStat, ...(progress?.modeStats?.compare ?? {}) },
       estimate: { ...defaultModeStat, ...(progress?.modeStats?.estimate ?? {}) },
       pour: { ...defaultModeStat, ...(progress?.modeStats?.pour ?? {}) },
+      line: { ...defaultModeStat, ...(progress?.modeStats?.line ?? {}) },
     },
     recentResults: progress?.recentResults ?? [],
   };

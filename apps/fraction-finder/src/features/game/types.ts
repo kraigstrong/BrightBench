@@ -1,5 +1,5 @@
-export type RepresentationType = 'bar' | 'container' | 'meter' | 'circle';
-export type GameMode = 'find' | 'build' | 'compare' | 'estimate' | 'pour';
+export type RepresentationType = 'bar' | 'container' | 'meter' | 'circle' | 'line';
+export type GameMode = 'find' | 'build' | 'compare' | 'estimate' | 'pour' | 'line';
 export type BenchmarkCategory = 'benchmark' | 'common' | 'stretch';
 export type ScoreBand = 'exact' | 'close' | 'almost' | 'far';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
@@ -53,7 +53,14 @@ export type PourRound = RoundBase & {
   tolerance: number;
 };
 
-export type AnyRound = FindRound | BuildRound | CompareRound | EstimateRound | PourRound;
+export type LineRound = RoundBase & {
+  mode: 'line';
+  lineMax: number;
+  segmentCount: number;
+  tolerance: number;
+};
+
+export type AnyRound = FindRound | BuildRound | CompareRound | EstimateRound | PourRound | LineRound;
 
 export type RoundEvaluation = {
   isCorrect: boolean;
