@@ -436,7 +436,7 @@ export function sessionProgressSummary(
       emptyText: 'Ready for your first round.',
       metrics: [
         { label: 'Played', value: String(practice.played) },
-        { label: 'Streak', value: String(practice.bestStreak) },
+        { label: 'Best Streak', value: String(practice.bestStreak) },
       ],
     };
   }
@@ -449,7 +449,7 @@ export function sessionProgressSummary(
     metrics: [
       { label: 'Played', value: String(challenge.played) },
       { label: 'Accuracy', value: `${accuracyFromCounts(challenge.correct, challenge.attempts)}%` },
-      { label: 'High score', value: String(challenge.highScore) },
+      { label: 'High Score', value: String(challenge.highScore) },
     ],
   };
 }

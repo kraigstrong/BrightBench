@@ -2,6 +2,7 @@ export * from './action-button';
 export * from './app-shell';
 export * from './card';
 export * from './celebration-overlay';
+export * from './compact-feature-card';
 export * from './feature-card';
 export * from './feedback-callout';
 export * from './header-icon-button';

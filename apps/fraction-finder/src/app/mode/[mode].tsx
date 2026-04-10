@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { spacing } from '@education/design';
 import {
   AppShell,
-  FeatureCard,
+  CompactFeatureCard,
   HeaderBar,
   HeaderBackButton,
   HeaderIconButton,
@@ -51,7 +51,7 @@ export default function ModeDetailScreen() {
       />
 
       <View style={styles.column}>
-        <FeatureCard
+        <CompactFeatureCard
           accentColor={meta.accent}
           description="Go at your own pace with instant feedback on each answer."
           footer={
@@ -60,7 +60,7 @@ export default function ModeDetailScreen() {
           onPress={() => router.push(`/session/${mode}/practice`)}
           title="Practice"
         />
-        <FeatureCard
+        <CompactFeatureCard
           accentColor={meta.accent}
           description="Answer as many questions as you can in one minute."
           footer={

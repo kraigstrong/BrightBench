@@ -105,7 +105,7 @@ describe('app state normalization', () => {
       hasProgress: true,
       metrics: [
         { label: 'Played', value: '4' },
-        { label: 'Streak', value: '2' },
+        { label: 'Best Streak', value: '2' },
       ],
     });
     expect(sessionProgressSummary(progress, 'find', 'challenge')).toEqual({
@@ -114,7 +114,7 @@ describe('app state normalization', () => {
       metrics: [
         { label: 'Played', value: '2' },
         { label: 'Accuracy', value: '75%' },
-        { label: 'High score', value: '3' },
+        { label: 'High Score', value: '3' },
       ],
     });
     expect(modeProgressSummary(progress, 'line').hasProgress).toBe(false);

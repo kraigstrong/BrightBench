@@ -93,8 +93,8 @@ describe('app screens', () => {
     expect(screen.getByText('Choose how you want to play.')).toBeTruthy();
     expect(screen.getByText('Practice')).toBeTruthy();
     expect(screen.getByText('1-Minute Challenge')).toBeTruthy();
-    expect(screen.getByText('Streak')).toBeTruthy();
-    expect(screen.getByText('High score')).toBeTruthy();
+    expect(screen.getByText('Best Streak')).toBeTruthy();
+    expect(screen.getByText('High Score')).toBeTruthy();
   });
 
   it('renders the settings screen with shared selectable controls', () => {
