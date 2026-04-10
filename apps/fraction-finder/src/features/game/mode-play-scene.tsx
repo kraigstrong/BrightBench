@@ -17,6 +17,7 @@ import { fractionPalette } from '@/design/tokens';
 import { FRACTION_BY_ID } from '@/features/game/fractions';
 import { FractionBar } from '@/features/game/components/fraction-bar';
 import { FractionContainer } from '@/features/game/components/fraction-container';
+import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { FractionMeter } from '@/features/game/components/fraction-meter';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { NumberLine } from '@/features/game/components/number-line';
@@ -33,11 +34,13 @@ import {
   LineRound,
   PourRound,
   RoundEvaluation,
+  SessionType,
 } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
 type ModePlaySceneProps = {
   mode: GameMode;
+  sessionType?: SessionType;
 };
 
 function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) {
@@ -83,7 +86,7 @@ function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) 
   }
 }
 
-export function ModePlayScene({ mode }: ModePlaySceneProps) {
+export function ModePlayScene({ mode, sessionType }: ModePlaySceneProps) {
   const { settings, recordRound } = useAppState();
   const difficultyLevel = settings.difficultyLevel;
   const [round, setRound] = useState<AnyRound>(() => generateRound(mode, { difficultyLevel }));
@@ -143,6 +146,7 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
     const evaluation = evaluateRound(mode, round, input);
     recordRound({
       mode,
+      sessionType: mode === 'find' ? sessionType ?? 'practice' : undefined,
       targetFractionId: round.targetFractionId,
       scoreBand: evaluation.scoreBand,
       wasCorrect: evaluation.isCorrect,
@@ -194,6 +198,7 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
     <View style={styles.scene}>
       <HeaderBar
         title={meta.title}
+        subtitle={mode === 'find' && sessionType === 'practice' ? 'Practice' : undefined}
         leftAction={
           <HeaderBackButton onPress={() => goBackOrReplace(router, '/modes')} />
         }
@@ -215,7 +220,7 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
         celebrationVisible={isCelebrating}
         successMessage="Nice work!">
         {mode === 'find' ? (
-          <FindPlay round={round as FindRound} onSubmit={submit} disabled={isCelebrating} />
+          <FindRoundPanel round={round as FindRound} onSubmit={submit} disabled={isCelebrating} />
         ) : null}
         {mode === 'build' ? (
           <BuildPlay
@@ -256,36 +261,6 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
           />
         ) : null}
       </GameScreenShell>
-    </View>
-  );
-}
-
-function FindPlay({
-  round,
-  onSubmit,
-  disabled,
-}: {
-  round: FindRound;
-  onSubmit: (input: string) => void;
-  disabled: boolean;
-}) {
-  const target = FRACTION_BY_ID[round.targetFractionId];
-
-  return (
-    <View style={styles.modeBody}>
-      <View style={styles.visualStage}>
-        <FractionBar connected numerator={target.numerator} denominator={target.denominator} />
-      </View>
-      <View style={styles.answerStage}>
-        {round.options.map((optionId, index) => (
-          <ChoiceButton
-            key={optionId}
-            disabled={disabled}
-            label={FRACTION_BY_ID[optionId].label}
-            onPress={() => onSubmit(optionId)}
-          />
-        ))}
-      </View>
     </View>
   );
 }

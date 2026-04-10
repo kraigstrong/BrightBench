@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FeatureCard } from '@education/ui';
 import { ModeProgressSummary } from '@/components/ui/mode-progress-summary';
-import { ModeProgressSummaryData } from '@/state/app-state';
+import { ProgressSummaryData } from '@/state/app-state';
 
 export function ModeCard({
   title,
@@ -14,7 +14,7 @@ export function ModeCard({
   title: string;
   description: string;
   accent: string;
-  progressSummary: ModeProgressSummaryData;
+  progressSummary?: ProgressSummaryData;
   onPress: () => void;
 }) {
   return (
@@ -22,7 +22,7 @@ export function ModeCard({
       accentColor={accent}
       description={description}
       descriptionNumberOfLines={2}
-      footer={<ModeProgressSummary summary={progressSummary} />}
+      footer={progressSummary ? <ModeProgressSummary summary={progressSummary} /> : undefined}
       onPress={onPress}
       title={title}
     />

@@ -15,6 +15,7 @@ import { GameMode } from '@/features/game/types';
 import {
   modeProgressSummary,
   overallAccuracy,
+  sessionProgressSummary,
   totalRoundsPlayed,
   useAppState,
 } from '@/state/app-state';
@@ -132,7 +133,20 @@ export default function SettingsScreen() {
           {modes.map((mode) => (
             <Card key={mode} style={styles.progressCard}>
               <Text style={styles.progressTitle}>{MODE_META[mode].title}</Text>
-              <ModeProgressSummary summary={modeProgressSummary(progress, mode)} />
+              {mode === 'find' ? (
+                <View style={styles.sessionList}>
+                  <Card style={styles.sessionCard}>
+                    <Text style={styles.sessionTitle}>Practice</Text>
+                    <ModeProgressSummary summary={sessionProgressSummary(progress, mode, 'practice')} />
+                  </Card>
+                  <Card style={styles.sessionCard}>
+                    <Text style={styles.sessionTitle}>1-Minute Challenge</Text>
+                    <ModeProgressSummary summary={sessionProgressSummary(progress, mode, 'challenge')} />
+                  </Card>
+                </View>
+              ) : (
+                <ModeProgressSummary summary={modeProgressSummary(progress, mode)} />
+              )}
             </Card>
           ))}
         </View>
@@ -178,10 +192,22 @@ const styles = StyleSheet.create({
   progressCard: {
     gap: spacing.sm,
   },
+  sessionList: {
+    gap: spacing.sm,
+  },
+  sessionCard: {
+    gap: spacing.sm,
+  },
   progressTitle: {
     color: palette.ink,
     fontFamily: typography.displayFamily,
     fontSize: 22,
+    fontWeight: '700',
+  },
+  sessionTitle: {
+    color: palette.ink,
+    fontFamily: typography.bodyFamily,
+    fontSize: 16,
     fontWeight: '700',
   },
   footerNote: {

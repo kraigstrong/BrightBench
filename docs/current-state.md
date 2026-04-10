@@ -40,6 +40,8 @@ Notes:
 - built on the shared Expo stack
 - now uses shared app shell, header, card, celebration, action-button, and feature-card primitives
 - includes six game modes, including a number-line placement mode with difficulty-based scaffolding
+- `Find the Fraction` now routes through a Practice vs 1-Minute Challenge chooser modeled after Time Tutor
+- `Find the Fraction` challenge progress is now tracked separately from practice progress
 - mode progress now lives on the chooser cards and in settings instead of on a separate progress screen
 - keeps game-specific logic and fraction interaction widgets app-local
 - not currently the design source of truth

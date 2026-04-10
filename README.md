@@ -51,6 +51,7 @@ around the concepts that are hardest to teach and hardest to make click.
   - Healthy Expo app in the monorepo
   - Uses shared app shell, header, card, celebration, and action primitives
   - Includes six playable modes, including the new number-line placement mode
+  - `Find the Fraction` now has a Time Tutor-style Practice vs 1-Minute Challenge split
   - Progress now shows on mode cards and in settings instead of a dedicated progress screen
   - Validated on iOS simulator, web dev, and static web export
   - Current local checks pass:

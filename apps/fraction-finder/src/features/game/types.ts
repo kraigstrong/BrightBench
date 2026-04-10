@@ -1,5 +1,6 @@
 export type RepresentationType = 'bar' | 'container' | 'meter' | 'circle' | 'line';
 export type GameMode = 'find' | 'build' | 'compare' | 'estimate' | 'pour' | 'line';
+export type SessionType = 'practice' | 'challenge';
 export type BenchmarkCategory = 'benchmark' | 'common' | 'stretch';
 export type ScoreBand = 'exact' | 'close' | 'almost' | 'far';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
@@ -82,8 +83,21 @@ export type ModeStat = {
   currentStreak: number;
 };
 
+export type ChallengeSessionStat = {
+  played: number;
+  correct: number;
+  attempts: number;
+  highScore: number;
+};
+
+export type FindSessionStats = {
+  practice: ModeStat;
+  challenge: ChallengeSessionStat;
+};
+
 export type RecentRoundResult = {
   mode: GameMode;
+  sessionType?: SessionType;
   targetFractionId: string;
   scoreBand: ScoreBand;
   wasCorrect: boolean;
@@ -93,6 +107,9 @@ export type RecentRoundResult = {
 
 export type ProgressSnapshot = {
   modeStats: Record<GameMode, ModeStat>;
+  sessionStats: {
+    find: FindSessionStats;
+  };
   recentResults: RecentRoundResult[];
 };
 

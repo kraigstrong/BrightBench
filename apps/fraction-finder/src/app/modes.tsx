@@ -35,8 +35,8 @@ export default function ModesScreen() {
             title={MODE_META[mode].title}
             description={MODE_META[mode].description}
             accent={MODE_META[mode].accent}
-            progressSummary={modeProgressSummary(progress, mode)}
-            onPress={() => router.push(`/play/${mode}`)}
+            progressSummary={mode === 'find' ? undefined : modeProgressSummary(progress, mode)}
+            onPress={() => router.push(mode === 'find' ? `/mode/${mode}` : `/play/${mode}`)}
           />
         ))}
       </View>

@@ -3,10 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { palette, spacing } from '@education/design';
 import { typography } from '@education/design/native';
-import { ModeProgressSummaryData } from '@/state/app-state';
+import { ProgressSummaryData } from '@/state/app-state';
 
 type ModeProgressSummaryProps = {
-  summary: ModeProgressSummaryData;
+  summary: ProgressSummaryData;
   emptyText?: string;
 };
 
@@ -15,15 +15,14 @@ export function ModeProgressSummary({
   emptyText = 'Ready for your first round.',
 }: ModeProgressSummaryProps) {
   if (!summary.hasProgress) {
-    return <Text style={styles.emptyText}>{emptyText}</Text>;
+    return <Text style={styles.emptyText}>{summary.emptyText ?? emptyText}</Text>;
   }
 
   return (
     <View style={styles.row}>
-      <Metric label="Played" value={String(summary.played)} />
-      <Metric label="Streak" value={String(summary.bestStreak)} />
-      <Metric label="Accuracy" value={`${summary.accuracy}%`} />
-      <Metric label="High score" value={String(summary.highScore)} />
+      {summary.metrics.map((metric) => (
+        <Metric key={metric.label} label={metric.label} value={metric.value} />
+      ))}
     </View>
   );
 }

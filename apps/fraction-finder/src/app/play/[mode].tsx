@@ -8,12 +8,20 @@ import { GameMode } from '@/features/game/types';
 
 const VALID_MODES: GameMode[] = ['find', 'build', 'compare', 'estimate', 'pour', 'line'];
 
+export function generateStaticParams() {
+  return VALID_MODES.map((mode) => ({ mode }));
+}
+
 export default function PlayModeScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = params.mode as GameMode | undefined;
 
   if (!mode || !VALID_MODES.includes(mode)) {
     return <Redirect href="/modes" />;
+  }
+
+  if (mode === 'find') {
+    return <Redirect href="/session/find/practice" />;
   }
 
   return (
