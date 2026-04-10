@@ -59,6 +59,8 @@ around the concepts that are hardest to teach and hardest to make click.
 - `apps/time-tutor`
   - Healthy Expo app in the monorepo
   - Core gameplay and settings are ported
+  - Challenge cards now show persisted Easy/Medium/Hard star progression with crown mastery state
+  - Challenge launch now uses a dedicated difficulty popup before the timed run, followed by a separate in-screen Start step, a countdown bar, and a skippable animated end-of-run reveal
   - Contains intentional migration differences documented in `apps/time-tutor/MIGRATION_NOTES.md`
 - `apps/marketing`
   - Next.js App Router site is working

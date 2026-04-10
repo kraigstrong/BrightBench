@@ -19,6 +19,13 @@ The goal is strong visual and behavioral parity, but not blind 1:1 copying. Some
   - `Elapsed Time` challenge start button lives in the prompt card instead of overlaying the answer input
 - Some layout changes are intentionally made to reduce motion and jumping:
   - example: elapsed-time challenge prompt area keeps a stable height before and after start
+- Challenge cards now use a new mastery-oriented progression treatment:
+  - Easy, Medium, and Hard star progress are shown on the card
+  - a crown appears when all 9 stars are earned
+  - challenge launch now opens a dedicated difficulty popup before gameplay starts
+  - challenge runs now require a separate in-screen Start tap and use a simple countdown bar during play
+  - challenge runs now end with a centered animated summary overlay driven by score and accuracy threshold bars
+  - the reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
 
 ## Parity Guidance
 

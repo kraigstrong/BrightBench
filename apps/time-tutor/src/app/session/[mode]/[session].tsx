@@ -9,18 +9,31 @@ import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { ReadClockPracticeScreen } from '@/components/read-clock-practice-screen';
 import { SetClockPracticeScreen } from '@/components/set-clock-practice-screen';
+import { CHALLENGE_DIFFICULTIES } from '@/config/challenge-thresholds';
 import { TimedChallengeScreen } from '@/components/timed-challenge-screen';
 import { Card } from '@education/ui';
 import { palette, typography } from '@/design/theme';
+import { getDefaultChallengeDifficulty } from '@/lib/challenge-progression';
 import { getHomeModeTitle } from '@/lib/time';
 import { useAppState } from '@/state/app-state';
-import type { PlayableMode, SessionType } from '@/types/time';
+import type { ChallengeDifficulty, PlayableMode, SessionType } from '@/types/time';
 
 export default function SessionScreen() {
-  const params = useLocalSearchParams<{ mode?: string; session?: string }>();
+  const params = useLocalSearchParams<{
+    difficulty?: string;
+    mode?: string;
+    session?: string;
+  }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
   const session = (params.session ?? 'practice') as SessionType;
-  const { practiceInterval, timeFormat } = useAppState();
+  const { challengeProgress, practiceInterval, timeFormat } = useAppState();
+  const requestedDifficulty = CHALLENGE_DIFFICULTIES.includes(
+    params.difficulty as ChallengeDifficulty,
+  )
+    ? (params.difficulty as ChallengeDifficulty)
+    : undefined;
+  const challengeDifficulty =
+    requestedDifficulty ?? getDefaultChallengeDifficulty(challengeProgress[mode]);
 
   if (session === 'practice' && mode === 'digital-to-analog') {
     return (
@@ -63,8 +76,8 @@ export default function SessionScreen() {
       <>
         <Stack.Screen options={{ gestureEnabled: false }} />
         <TimedChallengeScreen
+          difficulty={challengeDifficulty}
           mode={mode}
-          practiceInterval={practiceInterval}
           timeFormat={timeFormat}
         />
       </>
@@ -76,7 +89,7 @@ export default function SessionScreen() {
       <>
         <Stack.Screen options={{ gestureEnabled: false }} />
         <ElapsedTimeChallengeScreen
-          practiceInterval={practiceInterval}
+          difficulty={challengeDifficulty}
           timeFormat={timeFormat}
         />
       </>

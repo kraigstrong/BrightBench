@@ -12,10 +12,23 @@ import {
 import { CelebrationOverlay, Card } from '@education/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { ChallengeResultsCard } from '@/components/challenge-results-card';
 import { ElapsedDurationInput } from '@/components/elapsed-duration-input';
 import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
+import {
+  CHALLENGE_DIFFICULTY_LABELS,
+  challengeThresholds,
+  formatChallengeIntervalLabel,
+} from '@/config/challenge-thresholds';
 import { palette, shadows, typography } from '@/design/theme';
+import {
+  calculateChallengeAccuracy,
+  calculateChallengeStars,
+  getChallengeIntervalForDifficulty,
+  isChallengeModeMastered,
+  shouldUpdateBestStars,
+} from '@/lib/challenge-progression';
 import {
   createInitialElapsedDuration,
   formatTimeValue,
@@ -23,9 +36,10 @@ import {
   nextElapsedTimePairForInterval,
   randomElapsedTimePairForInterval,
 } from '@/lib/time';
+import { useAppState } from '@/state/app-state';
 import type {
+  ChallengeDifficulty,
   ElapsedDurationValue,
-  PracticeInterval,
   TimeFormat,
   TimeValue,
 } from '@/types/time';
@@ -33,21 +47,32 @@ import type {
 type PromptPair = readonly [TimeValue, TimeValue];
 type RunStatus = 'finished' | 'ready' | 'running';
 type FeedbackToast = 'error' | null;
+type ChallengeResultSummary = {
+  accuracy: number;
+  didUnlockMastery: boolean;
+  difficulty: ChallengeDifficulty;
+  intervalLabel: string;
+  isNewBest: boolean;
+  score: number;
+};
 
 type Props = {
-  practiceInterval: PracticeInterval;
+  difficulty: ChallengeDifficulty;
   timeFormat: TimeFormat;
 };
 
+const MODE = 'elapsed-time';
 const CHALLENGE_DURATION_SECONDS = 60;
 const SUCCESS_ADVANCE_DELAY_MS = 700;
 const ERROR_FLASH_DURATION_MS = 550;
 
-export function ElapsedTimeChallengeScreen({
-  practiceInterval,
-  timeFormat,
-}: Props) {
+export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
   const { width } = useWindowDimensions();
+  const { challengeProgress, setChallengeBestStars } = useAppState();
+  const progress = challengeProgress[MODE];
+  const currentInterval = getChallengeIntervalForDifficulty(difficulty);
+  const thresholds = challengeThresholds[MODE][difficulty];
+
   const useMobileWebLayout = Platform.OS === 'web';
   const isTablet = width >= 768 && !useMobileWebLayout;
   const useCompactInput = !isTablet;
@@ -56,14 +81,25 @@ export function ElapsedTimeChallengeScreen({
   const [runStatus, setRunStatus] = useState<RunStatus>('ready');
   const [timeRemaining, setTimeRemaining] = useState(CHALLENGE_DURATION_SECONDS);
   const [score, setScore] = useState(0);
-  const [promptPair, setPromptPair] = useState<PromptPair | null>(null);
+  const [attempts, setAttempts] = useState(0);
+  const [promptPair, setPromptPair] = useState<PromptPair>(() =>
+    randomElapsedTimePairForInterval(currentInterval),
+  );
   const [answer, setAnswer] = useState<ElapsedDurationValue>(() =>
     createInitialElapsedDuration(),
   );
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [feedbackToast, setFeedbackToast] = useState<FeedbackToast>(null);
+  const [resultSummary, setResultSummary] = useState<ChallengeResultSummary | null>(
+    null,
+  );
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const showSuccessOverlay = isAdvancing && feedbackToast === null;
+  const timerProgress =
+    runStatus === 'running'
+      ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
+      : 1;
 
   useEffect(
     () => () => {
@@ -94,15 +130,59 @@ export function ElapsedTimeChallengeScreen({
   }, [runStatus]);
 
   useEffect(() => {
-    if (runStatus === 'finished') {
-      if (feedbackTimerRef.current) {
-        clearTimeout(feedbackTimerRef.current);
-        feedbackTimerRef.current = null;
-      }
-      setFeedbackToast(null);
-      setIsAdvancing(false);
+    if (runStatus !== 'finished' || resultSummary) {
+      return;
     }
-  }, [runStatus]);
+
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+
+    setFeedbackToast(null);
+    setIsAdvancing(false);
+
+    const accuracy = calculateChallengeAccuracy(score, attempts);
+    const earnedStars = calculateChallengeStars(
+      { accuracy, score },
+      thresholds,
+    );
+    const previousBest = progress.bestStars[difficulty];
+    const nextBest = earnedStars > previousBest ? earnedStars : previousBest;
+    const nextProgress = {
+      ...progress,
+      bestStars: {
+        ...progress.bestStars,
+        [difficulty]: nextBest,
+      },
+    };
+    const isNewBest = shouldUpdateBestStars(previousBest, earnedStars);
+    const didUnlockMastery =
+      !isChallengeModeMastered(progress) && isChallengeModeMastered(nextProgress);
+
+    if (isNewBest) {
+      setChallengeBestStars(MODE, difficulty, earnedStars);
+    }
+
+    setResultSummary({
+      accuracy,
+      didUnlockMastery,
+      difficulty,
+      intervalLabel: formatChallengeIntervalLabel(currentInterval),
+      isNewBest,
+      score,
+    });
+  }, [
+    attempts,
+    currentInterval,
+    difficulty,
+    progress,
+    resultSummary,
+    runStatus,
+    score,
+    setChallengeBestStars,
+    thresholds,
+  ]);
 
   const loadPrompt = useCallback((nextPrompt: PromptPair) => {
     setPromptPair(nextPrompt);
@@ -110,48 +190,49 @@ export function ElapsedTimeChallengeScreen({
   }, []);
 
   const startRun = useCallback(() => {
-    const nextPrompt = randomElapsedTimePairForInterval(practiceInterval);
-
     if (feedbackTimerRef.current) {
       clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = null;
     }
 
-    loadPrompt(nextPrompt);
+    loadPrompt(randomElapsedTimePairForInterval(currentInterval));
     setScore(0);
+    setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
     setFeedbackToast(null);
     setIsAdvancing(false);
+    setResultSummary(null);
     setRunStatus('running');
-  }, [loadPrompt, practiceInterval]);
+  }, [currentInterval, loadPrompt]);
 
-  const handlePlayAgain = useCallback(() => {
+  const resetToReady = useCallback(() => {
     if (feedbackTimerRef.current) {
       clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = null;
     }
 
-    setPromptPair(null);
+    setPromptPair(randomElapsedTimePairForInterval(currentInterval));
     setAnswer(createInitialElapsedDuration());
     setScore(0);
+    setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
     setFeedbackToast(null);
     setIsAdvancing(false);
+    setResultSummary(null);
     setRunStatus('ready');
-  }, []);
+  }, [currentInterval]);
 
   function checkAnswer() {
-    if (runStatus !== 'running' || !promptPair || isAdvancing) {
+    if (runStatus !== 'running' || isAdvancing) {
       return;
     }
 
     const isCorrect = isElapsedDurationCorrect(answer, promptPair[0], promptPair[1]);
 
+    setAttempts((current) => current + 1);
+
     if (isCorrect) {
-      const nextPrompt = nextElapsedTimePairForInterval(
-        promptPair,
-        practiceInterval,
-      );
+      const nextPrompt = nextElapsedTimePairForInterval(promptPair, currentInterval);
 
       setScore((current) => current + 1);
       setFeedbackToast(null);
@@ -213,63 +294,44 @@ export function ElapsedTimeChallengeScreen({
   }
 
   return (
-    <AppShell maxWidth={contentMaxWidth} scrollEnabled={!isAdvancing}>
+    <AppShell
+      maxWidth={contentMaxWidth}
+      scrollEnabled={!isAdvancing && !resultSummary}>
       <HeaderBar
         title="Challenge Mode"
+        subtitle={`${CHALLENGE_DIFFICULTY_LABELS[difficulty]} · ${formatChallengeIntervalLabel(
+          currentInterval,
+        )}`}
         leftAction={<BackButton onPress={() => router.back()} />}
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />
 
-      <View style={styles.challengeLayout}>
+      <View style={styles.screenBody}>
+        <View style={styles.challengeLayout}>
         <View style={styles.challengeColumn}>
-          <View style={styles.statsRow}>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>Time left</Text>
-              <Text style={styles.statValue} testID="challenge-time-remaining">
-                {formatCountdown(timeRemaining)}
-              </Text>
-            </View>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>Score</Text>
-              <Text style={styles.statValue} testID="challenge-score">
-                {score}
-              </Text>
-            </View>
+          <View style={styles.timerRail} testID="challenge-timer-bar">
+            <View
+              style={[styles.timerFill, { width: `${timerProgress * 100}%` }]}
+              testID="challenge-timer-bar-fill"
+            />
           </View>
 
           <View style={styles.promptCard}>
             <Text style={styles.promptLabel}>How much time passes?</Text>
             <View style={styles.promptContentArea}>
-              {promptPair ? (
-                <View style={styles.promptTimesRow}>
-                  <View style={styles.promptTimeCard}>
-                    <Text style={styles.promptTimeEyebrow}>Start</Text>
-                    {renderPromptTime(promptPair[0], 'elapsed-challenge-start-time')}
-                  </View>
-                  <View style={styles.connectorPill}>
-                    <Text style={styles.connectorText}>to</Text>
-                  </View>
-                  <View style={styles.promptTimeCard}>
-                    <Text style={styles.promptTimeEyebrow}>End</Text>
-                    {renderPromptTime(promptPair[1], 'elapsed-challenge-end-time')}
-                  </View>
+              <View style={styles.promptTimesRow}>
+                <View style={styles.promptTimeCard}>
+                  <Text style={styles.promptTimeEyebrow}>Start</Text>
+                  {renderPromptTime(promptPair[0], 'elapsed-challenge-start-time')}
                 </View>
-              ) : (
-                <View style={styles.promptStage}>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={startRun}
-                    style={[styles.startActionButton, styles.startButton]}
-                    testID="challenge-start-button">
-                    <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                      Start
-                    </Text>
-                  </Pressable>
-                  <Text style={styles.promptPlaceholder}>
-                    Tap Start when you&apos;re ready to begin.
-                  </Text>
+                <View style={styles.connectorPill}>
+                  <Text style={styles.connectorText}>to</Text>
                 </View>
-              )}
+                <View style={styles.promptTimeCard}>
+                  <Text style={styles.promptTimeEyebrow}>End</Text>
+                  {renderPromptTime(promptPair[1], 'elapsed-challenge-end-time')}
+                </View>
+              </View>
             </View>
           </View>
         </View>
@@ -280,8 +342,9 @@ export function ElapsedTimeChallengeScreen({
             <View style={styles.answerOverlayWrap}>
               <ElapsedDurationInput
                 compact={useCompactInput}
+                disabled={runStatus !== 'running' || isAdvancing}
                 onChange={setAnswer}
-                practiceInterval={practiceInterval}
+                practiceInterval={currentInterval}
                 value={answer}
               />
 
@@ -297,34 +360,23 @@ export function ElapsedTimeChallengeScreen({
                 </View>
               ) : null}
             </View>
-          </Card>
 
-          {runStatus === 'finished' ? (
-            <Card style={styles.summaryCard} testID="challenge-summary">
-              <Text style={styles.summaryTitle}>Time&apos;s up!</Text>
-              <Text style={styles.summaryBody}>
-                You got {score} correct in 1 minute.
-              </Text>
-              <View style={styles.summaryActions}>
+            {runStatus === 'ready' ? (
+              <View pointerEvents="box-none" style={styles.startOverlay}>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={handlePlayAgain}
-                  style={[styles.actionButton, styles.primaryButton]}
-                  testID="challenge-play-again-button">
+                  onPress={startRun}
+                  style={styles.startActionButton}
+                  testID="challenge-start-button">
                   <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                    Play Again
+                    Start
                   </Text>
                 </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => router.back()}
-                  style={[styles.actionButton, styles.secondaryButton]}
-                  testID="challenge-summary-back-button">
-                  <Text style={styles.actionButtonText}>Back</Text>
-                </Pressable>
               </View>
-            </Card>
-          ) : (
+            ) : null}
+          </Card>
+
+          {runStatus !== 'finished' || !resultSummary ? (
             <Pressable
               accessibilityRole="button"
               disabled={runStatus !== 'running' || isAdvancing}
@@ -340,54 +392,54 @@ export function ElapsedTimeChallengeScreen({
                 Check Answer
               </Text>
             </Pressable>
-          )}
+          ) : null}
         </View>
+
+        {runStatus === 'finished' && resultSummary ? (
+          <View pointerEvents="box-none" style={styles.resultsOverlay}>
+            <View style={styles.resultsCardWrap}>
+              <ChallengeResultsCard
+              accuracy={resultSummary.accuracy}
+              accuracyThreshold={thresholds.accuracyThreshold}
+              didUnlockMastery={resultSummary.didUnlockMastery}
+              difficulty={resultSummary.difficulty}
+              intervalLabel={resultSummary.intervalLabel}
+              isNewBest={resultSummary.isNewBest}
+              onPlayAgain={resetToReady}
+              score={resultSummary.score}
+              scoreThreshold={thresholds.scoreThreshold}
+            />
+          </View>
+        </View>
+        ) : null}
+      </View>
       </View>
     </AppShell>
   );
 }
 
-function formatCountdown(timeRemaining: number): string {
-  const minutes = Math.floor(timeRemaining / 60);
-  const seconds = timeRemaining % 60;
-
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
 const styles = StyleSheet.create({
+  screenBody: {
+    flex: 1,
+    position: 'relative',
+  },
   challengeLayout: {
     gap: 12,
   },
   challengeColumn: {
     gap: 12,
   },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  statChip: {
-    backgroundColor: palette.surface,
-    borderRadius: 24,
-    flex: 1,
-    gap: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  timerRail: {
+    backgroundColor: '#E8EDF3',
+    borderRadius: 999,
+    height: 14,
+    overflow: 'hidden',
     ...shadows.card,
   },
-  statLabel: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  statValue: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 24,
-    fontVariant: ['tabular-nums'],
-    fontWeight: '700',
+  timerFill: {
+    backgroundColor: palette.coral,
+    borderRadius: 999,
+    height: '100%',
   },
   promptCard: {
     backgroundColor: palette.ink,
@@ -406,20 +458,6 @@ const styles = StyleSheet.create({
   promptContentArea: {
     justifyContent: 'center',
     minHeight: 120,
-  },
-  promptStage: {
-    alignItems: 'center',
-    gap: 14,
-    justifyContent: 'center',
-    minHeight: 120,
-  },
-  promptPlaceholder: {
-    alignSelf: 'center',
-    color: '#D8E5F0',
-    fontFamily: typography.bodyFamily,
-    fontSize: 18,
-    lineHeight: 26,
-    textAlign: 'center',
   },
   promptTimesRow: {
     alignItems: 'center',
@@ -490,6 +528,7 @@ const styles = StyleSheet.create({
   answerCard: {
     alignItems: 'center',
     gap: 16,
+    position: 'relative',
   },
   answerOverlayWrap: {
     position: 'relative',
@@ -513,6 +552,17 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 30,
   },
+  startOverlay: {
+    alignItems: 'center',
+    borderRadius: 24,
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 38,
+    zIndex: 25,
+  },
   feedbackToast: {
     alignItems: 'center',
     borderRadius: 18,
@@ -534,32 +584,9 @@ const styles = StyleSheet.create({
   errorToastText: {
     color: palette.danger,
   },
-  summaryCard: {
-    gap: 12,
-  },
-  summaryTitle: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  summaryBody: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 17,
-    lineHeight: 25,
-    textAlign: 'center',
-  },
-  summaryActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 4,
-  },
   actionButton: {
     alignItems: 'center',
     borderRadius: 999,
-    flex: 1,
     justifyContent: 'center',
     minHeight: 56,
     paddingHorizontal: 16,
@@ -567,25 +594,17 @@ const styles = StyleSheet.create({
   startActionButton: {
     alignItems: 'center',
     backgroundColor: palette.success,
+    borderColor: '#3E985B',
     borderRadius: 999,
+    borderWidth: 1.5,
     justifyContent: 'center',
-    minHeight: 56,
-    minWidth: 96,
-    paddingHorizontal: 22,
+    minHeight: 58,
+    minWidth: 140,
+    paddingHorizontal: 24,
     paddingVertical: 14,
-  },
-  startButton: {
-    shadowColor: palette.coral,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.24,
-    shadowRadius: 18,
-    zIndex: 40,
   },
   primaryButton: {
     backgroundColor: palette.coral,
-  },
-  secondaryButton: {
-    backgroundColor: palette.surfaceMuted,
   },
   actionButtonDisabled: {
     opacity: 0.65,
@@ -598,5 +617,20 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: palette.white,
+  },
+  resultsOverlay: {
+    alignItems: 'center',
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    paddingVertical: 20,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 40,
+  },
+  resultsCardWrap: {
+    maxWidth: 440,
+    width: '100%',
   },
 });

@@ -57,6 +57,9 @@
 - [x] Add a Practice vs Challenge pilot to `Find the Fraction`
 - [x] Create new Expo-based `apps/time-tutor`
 - [x] Port Time Tutor behavior without touching the original repo
+- [x] Add persisted challenge star progression and crown mastery state to Time Tutor challenge cards
+- [x] Add challenge difficulty selection plus score/accuracy-based challenge result summaries to Time Tutor
+- [x] Add skippable animated challenge results reveal to Time Tutor
 
 ## Phase 7: Marketing Site
 - [x] Scaffold `apps/marketing` with Next.js App Router

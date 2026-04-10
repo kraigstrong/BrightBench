@@ -16,8 +16,11 @@ import { Card } from './card';
 
 type CompactFeatureCardProps = Omit<PressableProps, 'children' | 'style'> & {
   accentColor: string;
+  badgeLabel?: string;
   cardStyle?: StyleProp<ViewStyle>;
   description: string;
+  descriptionNumberOfLines?: number;
+  cornerAdornment?: React.ReactNode;
   footer?: React.ReactNode;
   tintColor?: string;
   title: string;
@@ -25,8 +28,11 @@ type CompactFeatureCardProps = Omit<PressableProps, 'children' | 'style'> & {
 
 export function CompactFeatureCard({
   accentColor,
+  badgeLabel,
   cardStyle,
+  cornerAdornment,
   description,
+  descriptionNumberOfLines,
   disabled = false,
   footer,
   tintColor,
@@ -50,6 +56,7 @@ export function CompactFeatureCard({
           },
           cardStyle,
         ]}>
+        {cornerAdornment ? <View style={styles.cornerAdornment}>{cornerAdornment}</View> : null}
         <View style={styles.headerRow}>
           <View
             style={[
@@ -58,10 +65,19 @@ export function CompactFeatureCard({
             ]}
           />
           <View style={styles.copyColumn}>
-            <Text numberOfLines={1} style={[styles.title, disabled && styles.titleDisabled]}>
-              {title}
-            </Text>
-            <Text style={[styles.description, disabled && styles.descriptionDisabled]}>
+            <View style={styles.titleRow}>
+              <Text numberOfLines={1} style={[styles.title, disabled && styles.titleDisabled]}>
+                {title}
+              </Text>
+              {badgeLabel ? (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeLabel}>{badgeLabel}</Text>
+                </View>
+              ) : null}
+            </View>
+            <Text
+              numberOfLines={descriptionNumberOfLines}
+              style={[styles.description, disabled && styles.descriptionDisabled]}>
               {description}
             </Text>
           </View>
@@ -78,6 +94,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     gap: spacing.md,
     paddingVertical: spacing.md,
+    position: 'relative',
   },
   pressed: {
     opacity: 0.96,
@@ -100,8 +117,15 @@ const styles = StyleSheet.create({
     gap: 4,
     minWidth: 0,
   },
+  titleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+  },
   title: {
     color: palette.ink,
+    flex: 1,
     fontFamily: typography.displayFamily,
     fontSize: 24,
     fontWeight: '700',
@@ -118,6 +142,24 @@ const styles = StyleSheet.create({
   },
   descriptionDisabled: {
     color: '#6D7A89',
+  },
+  cornerAdornment: {
+    position: 'absolute',
+    right: spacing.md,
+    top: spacing.md,
+    zIndex: 1,
+  },
+  badge: {
+    backgroundColor: palette.surface,
+    borderRadius: radii.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  badgeLabel: {
+    color: palette.inkMuted,
+    fontFamily: typography.bodyFamily,
+    fontSize: 12,
+    fontWeight: '700',
   },
   footer: {
     marginTop: 0,

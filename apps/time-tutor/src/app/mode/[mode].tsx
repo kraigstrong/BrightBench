@@ -3,12 +3,14 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppShell } from '@/components/app-shell';
+import { ChallengeOptionCard } from '@/components/challenge-option-card';
 import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { OptionCard } from '@/components/option-card';
 import { palette, typography } from '@/design/theme';
 import { getFeatureAvailability } from '@/lib/feature-availability';
 import { getHomeModeTitle } from '@/lib/time';
+import { useAppState } from '@/state/app-state';
 import type { PlayableMode, SessionType } from '@/types/time';
 
 function getModeAccentColor(mode: PlayableMode): string {
@@ -40,12 +42,18 @@ function getModeTintColor(mode: PlayableMode): string {
 export default function ModeScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
+  const { challengeProgress } = useAppState();
   const challengeAvailability = getFeatureAvailability('challenge-mode');
   const accentColor = getModeAccentColor(mode);
   const challengeBackgroundColor = getModeTintColor(mode);
 
   function goToSession(sessionType: SessionType) {
     if (sessionType === 'challenge' && !challengeAvailability.enabled) {
+      return;
+    }
+
+    if (sessionType === 'challenge') {
+      router.push(`/challenge/${mode}`);
       return;
     }
 
@@ -71,12 +79,13 @@ export default function ModeScreen() {
           title="Practice"
         />
 
-        <OptionCard
+        <ChallengeOptionCard
           accentColor={accentColor}
           description="Answer as many questions as you can in one minute."
           disabled={!challengeAvailability.enabled}
           label={!challengeAvailability.enabled ? 'Mobile only' : undefined}
           onPress={() => goToSession('challenge')}
+          progress={challengeProgress[mode]}
           testID="challenge-session-card"
           tintColor={challengeAvailability.enabled ? challengeBackgroundColor : undefined}
           title={challengeAvailability.label}

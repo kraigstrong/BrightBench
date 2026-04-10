@@ -15,12 +15,14 @@ export type ExerciseMode = 'digital-to-analog' | 'analog-to-digital';
 export type PlayableMode = ExerciseMode | 'elapsed-time';
 export type HomeMode = ExerciseMode | 'explore-time' | 'elapsed-time';
 export type SessionType = 'practice' | 'challenge';
+export type ChallengeDifficulty = 'easy' | 'medium' | 'hard';
 export type PracticeInterval =
   | '1-minute'
   | '5-minute'
   | '15-minute'
   | 'hours-only';
 export type TimeFormat = '12-hour' | '24-hour';
+export type StarCount = 0 | 1 | 2 | 3;
 
 export type TimeValue = {
   hour12: Hour12;
@@ -42,4 +44,23 @@ export type SubmissionResult<TExpected = TimeValue, TActual = TimeValue> = {
   actual: TActual;
   expected: TExpected;
   isCorrect: boolean;
+};
+
+export type ChallengeBestStars = Record<ChallengeDifficulty, StarCount>;
+
+export type ChallengeModeProgress = {
+  bestStars: ChallengeBestStars;
+  lastSelectedDifficulty?: ChallengeDifficulty;
+};
+
+export type ChallengeProgressSnapshot = Record<PlayableMode, ChallengeModeProgress>;
+
+export type SettingsSnapshot = {
+  practiceInterval: PracticeInterval;
+  timeFormat: TimeFormat;
+};
+
+export type AppSnapshot = {
+  challengeProgress: ChallengeProgressSnapshot;
+  settings: SettingsSnapshot;
 };
