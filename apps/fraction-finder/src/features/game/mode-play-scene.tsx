@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { goBackOrReplace } from '@education/app-config';
 import { palette, radii, spacing } from '@education/design';
 import { typography } from '@education/design/native';
 import {
-  ActionButton,
   Card,
   HeaderBar,
   HeaderBackButton,
@@ -214,14 +213,7 @@ export function ModePlayScene({ mode }: ModePlaySceneProps) {
         accent={meta.accent}
         retryFeedback={retryFeedback}
         celebrationVisible={isCelebrating}
-        successMessage="Nice work!"
-        footer={
-          <View style={styles.footerRow}>
-            <Link href="/progress" asChild>
-              <ActionButton compact label="Progress" variant="secondary" />
-            </Link>
-          </View>
-        }>
+        successMessage="Nice work!">
         {mode === 'find' ? (
           <FindPlay round={round as FindRound} onSubmit={submit} disabled={isCelebrating} />
         ) : null}
@@ -543,11 +535,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     fontFamily: typography.bodyFamily,
-  },
-  footerRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
   },
   pourSurface: {
     paddingVertical: spacing.sm,

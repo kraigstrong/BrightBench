@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react-native';
 
 import HomeScreen from '@/app/index';
 import ModesScreen from '@/app/modes';
-import ProgressScreen from '@/app/progress';
 import SettingsScreen from '@/app/settings';
 import { useAppState } from '@/state/app-state';
 
@@ -15,7 +14,7 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@/state/app-state', () => ({
-  accuracyForMode: jest.fn(() => 75),
+  ...jest.requireActual('@/state/app-state'),
   useAppState: jest.fn(),
 }));
 
@@ -32,7 +31,7 @@ describe('app screens', () => {
           compare: { played: 1, correct: 1, bestStreak: 1, currentStreak: 1 },
           estimate: { played: 3, correct: 2, bestStreak: 2, currentStreak: 0 },
           pour: { played: 5, correct: 4, bestStreak: 3, currentStreak: 2 },
-          line: { played: 2, correct: 1, bestStreak: 1, currentStreak: 0 },
+          line: { played: 0, correct: 0, bestStreak: 0, currentStreak: 0 },
         },
         recentResults: [],
       },
@@ -70,6 +69,9 @@ describe('app screens', () => {
     expect(screen.getByText('Choose a Mode')).toBeTruthy();
     expect(screen.getByText('Find the Fraction')).toBeTruthy();
     expect(screen.getByText('Place on the Number Line')).toBeTruthy();
+    expect(screen.getAllByText('Played').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('High score').length).toBeGreaterThan(0);
+    expect(screen.getByText('Ready for your first round.')).toBeTruthy();
     expect(screen.getByLabelText('Open settings')).toBeTruthy();
   });
 
@@ -79,15 +81,11 @@ describe('app screens', () => {
     expect(screen.getByText('Settings')).toBeTruthy();
     expect(screen.getByText('Difficulty')).toBeTruthy();
     expect(screen.getByText('Preferred visuals')).toBeTruthy();
-    expect(screen.getByText('Settings save automatically on this device.')).toBeTruthy();
-  });
-
-  it('renders the progress screen summary cards', () => {
-    render(<ProgressScreen />);
-
     expect(screen.getByText('Progress')).toBeTruthy();
     expect(screen.getByText('Rounds played')).toBeTruthy();
-    expect(screen.getByText('Best streak')).toBeTruthy();
-    expect(screen.getByText('Find the Fraction')).toBeTruthy();
+    expect(screen.getByText('15')).toBeTruthy();
+    expect(screen.getByText('Total accuracy')).toBeTruthy();
+    expect(screen.getByText('73%')).toBeTruthy();
+    expect(screen.getByText('Settings save automatically on this device.')).toBeTruthy();
   });
 });

@@ -40,6 +40,7 @@ Notes:
 - built on the shared Expo stack
 - now uses shared app shell, header, card, celebration, action-button, and feature-card primitives
 - includes six game modes, including a number-line placement mode with difficulty-based scaffolding
+- mode progress now lives on the chooser cards and in settings instead of on a separate progress screen
 - keeps game-specific logic and fraction interaction widgets app-local
 - not currently the design source of truth
 

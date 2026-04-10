@@ -20,6 +20,7 @@ type FeatureCardProps = Omit<PressableProps, 'children' | 'style'> & {
   cardStyle?: StyleProp<ViewStyle>;
   description: string;
   descriptionNumberOfLines?: number;
+  footer?: React.ReactNode;
   tintColor?: string;
   title: string;
 };
@@ -31,6 +32,7 @@ export function FeatureCard({
   description,
   descriptionNumberOfLines,
   disabled = false,
+  footer,
   tintColor,
   title,
   ...rest
@@ -73,6 +75,7 @@ export function FeatureCard({
           style={[styles.description, disabled && styles.descriptionDisabled]}>
           {description}
         </Text>
+        {footer ? <View style={styles.footer}>{footer}</View> : null}
       </Card>
     </Pressable>
   );
@@ -118,6 +121,9 @@ const styles = StyleSheet.create({
   },
   descriptionDisabled: {
     color: '#6D7A89',
+  },
+  footer: {
+    marginTop: spacing.md,
   },
   badge: {
     backgroundColor: palette.surface,

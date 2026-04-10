@@ -54,6 +54,14 @@ export const defaultSettings: SettingsSnapshot = {
   preferredRepresentation: 'mixed',
 };
 
+export type ModeProgressSummaryData = {
+  played: number;
+  bestStreak: number;
+  accuracy: number;
+  highScore: number;
+  hasProgress: boolean;
+};
+
 const initialState: AppState = {
   hydrated: false,
   progress: defaultProgress,
@@ -203,4 +211,34 @@ export function accuracyForMode(progress: ProgressSnapshot, mode: GameMode) {
     return 0;
   }
   return Math.round((stat.correct / stat.played) * 100);
+}
+
+export function modeProgressSummary(
+  progress: ProgressSnapshot,
+  mode: GameMode
+): ModeProgressSummaryData {
+  const stat = progress.modeStats[mode];
+
+  return {
+    played: stat.played,
+    bestStreak: stat.bestStreak,
+    accuracy: accuracyForMode(progress, mode),
+    highScore: 0,
+    hasProgress: stat.played > 0,
+  };
+}
+
+export function totalRoundsPlayed(progress: ProgressSnapshot) {
+  return Object.values(progress.modeStats).reduce((sum, stat) => sum + stat.played, 0);
+}
+
+export function overallAccuracy(progress: ProgressSnapshot) {
+  const played = totalRoundsPlayed(progress);
+
+  if (!played) {
+    return 0;
+  }
+
+  const correct = Object.values(progress.modeStats).reduce((sum, stat) => sum + stat.correct, 0);
+  return Math.round((correct / played) * 100);
 }
