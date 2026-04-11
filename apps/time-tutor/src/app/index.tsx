@@ -62,7 +62,7 @@ export default function HomeScreen() {
             description={card.description}
             onPress={() => {
               if (card.mode === 'explore-time') {
-                router.push('/explore');
+                router.push('/explore-time');
                 return;
               }
 

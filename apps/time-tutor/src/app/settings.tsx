@@ -19,34 +19,7 @@ import { palette, typography } from '@/design/theme';
 import { getFeatureAvailability } from '@/lib/feature-availability';
 import { getSiteUrl } from '@/lib/site-links';
 import { useAppState } from '@/state/app-state';
-import type { PracticeInterval, TimeFormat } from '@/types/time';
-
-const intervalOptions: {
-  description: string;
-  label: string;
-  value: PracticeInterval;
-}[] = [
-  {
-    description: 'Every minute on the clock face.',
-    label: '1 minute',
-    value: '1-minute',
-  },
-  {
-    description: 'Round to 5 minutes.',
-    label: '5 minutes',
-    value: '5-minute',
-  },
-  {
-    description: 'Round to 15 minutes.',
-    label: '15 minutes',
-    value: '15-minute',
-  },
-  {
-    description: 'Hours only, no minute changes.',
-    label: 'Hours only',
-    value: 'hours-only',
-  },
-];
+import type { TimeFormat } from '@/types/time';
 
 const timeFormatOptions: {
   description: string;
@@ -66,13 +39,7 @@ const timeFormatOptions: {
 ];
 
 export default function SettingsScreen() {
-  const {
-    isHydrated,
-    practiceInterval,
-    setPracticeInterval,
-    timeFormat,
-    setTimeFormat,
-  } = useAppState();
+  const { isHydrated, timeFormat, setTimeFormat } = useAppState();
   const timeFormat24Availability = getFeatureAvailability('time-format-24-hour');
   const [gateAnswer, setGateAnswer] = React.useState('');
   const [gateError, setGateError] = React.useState('');
@@ -124,25 +91,6 @@ export default function SettingsScreen() {
           title="Settings"
           leftAction={<BackButton onPress={() => router.back()} testID="settings-back-button" />}
         />
-
-        <Card style={styles.sectionCard}>
-          <Text style={styles.eyebrow}>Practice interval</Text>
-          <Text style={styles.sectionDescription}>
-            Choose which time intervals to practice.
-          </Text>
-          <View style={styles.optionsColumn}>
-            {intervalOptions.map((option) => (
-              <SelectableOption
-                key={option.value}
-                description={option.description}
-                label={option.label}
-                onPress={() => setPracticeInterval(option.value)}
-                selected={practiceInterval === option.value}
-                testID={`interval-${option.value}`}
-              />
-            ))}
-          </View>
-        </Card>
 
         <Card style={styles.sectionCard}>
           <Text style={styles.eyebrow}>Time format</Text>

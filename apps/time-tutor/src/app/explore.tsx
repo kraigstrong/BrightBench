@@ -1,4 +1,4 @@
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState, type SetStateAction } from 'react';
 import {
   Platform,
@@ -17,6 +17,10 @@ import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { Card } from '@education/ui';
 import { palette, typography } from '@/design/theme';
 import {
+  DEFAULT_PRACTICE_INTERVAL,
+  isPracticeInterval,
+} from '@/config/practice-intervals';
+import {
   currentTimeValueForInterval,
   digitalValueToTimeValue,
   normalizeAnalogTimeFor24Hour,
@@ -27,8 +31,12 @@ import { useAppState } from '@/state/app-state';
 import type { DigitalTimeValue, TimeValue } from '@/types/time';
 
 export default function ExploreScreen() {
-  const { practiceInterval, timeFormat } = useAppState();
+  const { timeFormat } = useAppState();
+  const params = useLocalSearchParams<{ interval?: string }>();
   const { width } = useWindowDimensions();
+  const practiceInterval = isPracticeInterval(params.interval)
+    ? params.interval
+    : DEFAULT_PRACTICE_INTERVAL;
   const [clockInteractionActive, setClockInteractionActive] = useState(false);
   const [time, setTime] = useState<TimeValue>(() =>
     currentTimeValueForInterval(practiceInterval),

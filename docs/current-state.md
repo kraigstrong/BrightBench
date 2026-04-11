@@ -61,6 +61,8 @@ Notes:
 - challenge cards now show persisted Easy/Medium/Hard star progression with crown mastery state
 - challenge launch now uses a dedicated Easy/Medium/Hard popup that maps to `15-minute`, `5-minute`, and `1-minute`
 - practice mode now uses a dedicated interval chooser and passes the selected interval through the route instead of relying on the settings page
+- Explore Time now uses the same interval chooser pattern and receives its interval through the route instead of relying on the settings page
+- the settings screen no longer includes a practice interval control
 - challenge runs now use a separate Start step, a simple countdown bar, and a centered animated end-of-round star reveal
 - reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
 - intentional differences from the original app are documented in:

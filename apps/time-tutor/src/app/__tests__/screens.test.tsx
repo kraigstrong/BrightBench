@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import ExploreScreen from '@/app/explore';
+import ExploreTimeLaunchScreen from '@/app/explore-time';
 import HomeScreen from '@/app/index';
 import ChallengeLaunchScreen from '@/app/challenge/[mode]';
 import ModeScreen from '@/app/mode/[mode]';
@@ -91,16 +92,16 @@ describe('time tutor screens', () => {
     );
 
     expect(screen.getByText('Settings')).toBeTruthy();
-    expect(screen.getByText('Practice interval')).toBeTruthy();
     expect(screen.getByText('Time format')).toBeTruthy();
     expect(screen.getByText('Help')).toBeTruthy();
     expect(screen.getByText('Support')).toBeTruthy();
     expect(screen.getByText('Privacy Policy')).toBeTruthy();
-    expect(screen.getByText('5 minutes')).toBeTruthy();
     expect(screen.getByText('Version 1.0.0')).toBeTruthy();
   });
 
   it('renders the explore screen', () => {
+    mockUseLocalSearchParams.mockReturnValue({ interval: '5-minute' });
+
     render(
       <SafeAreaProvider>
         <AppStateProvider skipHydration>
@@ -154,6 +155,20 @@ describe('time tutor screens', () => {
     fireEvent.press(screen.getByTestId('practice-session-card'));
 
     expect(router.push).toHaveBeenCalledWith('/practice/digital-to-analog');
+  });
+
+  it('routes explore time through the interval chooser', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <HomeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    fireEvent.press(screen.getByTestId('explore-time-card'));
+
+    expect(router.push).toHaveBeenCalledWith('/explore-time');
   });
 
   it('clears challenge progress for the current mode from the dev button', () => {
@@ -235,6 +250,27 @@ describe('time tutor screens', () => {
     expect(router.replace).toHaveBeenCalledWith(
       '/session/digital-to-analog/practice?interval=hours-only',
     );
+  });
+
+  it('renders the explore time interval chooser', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <ExploreTimeLaunchScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Explore Time')).toBeTruthy();
+    expect(screen.getByText('Choose your interval')).toBeTruthy();
+    expect(screen.getByText('Hours only')).toBeTruthy();
+    expect(screen.getByText('15 minutes')).toBeTruthy();
+    expect(screen.getByText('5 minutes')).toBeTruthy();
+    expect(screen.getByText('1 minute')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('explore-time-interval-hours-only'));
+
+    expect(router.replace).toHaveBeenCalledWith('/explore?interval=hours-only');
   });
 
   it('shows a mastery crown when a challenge mode has all 9 stars', () => {
