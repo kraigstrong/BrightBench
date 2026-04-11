@@ -106,7 +106,11 @@ export function ElapsedTimePracticeScreen({
 
       return (
         <View style={styles.promptTimeInlineRow} testID={testID}>
-          <Text numberOfLines={1} style={styles.promptTimeMain}>
+          <Text
+            adjustsFontSizeToFit
+            minimumFontScale={0.72}
+            numberOfLines={1}
+            style={styles.promptTimeMain}>
             {mainTime}
           </Text>
           <Text numberOfLines={1} style={styles.promptTimeSuffix}>
@@ -277,7 +281,7 @@ const styles = StyleSheet.create({
     color: palette.ink,
     flexShrink: 1,
     fontFamily: typography.displayFamily,
-    fontSize: 28,
+    fontSize: 24,
     fontVariant: ['tabular-nums'],
     fontWeight: '700',
   },

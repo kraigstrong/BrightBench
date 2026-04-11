@@ -185,10 +185,13 @@ describe('time tutor screens', () => {
       </SafeAreaProvider>,
     );
 
-    expect(screen.getByText('Choose your difficulty to start right away.')).toBeTruthy();
+    expect(screen.getByText('Choose your difficulty')).toBeTruthy();
     expect(screen.getByText('Easy')).toBeTruthy();
     expect(screen.getByText('Medium')).toBeTruthy();
     expect(screen.getByText('Hard')).toBeTruthy();
+    expect(screen.getByText('15 min. intervals')).toBeTruthy();
+    expect(screen.getByText('5 min. intervals')).toBeTruthy();
+    expect(screen.getByText('1 min. intervals')).toBeTruthy();
     expect(screen.getByText('1 / 3')).toBeTruthy();
     expect(screen.getByText('2 / 3')).toBeTruthy();
   });

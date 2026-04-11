@@ -8,7 +8,7 @@ import { ChallengeStarGroup } from '@/components/challenge-star-group';
 import {
   CHALLENGE_DIFFICULTIES,
   CHALLENGE_DIFFICULTY_LABELS,
-  formatChallengeIntervalLabel,
+  formatChallengeLaunchIntervalLabel,
 } from '@/config/challenge-thresholds';
 import { palette, shadows, typography } from '@/design/theme';
 import { getChallengeIntervalForDifficulty } from '@/lib/challenge-progression';
@@ -49,7 +49,7 @@ export default function ChallengeLaunchScreen() {
         <Card style={styles.modalCard}>
           <Text style={styles.eyebrow}>1-Minute Challenge</Text>
           <Text style={styles.title}>{getHomeModeTitle(mode)}</Text>
-          <Text style={styles.body}>Choose your difficulty to start right away.</Text>
+          <Text style={styles.body}>Choose your difficulty</Text>
 
           <View style={styles.optionsColumn}>
             {CHALLENGE_DIFFICULTIES.map((difficulty) => (
@@ -64,7 +64,7 @@ export default function ChallengeLaunchScreen() {
                     {CHALLENGE_DIFFICULTY_LABELS[difficulty]}
                   </Text>
                   <Text style={styles.optionMeta}>
-                    {formatChallengeIntervalLabel(
+                    {formatChallengeLaunchIntervalLabel(
                       getChallengeIntervalForDifficulty(difficulty),
                     )}
                   </Text>

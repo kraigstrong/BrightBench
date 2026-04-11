@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -46,7 +48,6 @@ import type {
 
 type PromptPair = readonly [TimeValue, TimeValue];
 type RunStatus = 'finished' | 'ready' | 'running';
-type FeedbackToast = 'error' | null;
 type ChallengeResultSummary = {
   accuracy: number;
   didUnlockMastery: boolean;
@@ -64,7 +65,10 @@ type Props = {
 const MODE = 'elapsed-time';
 const CHALLENGE_DURATION_SECONDS = 60;
 const SUCCESS_ADVANCE_DELAY_MS = 700;
-const ERROR_FLASH_DURATION_MS = 550;
+const WRONG_ANSWER_ADVANCE_DELAY_MS = 520;
+const WRONG_ANSWER_SHAKE_KEYFRAMES = [0, -8, 8, -6, 6, -3, 0] as const;
+const WRONG_ANSWER_SHAKE_DURATIONS = [0, 55, 50, 45, 40, 35, 30] as const;
+const WRONG_ANSWER_FLASH_OPACITY = 0.5;
 
 export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
   const { width } = useWindowDimensions();
@@ -89,13 +93,15 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     createInitialElapsedDuration(),
   );
   const [isAdvancing, setIsAdvancing] = useState(false);
-  const [feedbackToast, setFeedbackToast] = useState<FeedbackToast>(null);
+  const [showWrongAnswerFeedback, setShowWrongAnswerFeedback] = useState(false);
   const [resultSummary, setResultSummary] = useState<ChallengeResultSummary | null>(
     null,
   );
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrongAnswerShake = useRef(new Animated.Value(0)).current;
+  const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
 
-  const showSuccessOverlay = isAdvancing && feedbackToast === null;
+  const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
   const timerProgress =
     runStatus === 'running'
       ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
@@ -139,7 +145,7 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       feedbackTimerRef.current = null;
     }
 
-    setFeedbackToast(null);
+    setShowWrongAnswerFeedback(false);
     setIsAdvancing(false);
 
     const accuracy = calculateChallengeAccuracy(score, attempts);
@@ -199,11 +205,15 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     setScore(0);
     setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setFeedbackToast(null);
     setIsAdvancing(false);
+    setShowWrongAnswerFeedback(false);
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
     setResultSummary(null);
     setRunStatus('running');
-  }, [currentInterval, loadPrompt]);
+  }, [currentInterval, loadPrompt, wrongAnswerFlashOpacity, wrongAnswerShake]);
 
   const resetToReady = useCallback(() => {
     if (feedbackTimerRef.current) {
@@ -216,11 +226,64 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     setScore(0);
     setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setFeedbackToast(null);
     setIsAdvancing(false);
+    setShowWrongAnswerFeedback(false);
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
     setResultSummary(null);
     setRunStatus('ready');
-  }, [currentInterval]);
+  }, [currentInterval, wrongAnswerFlashOpacity, wrongAnswerShake]);
+
+  const triggerWrongAnswerFeedback = useCallback(
+    (nextPrompt: PromptPair) => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+        feedbackTimerRef.current = null;
+      }
+
+      wrongAnswerShake.stopAnimation();
+      wrongAnswerShake.setValue(0);
+      wrongAnswerFlashOpacity.stopAnimation();
+      wrongAnswerFlashOpacity.setValue(0);
+      setShowWrongAnswerFeedback(true);
+      setIsAdvancing(true);
+
+      Animated.parallel([
+        Animated.sequence(
+          WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
+            Animated.timing(wrongAnswerShake, {
+              duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
+              easing: Easing.out(Easing.quad),
+              toValue: offset,
+              useNativeDriver: true,
+            }),
+          ),
+        ),
+        Animated.sequence([
+          Animated.timing(wrongAnswerFlashOpacity, {
+            duration: 80,
+            toValue: WRONG_ANSWER_FLASH_OPACITY,
+            useNativeDriver: true,
+          }),
+          Animated.timing(wrongAnswerFlashOpacity, {
+            duration: 220,
+            toValue: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+
+      feedbackTimerRef.current = setTimeout(() => {
+        loadPrompt(nextPrompt);
+        setShowWrongAnswerFeedback(false);
+        setIsAdvancing(false);
+        feedbackTimerRef.current = null;
+      }, WRONG_ANSWER_ADVANCE_DELAY_MS);
+    },
+    [loadPrompt, wrongAnswerFlashOpacity, wrongAnswerShake],
+  );
 
   function checkAnswer() {
     if (runStatus !== 'running' || isAdvancing) {
@@ -235,8 +298,12 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       const nextPrompt = nextElapsedTimePairForInterval(promptPair, currentInterval);
 
       setScore((current) => current + 1);
-      setFeedbackToast(null);
+      setShowWrongAnswerFeedback(false);
       setIsAdvancing(true);
+      wrongAnswerShake.stopAnimation();
+      wrongAnswerShake.setValue(0);
+      wrongAnswerFlashOpacity.stopAnimation();
+      wrongAnswerFlashOpacity.setValue(0);
 
       feedbackTimerRef.current = setTimeout(() => {
         loadPrompt(nextPrompt);
@@ -252,12 +319,7 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       feedbackTimerRef.current = null;
     }
 
-    setFeedbackToast('error');
-
-    feedbackTimerRef.current = setTimeout(() => {
-      setFeedbackToast(null);
-      feedbackTimerRef.current = null;
-    }, ERROR_FLASH_DURATION_MS);
+    triggerWrongAnswerFeedback(nextElapsedTimePairForInterval(promptPair, currentInterval));
   }
 
   function addDebugScore() {
@@ -276,7 +338,11 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     }
 
     setIsAdvancing(false);
-    setFeedbackToast(null);
+    setShowWrongAnswerFeedback(false);
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
     setTimeRemaining(0);
     setRunStatus('finished');
   }
@@ -292,7 +358,11 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
 
       return (
         <View style={styles.promptTimeInlineRow} testID={testID}>
-          <Text numberOfLines={1} style={styles.promptTimeMain}>
+          <Text
+            adjustsFontSizeToFit
+            minimumFontScale={0.72}
+            numberOfLines={1}
+            style={styles.promptTimeMain}>
             {mainTime}
           </Text>
           <Text numberOfLines={1} style={styles.promptTimeSuffix}>
@@ -389,27 +459,37 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
         <View style={styles.challengeColumn}>
           <Card style={styles.answerCard}>
             <Text style={styles.cardEyebrow}>Elapsed time</Text>
-            <View style={styles.answerOverlayWrap}>
-              <ElapsedDurationInput
-                compact={useCompactInput}
-                disabled={runStatus !== 'running' || isAdvancing}
-                onChange={setAnswer}
-                practiceInterval={currentInterval}
-                value={answer}
-              />
+            <Animated.View
+              style={[
+                styles.answerSurface,
+                {
+                  transform: [{ translateX: wrongAnswerShake }],
+                },
+              ]}>
+              <View style={styles.answerOverlayWrap}>
+                <ElapsedDurationInput
+                  compact={useCompactInput}
+                  disabled={runStatus !== 'running' || isAdvancing}
+                  onChange={setAnswer}
+                  practiceInterval={currentInterval}
+                  value={answer}
+                />
+
+                {showWrongAnswerFeedback ? (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.answerFlashOverlay,
+                      {
+                        opacity: wrongAnswerFlashOpacity,
+                      },
+                    ]}
+                  />
+                ) : null}
+              </View>
 
               {showSuccessOverlay ? <CelebrationOverlay visible /> : null}
-
-              {feedbackToast === 'error' ? (
-                <View pointerEvents="none" style={styles.feedbackToastOverlay}>
-                  <View style={[styles.feedbackToast, styles.errorToast]}>
-                    <Text style={[styles.feedbackToastText, styles.errorToastText]}>
-                      Try Again
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
-            </View>
+            </Animated.View>
 
             {runStatus === 'ready' ? (
               <View pointerEvents="box-none" style={styles.startOverlay}>
@@ -569,14 +649,14 @@ const styles = StyleSheet.create({
     color: palette.ink,
     flexShrink: 1,
     fontFamily: typography.displayFamily,
-    fontSize: 28,
+    fontSize: 24,
     fontVariant: ['tabular-nums'],
     fontWeight: '700',
   },
   promptTimeSuffix: {
     color: palette.inkMuted,
     fontFamily: typography.bodyFamily,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
@@ -608,8 +688,17 @@ const styles = StyleSheet.create({
     gap: 16,
     position: 'relative',
   },
+  answerSurface: {
+    position: 'relative',
+    width: '100%',
+  },
   answerOverlayWrap: {
     position: 'relative',
+  },
+  answerFlashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(231, 76, 60, 0.22)',
+    borderRadius: 24,
   },
   cardEyebrow: {
     alignSelf: 'stretch',
@@ -619,16 +708,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.1,
     textTransform: 'uppercase',
-  },
-  feedbackToastOverlay: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: 30,
   },
   startOverlay: {
     alignItems: 'center',
@@ -640,27 +719,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 38,
     zIndex: 25,
-  },
-  feedbackToast: {
-    alignItems: 'center',
-    borderRadius: 18,
-    borderWidth: 2,
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  errorToast: {
-    backgroundColor: '#FBEAEC',
-    borderColor: palette.danger,
-  },
-  feedbackToastText: {
-    fontFamily: typography.displayFamily,
-    fontSize: 18,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  errorToastText: {
-    color: palette.danger,
   },
   actionButton: {
     alignItems: 'center',

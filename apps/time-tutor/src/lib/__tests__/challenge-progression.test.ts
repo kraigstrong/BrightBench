@@ -7,6 +7,10 @@ import {
   shouldUpdateBestStars,
   totalStarsForMode,
 } from '@/lib/challenge-progression';
+import {
+  challengeThresholds,
+  formatChallengeLaunchIntervalLabel,
+} from '@/config/challenge-thresholds';
 
 describe('challenge progression helpers', () => {
   it('maps challenge difficulties to the intended intervals', () => {
@@ -15,32 +19,61 @@ describe('challenge progression helpers', () => {
     expect(getChallengeIntervalForDifficulty('hard')).toBe('1-minute');
   });
 
+  it('formats challenge launch intervals with interval copy', () => {
+    expect(formatChallengeLaunchIntervalLabel('15-minute')).toBe('15 min. intervals');
+    expect(formatChallengeLaunchIntervalLabel('5-minute')).toBe('5 min. intervals');
+    expect(formatChallengeLaunchIntervalLabel('1-minute')).toBe('1 min. intervals');
+  });
+
+  it('uses the same challenge thresholds across all modes and difficulties', () => {
+    expect(challengeThresholds['digital-to-analog'].easy).toEqual({
+      scoreThreshold: 10,
+      accuracyThreshold: 80,
+    });
+    expect(challengeThresholds['digital-to-analog'].medium).toEqual({
+      scoreThreshold: 10,
+      accuracyThreshold: 80,
+    });
+    expect(challengeThresholds['digital-to-analog'].hard).toEqual({
+      scoreThreshold: 10,
+      accuracyThreshold: 80,
+    });
+    expect(challengeThresholds['analog-to-digital'].easy).toEqual({
+      scoreThreshold: 10,
+      accuracyThreshold: 80,
+    });
+    expect(challengeThresholds['elapsed-time'].hard).toEqual({
+      scoreThreshold: 10,
+      accuracyThreshold: 80,
+    });
+  });
+
   it('calculates stars from score, accuracy, and perfect accuracy', () => {
     expect(
       calculateChallengeStars(
-        { score: 6, accuracy: 60 },
-        { scoreThreshold: 6, accuracyThreshold: 70 },
+        { score: 10, accuracy: 60 },
+        { scoreThreshold: 10, accuracyThreshold: 80 },
       ),
     ).toBe(1);
 
     expect(
       calculateChallengeStars(
-        { score: 6, accuracy: 70 },
-        { scoreThreshold: 6, accuracyThreshold: 70 },
+        { score: 10, accuracy: 80 },
+        { scoreThreshold: 10, accuracyThreshold: 80 },
       ),
     ).toBe(2);
 
     expect(
       calculateChallengeStars(
-        { score: 3, accuracy: 100 },
-        { scoreThreshold: 6, accuracyThreshold: 70 },
+        { score: 5, accuracy: 100 },
+        { scoreThreshold: 10, accuracyThreshold: 80 },
       ),
     ).toBe(2);
 
     expect(
       calculateChallengeStars(
-        { score: 6, accuracy: 100 },
-        { scoreThreshold: 6, accuracyThreshold: 70 },
+        { score: 10, accuracy: 100 },
+        { scoreThreshold: 10, accuracyThreshold: 80 },
       ),
     ).toBe(3);
   });

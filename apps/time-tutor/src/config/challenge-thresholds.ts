@@ -38,19 +38,19 @@ export const challengeThresholds: Record<
   >
 > = {
   'digital-to-analog': {
-    easy: { scoreThreshold: 6, accuracyThreshold: 70 },
+    easy: { scoreThreshold: 10, accuracyThreshold: 80 },
     medium: { scoreThreshold: 10, accuracyThreshold: 80 },
-    hard: { scoreThreshold: 14, accuracyThreshold: 90 },
+    hard: { scoreThreshold: 10, accuracyThreshold: 80 },
   },
   'analog-to-digital': {
-    easy: { scoreThreshold: 6, accuracyThreshold: 70 },
+    easy: { scoreThreshold: 10, accuracyThreshold: 80 },
     medium: { scoreThreshold: 10, accuracyThreshold: 80 },
-    hard: { scoreThreshold: 14, accuracyThreshold: 90 },
+    hard: { scoreThreshold: 10, accuracyThreshold: 80 },
   },
   'elapsed-time': {
-    easy: { scoreThreshold: 4, accuracyThreshold: 70 },
-    medium: { scoreThreshold: 7, accuracyThreshold: 80 },
-    hard: { scoreThreshold: 10, accuracyThreshold: 90 },
+    easy: { scoreThreshold: 10, accuracyThreshold: 80 },
+    medium: { scoreThreshold: 10, accuracyThreshold: 80 },
+    hard: { scoreThreshold: 10, accuracyThreshold: 80 },
   },
 };
 
@@ -62,6 +62,21 @@ export function formatChallengeIntervalLabel(interval: PracticeInterval) {
       return '5 min';
     case '1-minute':
       return '1 min';
+    case 'hours-only':
+      return 'Hours only';
+    default:
+      return interval;
+  }
+}
+
+export function formatChallengeLaunchIntervalLabel(interval: PracticeInterval) {
+  switch (interval) {
+    case '15-minute':
+      return '15 min. intervals';
+    case '5-minute':
+      return '5 min. intervals';
+    case '1-minute':
+      return '1 min. intervals';
     case 'hours-only':
       return 'Hours only';
     default:

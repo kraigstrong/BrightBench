@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState, type SetStateAction } from 'react';
 import {
+  Animated,
+  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -55,7 +57,6 @@ type Props = {
 };
 
 type RunStatus = 'finished' | 'ready' | 'running';
-type FeedbackToast = 'error' | null;
 type ChallengeResultSummary = {
   accuracy: number;
   didUnlockMastery: boolean;
@@ -67,7 +68,10 @@ type ChallengeResultSummary = {
 
 const CHALLENGE_DURATION_SECONDS = 60;
 const SUCCESS_ADVANCE_DELAY_MS = 700;
-const ERROR_FLASH_DURATION_MS = 550;
+const WRONG_ANSWER_ADVANCE_DELAY_MS = 520;
+const WRONG_ANSWER_SHAKE_KEYFRAMES = [0, -8, 8, -6, 6, -3, 0] as const;
+const WRONG_ANSWER_SHAKE_DURATIONS = [0, 55, 50, 45, 40, 35, 30] as const;
+const WRONG_ANSWER_FLASH_OPACITY = 0.5;
 
 export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
   const { width } = useWindowDimensions();
@@ -103,13 +107,15 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
   );
   const [clockInteractionActive, setClockInteractionActive] = useState(false);
   const [isAdvancing, setIsAdvancing] = useState(false);
-  const [feedbackToast, setFeedbackToast] = useState<FeedbackToast>(null);
+  const [showWrongAnswerFeedback, setShowWrongAnswerFeedback] = useState(false);
   const [resultSummary, setResultSummary] = useState<ChallengeResultSummary | null>(
     null,
   );
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrongAnswerShake = useRef(new Animated.Value(0)).current;
+  const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
 
-  const showSuccessOverlay = isAdvancing && feedbackToast === null;
+  const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
   const timerProgress =
     runStatus === 'running'
       ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
@@ -153,7 +159,7 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
       feedbackTimerRef.current = null;
     }
 
-    setFeedbackToast(null);
+    setShowWrongAnswerFeedback(false);
     setIsAdvancing(false);
 
     const accuracy = calculateChallengeAccuracy(score, attempts);
@@ -218,11 +224,15 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
     setScore(0);
     setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setFeedbackToast(null);
     setIsAdvancing(false);
+    setShowWrongAnswerFeedback(false);
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
     setResultSummary(null);
     setRunStatus('running');
-  }, [currentInterval, loadPrompt]);
+  }, [currentInterval, loadPrompt, wrongAnswerFlashOpacity, wrongAnswerShake]);
 
   const resetToReady = useCallback(() => {
     if (feedbackTimerRef.current) {
@@ -235,12 +245,65 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
     setScore(0);
     setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setFeedbackToast(null);
     setIsAdvancing(false);
+    setShowWrongAnswerFeedback(false);
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
     setResultSummary(null);
     setPromptTime(randomTimeValueForInterval(currentInterval));
     setRunStatus('ready');
-  }, [currentInterval, timeFormat]);
+  }, [currentInterval, timeFormat, wrongAnswerFlashOpacity, wrongAnswerShake]);
+
+  const triggerWrongAnswerFeedback = useCallback(
+    (nextPrompt: TimeValue) => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+        feedbackTimerRef.current = null;
+      }
+
+      wrongAnswerShake.stopAnimation();
+      wrongAnswerShake.setValue(0);
+      wrongAnswerFlashOpacity.stopAnimation();
+      wrongAnswerFlashOpacity.setValue(0);
+      setShowWrongAnswerFeedback(true);
+      setIsAdvancing(true);
+
+      Animated.parallel([
+        Animated.sequence(
+          WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
+            Animated.timing(wrongAnswerShake, {
+              duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
+              easing: Easing.out(Easing.quad),
+              toValue: offset,
+              useNativeDriver: true,
+            }),
+          ),
+        ),
+        Animated.sequence([
+          Animated.timing(wrongAnswerFlashOpacity, {
+            duration: 80,
+            toValue: WRONG_ANSWER_FLASH_OPACITY,
+            useNativeDriver: true,
+          }),
+          Animated.timing(wrongAnswerFlashOpacity, {
+            duration: 220,
+            toValue: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start();
+
+      feedbackTimerRef.current = setTimeout(() => {
+        loadPrompt(nextPrompt);
+        setShowWrongAnswerFeedback(false);
+        setIsAdvancing(false);
+        feedbackTimerRef.current = null;
+      }, WRONG_ANSWER_ADVANCE_DELAY_MS);
+    },
+    [loadPrompt, wrongAnswerFlashOpacity, wrongAnswerShake],
+  );
 
   const handleAnalogAnswerChange = (value: SetStateAction<TimeValue>) => {
     setAnalogAnswer(value);
@@ -268,8 +331,12 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
       const nextPrompt = nextTimeValueForInterval(promptTime, currentInterval);
 
       setScore((current) => current + 1);
-      setFeedbackToast(null);
+      setShowWrongAnswerFeedback(false);
       setIsAdvancing(true);
+      wrongAnswerShake.stopAnimation();
+      wrongAnswerShake.setValue(0);
+      wrongAnswerFlashOpacity.stopAnimation();
+      wrongAnswerFlashOpacity.setValue(0);
 
       feedbackTimerRef.current = setTimeout(() => {
         loadPrompt(nextPrompt);
@@ -285,12 +352,7 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
       feedbackTimerRef.current = null;
     }
 
-    setFeedbackToast('error');
-
-    feedbackTimerRef.current = setTimeout(() => {
-      setFeedbackToast(null);
-      feedbackTimerRef.current = null;
-    }, ERROR_FLASH_DURATION_MS);
+    triggerWrongAnswerFeedback(nextTimeValueForInterval(promptTime, currentInterval));
   }
 
   const promptLabel =
@@ -312,7 +374,11 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
     }
 
     setIsAdvancing(false);
-    setFeedbackToast(null);
+    setShowWrongAnswerFeedback(false);
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
     setTimeRemaining(0);
     setRunStatus('finished');
   }
@@ -392,42 +458,52 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
         <View style={styles.challengeColumn}>
           <Card style={styles.answerCard}>
             <Text style={styles.cardEyebrow}>Your answer</Text>
-            {mode === 'digital-to-analog' ? (
-              <View style={styles.answerClockWrap}>
-                <AnalogClock
-                  interactive={runStatus === 'running' && !isAdvancing}
-                  onChange={handleAnalogAnswerChange}
-                  onInteractionEnd={() => setClockInteractionActive(false)}
-                  onInteractionStart={() => setClockInteractionActive(true)}
-                  practiceInterval={currentInterval}
-                  size={clockSize}
-                  time={analogAnswer}
+            <Animated.View
+              style={[
+                styles.answerSurface,
+                {
+                  transform: [{ translateX: wrongAnswerShake }],
+                },
+              ]}>
+              {mode === 'digital-to-analog' ? (
+                <View style={styles.answerClockWrap}>
+                  <AnalogClock
+                    interactive={runStatus === 'running' && !isAdvancing}
+                    onChange={handleAnalogAnswerChange}
+                    onInteractionEnd={() => setClockInteractionActive(false)}
+                    onInteractionStart={() => setClockInteractionActive(true)}
+                    practiceInterval={currentInterval}
+                    size={clockSize}
+                    time={analogAnswer}
+                  />
+                </View>
+              ) : (
+                <View style={styles.answerOverlayWrap}>
+                  <DigitalTimeInput
+                    compact={useCompactDigitalInput}
+                    disabled={runStatus !== 'running' || isAdvancing}
+                    onChange={handleDigitalAnswerChange}
+                    practiceInterval={currentInterval}
+                    timeFormat={timeFormat}
+                    value={digitalAnswer}
+                  />
+                </View>
+              )}
+
+              {showWrongAnswerFeedback ? (
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    styles.answerFlashOverlay,
+                    {
+                      opacity: wrongAnswerFlashOpacity,
+                    },
+                  ]}
                 />
-              </View>
-            ) : (
-              <View style={styles.answerOverlayWrap}>
-                <DigitalTimeInput
-                  compact={useCompactDigitalInput}
-                  disabled={runStatus !== 'running' || isAdvancing}
-                  onChange={handleDigitalAnswerChange}
-                  practiceInterval={currentInterval}
-                  timeFormat={timeFormat}
-                  value={digitalAnswer}
-                />
-              </View>
-            )}
+              ) : null}
+            </Animated.View>
 
             {showSuccessOverlay ? <CelebrationOverlay visible /> : null}
-
-            {feedbackToast === 'error' ? (
-              <View pointerEvents="none" style={styles.feedbackToastOverlay}>
-                <View style={[styles.feedbackToast, styles.errorToast]}>
-                  <Text style={[styles.feedbackToastText, styles.errorToastText]}>
-                    Try Again
-                  </Text>
-                </View>
-              </View>
-            ) : null}
 
             {runStatus === 'ready' ? (
               <View pointerEvents="box-none" style={styles.startOverlay}>
@@ -575,8 +651,17 @@ const styles = StyleSheet.create({
     gap: 12,
     position: 'relative',
   },
+  answerSurface: {
+    position: 'relative',
+    width: '100%',
+  },
   answerOverlayWrap: {
     position: 'relative',
+  },
+  answerFlashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(231, 76, 60, 0.22)',
+    borderRadius: 24,
   },
   answerClockWrap: {
     alignItems: 'center',
@@ -593,16 +678,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
     textTransform: 'uppercase',
   },
-  feedbackToastOverlay: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: 30,
-  },
   startOverlay: {
     alignItems: 'center',
     borderRadius: 24,
@@ -613,27 +688,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 38,
     zIndex: 25,
-  },
-  feedbackToast: {
-    alignItems: 'center',
-    borderRadius: 18,
-    borderWidth: 2,
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  errorToast: {
-    backgroundColor: '#FBEAEC',
-    borderColor: palette.danger,
-  },
-  feedbackToastText: {
-    fontFamily: typography.displayFamily,
-    fontSize: 18,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  errorToastText: {
-    color: palette.danger,
   },
   actionButton: {
     alignItems: 'center',
