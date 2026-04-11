@@ -14,6 +14,10 @@ import { TimedChallengeScreen } from '@/components/timed-challenge-screen';
 import { Card } from '@education/ui';
 import { palette, typography } from '@/design/theme';
 import { getDefaultChallengeDifficulty } from '@/lib/challenge-progression';
+import {
+  DEFAULT_PRACTICE_INTERVAL,
+  isPracticeInterval,
+} from '@/config/practice-intervals';
 import { getHomeModeTitle } from '@/lib/time';
 import { useAppState } from '@/state/app-state';
 import type { ChallengeDifficulty, PlayableMode, SessionType } from '@/types/time';
@@ -21,12 +25,16 @@ import type { ChallengeDifficulty, PlayableMode, SessionType } from '@/types/tim
 export default function SessionScreen() {
   const params = useLocalSearchParams<{
     difficulty?: string;
+    interval?: string;
     mode?: string;
     session?: string;
   }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
   const session = (params.session ?? 'practice') as SessionType;
-  const { challengeProgress, practiceInterval, timeFormat } = useAppState();
+  const { challengeProgress, timeFormat } = useAppState();
+  const practiceInterval = isPracticeInterval(params.interval)
+    ? params.interval
+    : DEFAULT_PRACTICE_INTERVAL;
   const requestedDifficulty = CHALLENGE_DIFFICULTIES.includes(
     params.difficulty as ChallengeDifficulty,
   )

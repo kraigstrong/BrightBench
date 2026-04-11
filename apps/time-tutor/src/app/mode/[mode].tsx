@@ -57,7 +57,7 @@ export default function ModeScreen() {
       return;
     }
 
-    router.push(`/session/${mode}/${sessionType}`);
+    router.push(`/practice/${mode}`);
   }
 
   return (

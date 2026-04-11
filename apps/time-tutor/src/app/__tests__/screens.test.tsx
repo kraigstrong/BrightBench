@@ -1,11 +1,14 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import ExploreScreen from '@/app/explore';
 import HomeScreen from '@/app/index';
 import ChallengeLaunchScreen from '@/app/challenge/[mode]';
 import ModeScreen from '@/app/mode/[mode]';
+import PracticeLaunchScreen from '@/app/practice/[mode]';
+import SessionScreen from '@/app/session/[mode]/[session]';
 import SettingsScreen from '@/app/settings';
 import { ElapsedTimeChallengeScreen } from '@/components/elapsed-time-challenge-screen';
 import { ElapsedTimePracticeScreen } from '@/components/elapsed-time-practice-screen';
@@ -30,6 +33,7 @@ jest.mock('expo-router', () => ({
 
 describe('time tutor screens', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     mockUseLocalSearchParams.mockReturnValue({ mode: 'digital-to-analog' });
   });
 
@@ -138,6 +142,20 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Hard')).toBeTruthy();
   });
 
+  it('routes practice mode through the interval chooser', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <ModeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    fireEvent.press(screen.getByTestId('practice-session-card'));
+
+    expect(router.push).toHaveBeenCalledWith('/practice/digital-to-analog');
+  });
+
   it('clears challenge progress for the current mode from the dev button', () => {
     render(
       <SafeAreaProvider>
@@ -195,6 +213,28 @@ describe('time tutor screens', () => {
     expect(screen.getByText('1 min. intervals')).toBeTruthy();
     expect(screen.getByText('1 / 3')).toBeTruthy();
     expect(screen.getByText('2 / 3')).toBeTruthy();
+  });
+
+  it('renders the practice interval chooser', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <PracticeLaunchScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Choose your interval')).toBeTruthy();
+    expect(screen.getByText('Hours only')).toBeTruthy();
+    expect(screen.getByText('15 minutes')).toBeTruthy();
+    expect(screen.getByText('5 minutes')).toBeTruthy();
+    expect(screen.getByText('1 minute')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('practice-interval-hours-only'));
+
+    expect(router.replace).toHaveBeenCalledWith(
+      '/session/digital-to-analog/practice?interval=hours-only',
+    );
   });
 
   it('shows a mastery crown when a challenge mode has all 9 stars', () => {
@@ -301,5 +341,25 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Easy · 15 min')).toBeTruthy();
     expect(screen.getByTestId('challenge-timer-bar')).toBeTruthy();
     expect(screen.getByTestId('challenge-start-button')).toBeTruthy();
+  });
+
+  it('uses the chosen interval when opening practice sessions', () => {
+    mockUseLocalSearchParams.mockReturnValue({
+      interval: 'hours-only',
+      mode: 'analog-to-digital',
+      session: 'practice',
+    });
+
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider initialPracticeInterval="1-minute" skipHydration>
+          <SessionScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Read the Clock')).toBeTruthy();
+    expect(screen.getByTestId('minute-increment-button')).toBeDisabled();
+    expect(screen.getByTestId('minute-decrement-button')).toBeDisabled();
   });
 });

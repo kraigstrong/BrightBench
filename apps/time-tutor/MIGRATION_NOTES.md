@@ -26,6 +26,10 @@ The goal is strong visual and behavioral parity, but not blind 1:1 copying. Some
   - challenge runs now require a separate in-screen Start tap and use a simple countdown bar during play
   - challenge runs now end with a centered animated summary overlay driven by score and accuracy threshold bars
   - the reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
+- Practice mode now opens a dedicated interval chooser before gameplay starts:
+  - hours only, 15 minutes, 5 minutes, and 1 minute are selected at entry time
+  - practice sessions receive the chosen interval through the route instead of reading it from settings
+  - the settings page interval control is therefore no longer part of the practice-mode flow
 
 ## Parity Guidance
 
@@ -50,6 +54,7 @@ The monorepo version already includes:
 - Mode chooser
 - Settings
 - Explore Time
+- Practice interval chooser
 - Set the Clock practice
 - Read the Clock practice
 - Elapsed Time practice
