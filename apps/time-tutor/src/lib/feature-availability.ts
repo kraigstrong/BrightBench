@@ -3,7 +3,6 @@ import { Platform } from 'react-native';
 import type { FeatureAvailability, FeatureId } from '@/types/features';
 
 const WEB_PRELAUNCH_ENTITLEMENTS: Partial<Record<FeatureId, true>> = {
-  'challenge-mode': true,
   'time-format-24-hour': true,
   'elapsed-time': true,
 };
@@ -18,7 +17,7 @@ export function getFeatureAvailability(
         ? {
             enabled: false,
             label: '1-Minute Challenge',
-            reason: 'Available in the paid mobile app',
+            reason: 'Available on the App Store',
           }
         : {
             enabled: true,

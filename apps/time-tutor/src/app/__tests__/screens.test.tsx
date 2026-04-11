@@ -96,7 +96,7 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Help')).toBeTruthy();
     expect(screen.getByText('Support')).toBeTruthy();
     expect(screen.getByText('Privacy Policy')).toBeTruthy();
-    expect(screen.getByText('Version 1.0.0')).toBeTruthy();
+    expect(screen.getByText('Version 1.1.0')).toBeTruthy();
   });
 
   it('renders the explore screen', () => {

@@ -84,7 +84,6 @@ export default function ModeScreen() {
             accentColor={accentColor}
             description="Answer as many questions as you can in one minute."
             disabled={!challengeAvailability.enabled}
-            label={!challengeAvailability.enabled ? 'Mobile only' : undefined}
             onPress={() => goToSession('challenge')}
             progress={challengeProgress[mode]}
             testID="challenge-session-card"

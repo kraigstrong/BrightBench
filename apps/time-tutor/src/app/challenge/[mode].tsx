@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@education/ui';
@@ -11,6 +11,7 @@ import {
   formatChallengeLaunchIntervalLabel,
 } from '@/config/challenge-thresholds';
 import { palette, shadows, typography } from '@/design/theme';
+import { getFeatureAvailability } from '@/lib/feature-availability';
 import { getChallengeIntervalForDifficulty } from '@/lib/challenge-progression';
 import { getHomeModeTitle } from '@/lib/time';
 import { useAppState } from '@/state/app-state';
@@ -20,7 +21,18 @@ export default function ChallengeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
   const { challengeProgress, setLastSelectedChallengeDifficulty } = useAppState();
+  const challengeAvailability = getFeatureAvailability('challenge-mode');
   const progress = challengeProgress[mode];
+
+  useEffect(() => {
+    if (!challengeAvailability.enabled) {
+      router.replace(`/mode/${mode}`);
+    }
+  }, [challengeAvailability.enabled, mode]);
+
+  if (!challengeAvailability.enabled) {
+    return null;
+  }
 
   function launchDifficulty(difficulty: ChallengeDifficulty) {
     setLastSelectedChallengeDifficulty(mode, difficulty);

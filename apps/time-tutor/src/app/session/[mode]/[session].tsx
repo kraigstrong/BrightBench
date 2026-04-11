@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { AppShell } from '@/components/app-shell';
@@ -13,6 +13,7 @@ import { CHALLENGE_DIFFICULTIES } from '@/config/challenge-thresholds';
 import { TimedChallengeScreen } from '@/components/timed-challenge-screen';
 import { Card } from '@education/ui';
 import { palette, typography } from '@/design/theme';
+import { getFeatureAvailability } from '@/lib/feature-availability';
 import { getDefaultChallengeDifficulty } from '@/lib/challenge-progression';
 import {
   DEFAULT_PRACTICE_INTERVAL,
@@ -32,6 +33,7 @@ export default function SessionScreen() {
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
   const session = (params.session ?? 'practice') as SessionType;
   const { challengeProgress, timeFormat } = useAppState();
+  const challengeAvailability = getFeatureAvailability('challenge-mode');
   const practiceInterval = isPracticeInterval(params.interval)
     ? params.interval
     : DEFAULT_PRACTICE_INTERVAL;
@@ -42,6 +44,16 @@ export default function SessionScreen() {
     : undefined;
   const challengeDifficulty =
     requestedDifficulty ?? getDefaultChallengeDifficulty(challengeProgress[mode]);
+
+  useEffect(() => {
+    if (session === 'challenge' && !challengeAvailability.enabled) {
+      router.replace(`/mode/${mode}`);
+    }
+  }, [challengeAvailability.enabled, mode, session]);
+
+  if (session === 'challenge' && !challengeAvailability.enabled) {
+    return null;
+  }
 
   if (session === 'practice' && mode === 'digital-to-analog') {
     return (

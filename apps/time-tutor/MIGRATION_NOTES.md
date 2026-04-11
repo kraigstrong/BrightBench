@@ -32,6 +32,9 @@ The goal is strong visual and behavioral parity, but not blind 1:1 copying. Some
 - Explore Time now opens the same style of interval chooser before the screen loads:
   - hours only, 15 minutes, 5 minutes, and 1 minute are selected at entry time
   - Explore Time receives the chosen interval through the route instead of reading it from settings
+- Challenge mode is mobile-only on the web build:
+  - the mode chooser card is disabled on web
+  - the disabled state shows the official App Store badge button
 - The settings page no longer contains a practice interval control
 
 ## Parity Guidance

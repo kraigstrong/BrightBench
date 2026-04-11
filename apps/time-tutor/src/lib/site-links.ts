@@ -1,6 +1,8 @@
 import { Platform } from 'react-native';
 
 const DEFAULT_SITE_ORIGIN = 'https://timetutor.app';
+const DEFAULT_APP_STORE_URL =
+  'https://apps.apple.com/app/time-tutor-clock-practice/id6761587276';
 
 type SitePath = '/privacy' | '/support';
 type SiteUrlOptions = {
@@ -32,4 +34,8 @@ export function getSiteUrl(path: SitePath, options: SiteUrlOptions = {}) {
       : getConfiguredSiteOrigin();
 
   return new URL(path, origin).toString();
+}
+
+export function getTimeTutorAppStoreUrl() {
+  return process.env.EXPO_PUBLIC_TIME_TUTOR_APP_STORE_URL || DEFAULT_APP_STORE_URL;
 }

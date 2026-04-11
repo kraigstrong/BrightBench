@@ -1,6 +1,8 @@
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { CompactFeatureCard } from '@education/ui';
+import { AppStoreBadgeButton } from '@/components/app-store-badge-button';
 import { ChallengeMasteryCrown } from '@/components/challenge-mastery-crown';
 import { ChallengeStarProgressFooter } from '@/components/challenge-star-progress-footer';
 import { isChallengeModeMastered } from '@/lib/challenge-progression';
@@ -10,7 +12,6 @@ type ChallengeOptionCardProps = {
   accentColor: string;
   description: string;
   disabled?: boolean;
-  label?: string;
   onPress: () => void;
   progress: ChallengeModeProgress;
   testID?: string;
@@ -22,25 +23,46 @@ export function ChallengeOptionCard({
   accentColor,
   description,
   disabled = false,
-  label,
   onPress,
   progress,
   testID,
   tintColor,
   title,
 }: ChallengeOptionCardProps) {
+  const cornerAdornment = !disabled && isChallengeModeMastered(progress) ? (
+    <ChallengeMasteryCrown />
+  ) : null;
+
   return (
-    <CompactFeatureCard
-      accentColor={accentColor}
-      badgeLabel={label}
-      cornerAdornment={isChallengeModeMastered(progress) ? <ChallengeMasteryCrown /> : null}
-      description={description}
-      disabled={disabled}
-      footer={<ChallengeStarProgressFooter progress={progress} />}
-      onPress={onPress}
-      testID={testID}
-      tintColor={tintColor}
-      title={title}
-    />
+    <View style={styles.container}>
+      <CompactFeatureCard
+        accentColor={accentColor}
+        cornerAdornment={cornerAdornment}
+        description={description}
+        disabled={disabled}
+        footer={<ChallengeStarProgressFooter progress={progress} />}
+        onPress={onPress}
+        testID={testID}
+        tintColor={tintColor}
+        title={title}
+      />
+      {disabled ? (
+        <View style={styles.badgeOverlay}>
+          <AppStoreBadgeButton />
+        </View>
+      ) : null}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+  },
+  badgeOverlay: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    zIndex: 10,
+  },
+});
