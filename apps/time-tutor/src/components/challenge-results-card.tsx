@@ -262,10 +262,11 @@ export function ChallengeResultsCard({
         <View style={styles.barSection}>
           <View style={styles.barHeader}>
             <Text style={styles.barTitle}>Accuracy</Text>
-            <Text style={styles.barValue}>{accuracy}%</Text>
           </View>
           <View onLayout={handleAccuracyTrackLayout} style={styles.barTrack}>
-            <Animated.View style={[styles.barFill, styles.accuracyFill, { width: animatedAccuracyWidth }]} />
+            <Animated.View
+              style={[styles.barFill, styles.accuracyFill, { width: animatedAccuracyWidth }]}
+            />
 
             <View style={[styles.markerWrap, { left: `${accuracyThreshold}%` }]}>
               <Animated.View style={{ transform: [{ scale: accuracyStarScales[0] }] }}>
@@ -274,11 +275,16 @@ export function ChallengeResultsCard({
               <View style={styles.markerLine} />
             </View>
 
-            <View style={[styles.markerWrap, styles.endMarkerWrap]}>
+            <View style={[styles.markerWrap, { left: '100%' }]}>
               <Animated.View style={{ transform: [{ scale: accuracyStarScales[1] }] }}>
                 <ChallengeStarIcon filled={accuracyEarnedPerfectStar} size={18} />
               </Animated.View>
               <View style={styles.markerLine} />
+            </View>
+
+            <View style={[styles.playerMarkerWrap, { left: `${accuracyNormalized * 100}%` }]}>
+              <View style={styles.playerMarkerLine} />
+              <Text style={styles.playerMarkerLabel}>{accuracy}%</Text>
             </View>
           </View>
         </View>
@@ -286,10 +292,11 @@ export function ChallengeResultsCard({
         <View style={styles.barSection}>
           <View style={styles.barHeader}>
             <Text style={styles.barTitle}>Score</Text>
-            <Text style={styles.barValue}>{score}</Text>
           </View>
           <View onLayout={handleScoreTrackLayout} style={styles.barTrack}>
-            <Animated.View style={[styles.barFill, styles.scoreFill, { width: animatedScoreWidth }]} />
+            <Animated.View
+              style={[styles.barFill, styles.scoreFill, { width: animatedScoreWidth }]}
+            />
 
             <View
               style={[
@@ -300,11 +307,13 @@ export function ChallengeResultsCard({
                 <ChallengeStarIcon filled={scoreEarnedStar} size={18} />
               </Animated.View>
               <View style={styles.markerLine} />
+              <Text style={styles.markerValueLabel}>{scoreThreshold}</Text>
             </View>
-          </View>
-          <View style={styles.barFooter}>
-            <Text style={styles.barHint}>Need {scoreThreshold}</Text>
-            <Text style={styles.barHint}>Score {scoreThreshold}</Text>
+
+            <View style={[styles.playerMarkerWrap, { left: `${scoreNormalized * 100}%` }]}>
+              <View style={styles.playerMarkerLine} />
+              <Text style={styles.playerMarkerLabel}>{score}</Text>
+            </View>
           </View>
         </View>
 
@@ -397,7 +406,7 @@ const styles = StyleSheet.create({
   barHeader: {
     alignItems: 'baseline',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   barTitle: {
     color: palette.ink,
@@ -405,16 +414,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
   },
-  barValue: {
-    color: palette.inkMuted,
-    fontFamily: typography.displayFamily,
-    fontSize: 20,
-    fontWeight: '700',
-  },
   barTrack: {
     backgroundColor: '#E9EEF4',
     borderRadius: 999,
     height: 18,
+    marginBottom: 28,
     overflow: 'visible',
     position: 'relative',
   },
@@ -430,14 +434,10 @@ const styles = StyleSheet.create({
   },
   markerWrap: {
     alignItems: 'center',
-    marginLeft: -9,
+    marginLeft: -24,
     position: 'absolute',
     top: -16,
-  },
-  endMarkerWrap: {
-    left: undefined,
-    marginLeft: 0,
-    right: 0,
+    width: 48,
   },
   markerLine: {
     backgroundColor: '#B9C4D2',
@@ -445,15 +445,31 @@ const styles = StyleSheet.create({
     marginTop: 2,
     width: 2,
   },
-  barFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  barHint: {
+  markerValueLabel: {
     color: palette.inkMuted,
     fontFamily: typography.bodyFamily,
     fontSize: 13,
     fontWeight: '700',
+    marginTop: 4,
+  },
+  playerMarkerWrap: {
+    alignItems: 'center',
+    bottom: -30,
+    marginLeft: -24,
+    position: 'absolute',
+    width: 48,
+  },
+  playerMarkerLine: {
+    backgroundColor: palette.ink,
+    height: 16,
+    width: 2,
+  },
+  playerMarkerLabel: {
+    color: palette.ink,
+    fontFamily: typography.displayFamily,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 4,
   },
   starsWrap: {
     alignItems: 'flex-start',
