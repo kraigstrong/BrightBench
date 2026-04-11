@@ -28,7 +28,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>timetutor</string>
-				<string>com.kraig.timetutor</string>
+				<string>com.timetutor.app</string>
 			</array>
 		</dict>
 		<dict>

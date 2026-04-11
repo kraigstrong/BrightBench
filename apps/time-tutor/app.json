@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kraig.timetutor"
+      "bundleIdentifier": "com.timetutor.app"
     },
     "android": {
       "package": "com.kraig.timetutor",
