@@ -15,7 +15,9 @@ describe('ChallengeResultsCard', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
@@ -27,7 +29,6 @@ describe('ChallengeResultsCard', () => {
         didUnlockMastery={false}
         difficulty="medium"
         intervalLabel="5 min"
-        isNewBest
         onPlayAgain={jest.fn()}
         score={8}
         scoreThreshold={8}
@@ -35,18 +36,19 @@ describe('ChallengeResultsCard', () => {
     );
 
     expect(screen.getByText('Revealing your stars...')).toBeTruthy();
-    expect(screen.getByText('Tap anywhere to skip')).toBeTruthy();
+    expect(screen.getByTestId('challenge-play-again-button')).toBeTruthy();
+    expect(screen.getByTestId('challenge-summary-back-button')).toBeTruthy();
+    expect(screen.getByTestId('challenge-results-skip-overlay')).toBeTruthy();
 
     act(() => {
       jest.runAllTimers();
     });
 
     expect(screen.getByText('2 stars earned')).toBeTruthy();
-    expect(screen.getByText('New Best')).toBeTruthy();
     expect(screen.getByTestId('challenge-play-again-button')).toBeTruthy();
   });
 
-  it('fast-forwards the reveal when tapped', () => {
+  it('fast-forwards the reveal when play again is tapped early', () => {
     render(
       <ChallengeResultsCard
         accuracy={100}
@@ -54,17 +56,16 @@ describe('ChallengeResultsCard', () => {
         didUnlockMastery
         difficulty="hard"
         intervalLabel="1 min"
-        isNewBest
         onPlayAgain={jest.fn()}
         score={15}
         scoreThreshold={14}
       />,
     );
 
-    fireEvent.press(screen.getByTestId('challenge-results-skip-overlay'));
+    fireEvent.press(screen.getByTestId('challenge-play-again-button'));
 
     expect(screen.getByText('3 stars earned')).toBeTruthy();
-    expect(screen.getByText('Mastered!')).toBeTruthy();
+    expect(screen.getAllByText('Crown Unlocked!').length).toBeGreaterThan(0);
     expect(screen.getByTestId('challenge-summary-back-button')).toBeTruthy();
   });
 });

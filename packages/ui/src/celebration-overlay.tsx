@@ -12,9 +12,10 @@ import { confettiPalette, palette, radii, spacing } from '@education/design';
 import { shadows, typography } from '@education/design/native';
 
 type CelebrationOverlayProps = {
-  visible: boolean;
-  title?: string;
   body?: string;
+  showMessage?: boolean;
+  title?: string;
+  visible: boolean;
 };
 
 const CONFETTI_LAYOUT = [
@@ -35,9 +36,10 @@ const CONFETTI_LAYOUT = [
 ] as const;
 
 export function CelebrationOverlay({
-  visible,
-  title = 'Nice work!',
   body = 'New challenge coming up',
+  showMessage = true,
+  title = 'Nice work!',
+  visible,
 }: CelebrationOverlayProps) {
   const { width } = useWindowDimensions();
   const messageOpacity = useRef(new Animated.Value(0)).current;
@@ -55,18 +57,22 @@ export function CelebrationOverlay({
     }
 
     Animated.parallel([
-      Animated.timing(messageOpacity, {
-        duration: 180,
-        easing: Easing.out(Easing.quad),
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-      Animated.spring(messageScale, {
-        friction: 7,
-        tension: 120,
-        toValue: 1,
-        useNativeDriver: true,
-      }),
+      ...(showMessage
+        ? [
+            Animated.timing(messageOpacity, {
+              duration: 180,
+              easing: Easing.out(Easing.quad),
+              toValue: 1,
+              useNativeDriver: true,
+            }),
+            Animated.spring(messageScale, {
+              friction: 7,
+              tension: 120,
+              toValue: 1,
+              useNativeDriver: true,
+            }),
+          ]
+        : []),
       ...confettiValues.map((value, index) =>
         Animated.timing(value, {
           delay: CONFETTI_LAYOUT[index].delay,
@@ -77,7 +83,7 @@ export function CelebrationOverlay({
         }),
       ),
     ]).start();
-  }, [confettiValues, messageOpacity, messageScale, visible]);
+  }, [confettiValues, messageOpacity, messageScale, showMessage, visible]);
 
   const confettiPieces = useMemo(
     () =>
@@ -136,19 +142,20 @@ export function CelebrationOverlay({
     <View pointerEvents="none" style={styles.overlay}>
       <View style={styles.celebrationWrap}>
         {confettiPieces}
-        <Animated.View
-          style={[
-            styles.messageCard,
-            {
-              maxWidth: Math.min(width - 40, 360),
-              opacity: messageOpacity,
-              transform: [{ scale: messageScale }],
-            },
-          ]}
-        >
-          <Text style={styles.messageTitle}>{title}</Text>
-          <Text style={styles.messageBody}>{body}</Text>
-        </Animated.View>
+        {showMessage ? (
+          <Animated.View
+            style={[
+              styles.messageCard,
+              {
+                maxWidth: Math.min(width - 40, 360),
+                opacity: messageOpacity,
+                transform: [{ scale: messageScale }],
+              },
+            ]}>
+            <Text style={styles.messageTitle}>{title}</Text>
+            <Text style={styles.messageBody}>{body}</Text>
+          </Animated.View>
+        ) : null}
       </View>
     </View>
   );

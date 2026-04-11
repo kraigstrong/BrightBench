@@ -6,7 +6,8 @@ import { AppShell } from '@/components/app-shell';
 import { HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { ModeCard } from '@/components/mode-card';
-import type { HomeMode } from '@/types/time';
+import { useAppState } from '@/state/app-state';
+import type { HomeMode, PlayableMode } from '@/types/time';
 
 const modeCards: {
   accentColor: string;
@@ -41,6 +42,8 @@ const modeCards: {
 ];
 
 export default function HomeScreen() {
+  const { challengeProgress } = useAppState();
+
   return (
     <AppShell>
       <HeaderBar
@@ -65,6 +68,11 @@ export default function HomeScreen() {
 
               router.push(`/mode/${card.mode}`);
             }}
+            progress={
+              card.mode === 'explore-time'
+                ? undefined
+                : challengeProgress[card.mode as PlayableMode]
+            }
             testID={`${card.mode}-card`}
             title={card.title}
           />

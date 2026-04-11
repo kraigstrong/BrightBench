@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import ExploreScreen from '@/app/explore';
@@ -36,7 +36,9 @@ describe('time tutor screens', () => {
   it('renders the home screen', () => {
     render(
       <SafeAreaProvider>
-        <HomeScreen />
+        <AppStateProvider skipHydration>
+          <HomeScreen />
+        </AppStateProvider>
       </SafeAreaProvider>,
     );
 
@@ -45,6 +47,28 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Explore Time')).toBeTruthy();
     expect(screen.getByText('Set the Clock')).toBeTruthy();
     expect(screen.getByText('Read the Clock')).toBeTruthy();
+  });
+
+  it('shows a crown on the home mode card when that mode challenge is mastered', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider
+          initialChallengeProgress={{
+            'digital-to-analog': {
+              bestStars: {
+                easy: 3,
+                medium: 3,
+                hard: 3,
+              },
+            },
+          }}
+          skipHydration>
+          <HomeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getAllByLabelText('Mastered').length).toBeGreaterThan(0);
   });
 
   it('renders the settings screen', async () => {
@@ -111,6 +135,35 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Easy')).toBeTruthy();
     expect(screen.getByText('Medium')).toBeTruthy();
     expect(screen.getByText('Hard')).toBeTruthy();
+  });
+
+  it('clears challenge progress for the current mode from the dev button', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider
+          initialChallengeProgress={{
+            'digital-to-analog': {
+              bestStars: {
+                easy: 3,
+                medium: 3,
+                hard: 3,
+              },
+            },
+          }}
+          skipHydration>
+          <ModeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Easy')).toBeTruthy();
+    expect(screen.getByText('Medium')).toBeTruthy();
+    expect(screen.getByText('Hard')).toBeTruthy();
+    expect(screen.getByLabelText('Mastered')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('challenge-clear-progress-button'));
+
+    expect(screen.queryByLabelText('Mastered')).toBeNull();
   });
 
   it('renders the challenge launch popup', () => {

@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppShell } from '@/components/app-shell';
 import { ChallengeOptionCard } from '@/components/challenge-option-card';
@@ -42,7 +42,7 @@ function getModeTintColor(mode: PlayableMode): string {
 export default function ModeScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
-  const { challengeProgress } = useAppState();
+  const { challengeProgress, clearChallengeModeProgress } = useAppState();
   const challengeAvailability = getFeatureAvailability('challenge-mode');
   const accentColor = getModeAccentColor(mode);
   const challengeBackgroundColor = getModeTintColor(mode);
@@ -79,17 +79,31 @@ export default function ModeScreen() {
           title="Practice"
         />
 
-        <ChallengeOptionCard
-          accentColor={accentColor}
-          description="Answer as many questions as you can in one minute."
-          disabled={!challengeAvailability.enabled}
-          label={!challengeAvailability.enabled ? 'Mobile only' : undefined}
-          onPress={() => goToSession('challenge')}
-          progress={challengeProgress[mode]}
-          testID="challenge-session-card"
-          tintColor={challengeAvailability.enabled ? challengeBackgroundColor : undefined}
-          title={challengeAvailability.label}
-        />
+        <View style={styles.challengeCardWrap}>
+          <ChallengeOptionCard
+            accentColor={accentColor}
+            description="Answer as many questions as you can in one minute."
+            disabled={!challengeAvailability.enabled}
+            label={!challengeAvailability.enabled ? 'Mobile only' : undefined}
+            onPress={() => goToSession('challenge')}
+            progress={challengeProgress[mode]}
+            testID="challenge-session-card"
+            tintColor={challengeAvailability.enabled ? challengeBackgroundColor : undefined}
+            title={challengeAvailability.label}
+          />
+
+          {__DEV__ ? (
+            <View pointerEvents="box-none" style={styles.devOverlay}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => clearChallengeModeProgress(mode)}
+                style={styles.devClearButton}
+                testID="challenge-clear-progress-button">
+                <Text style={styles.devClearButtonText}>Clear</Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
       </View>
     </AppShell>
   );
@@ -106,5 +120,30 @@ const styles = StyleSheet.create({
   },
   column: {
     gap: 14,
+  },
+  challengeCardWrap: {
+    position: 'relative',
+  },
+  devOverlay: {
+    bottom: 12,
+    position: 'absolute',
+    right: 12,
+    zIndex: 10,
+  },
+  devClearButton: {
+    alignItems: 'center',
+    backgroundColor: '#EEF3FA',
+    borderColor: '#B9C7DA',
+    borderRadius: 999,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 28,
+    paddingHorizontal: 10,
+  },
+  devClearButtonText: {
+    color: palette.inkMuted,
+    fontFamily: typography.bodyFamily,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

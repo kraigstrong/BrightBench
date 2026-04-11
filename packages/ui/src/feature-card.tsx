@@ -18,6 +18,7 @@ type FeatureCardProps = Omit<PressableProps, 'children' | 'style'> & {
   accentColor: string;
   badgeLabel?: string;
   cardStyle?: StyleProp<ViewStyle>;
+  cornerAdornment?: React.ReactNode;
   description: string;
   descriptionNumberOfLines?: number;
   footer?: React.ReactNode;
@@ -29,6 +30,7 @@ export function FeatureCard({
   accentColor,
   badgeLabel,
   cardStyle,
+  cornerAdornment,
   description,
   descriptionNumberOfLines,
   disabled = false,
@@ -54,6 +56,7 @@ export function FeatureCard({
           },
           cardStyle,
         ]}>
+        {cornerAdornment ? <View style={styles.cornerAdornment}>{cornerAdornment}</View> : null}
         <View
           style={[
             styles.accent,
@@ -130,6 +133,12 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     paddingHorizontal: 10,
     paddingVertical: 4,
+  },
+  cornerAdornment: {
+    position: 'absolute',
+    right: spacing.md,
+    top: spacing.md,
+    zIndex: 1,
   },
   badgeLabel: {
     color: palette.inkMuted,

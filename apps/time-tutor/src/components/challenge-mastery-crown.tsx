@@ -4,10 +4,26 @@ import Svg, { Path } from 'react-native-svg';
 
 import { palette } from '@/design/theme';
 
-export function ChallengeMasteryCrown() {
+type ChallengeMasteryCrownProps = {
+  size?: number;
+};
+
+export function ChallengeMasteryCrown({
+  size = 22,
+}: ChallengeMasteryCrownProps) {
+  const wrapSize = Math.round(size * 1.45);
+
   return (
-    <View accessibilityLabel="Mastered" style={styles.wrap}>
-      <Svg fill="none" height={22} viewBox="0 0 24 24" width={22}>
+    <View
+      accessibilityLabel="Mastered"
+      style={[
+        styles.wrap,
+        {
+          height: wrapSize,
+          width: wrapSize,
+        },
+      ]}>
+      <Svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
         <Path
           d="M4 17.5 5.8 7.9l4 3.8L12 5l2.2 6.7 4-3.8 1.8 9.6H4Z"
           fill={palette.gold}

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
+  createEmptyChallengeModeProgress,
   createDefaultChallengeProgress,
   normalizeChallengeProgress,
 } from '@/lib/challenge-progression';
@@ -37,6 +38,7 @@ type StoredSnapshot = Partial<
 
 type AppStateValue = {
   challengeProgress: ChallengeProgressSnapshot;
+  clearChallengeModeProgress: (mode: PlayableMode) => void;
   isHydrated: boolean;
   practiceInterval: PracticeInterval;
   setChallengeBestStars: (
@@ -167,6 +169,12 @@ export function AppStateProvider({
   const value = useMemo(
     () => ({
       challengeProgress,
+      clearChallengeModeProgress: (mode: PlayableMode) => {
+        setChallengeProgress((current) => ({
+          ...current,
+          [mode]: createEmptyChallengeModeProgress(),
+        }));
+      },
       isHydrated,
       practiceInterval,
       setChallengeBestStars: (

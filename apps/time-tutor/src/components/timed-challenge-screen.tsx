@@ -296,6 +296,27 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
   const promptLabel =
     mode === 'digital-to-analog' ? 'Match this digital time' : 'Read this analog clock';
 
+  function addDebugScore() {
+    setScore((current) => current + 5);
+    setAttempts((current) => current + 5);
+  }
+
+  function endDebugRun() {
+    if (runStatus === 'finished') {
+      return;
+    }
+
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+
+    setIsAdvancing(false);
+    setFeedbackToast(null);
+    setTimeRemaining(0);
+    setRunStatus('finished');
+  }
+
   return (
     <AppShell
       maxWidth={contentMaxWidth}
@@ -318,6 +339,35 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
               testID="challenge-timer-bar-fill"
             />
           </View>
+
+          {__DEV__ ? (
+            <View pointerEvents="box-none" style={styles.devControlsOverlay}>
+              <View style={styles.devControls}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={runStatus !== 'running'}
+                onPress={addDebugScore}
+                style={[
+                  styles.devButton,
+                  runStatus !== 'running' ? styles.actionButtonDisabled : null,
+                ]}
+                testID="challenge-dev-add-score-button">
+                <Text style={styles.devButtonText}>+5</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={runStatus !== 'running'}
+                onPress={endDebugRun}
+                style={[
+                  styles.devButton,
+                  runStatus !== 'running' ? styles.actionButtonDisabled : null,
+                ]}
+                testID="challenge-dev-end-button">
+                <Text style={styles.devButtonText}>End Now</Text>
+              </Pressable>
+            </View>
+            </View>
+          ) : null}
 
           <View style={styles.promptCard}>
             <Text style={styles.promptLabel}>{promptLabel}</Text>
@@ -422,7 +472,6 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
               didUnlockMastery={resultSummary.didUnlockMastery}
               difficulty={resultSummary.difficulty}
               intervalLabel={resultSummary.intervalLabel}
-              isNewBest={resultSummary.isNewBest}
               onPlayAgain={resetToReady}
               score={resultSummary.score}
               scoreThreshold={thresholds.scoreThreshold}
@@ -446,6 +495,7 @@ const styles = StyleSheet.create({
   },
   challengeColumn: {
     gap: 12,
+    position: 'relative',
   },
   timerRail: {
     backgroundColor: '#E8EDF3',
@@ -458,6 +508,34 @@ const styles = StyleSheet.create({
     backgroundColor: palette.coral,
     borderRadius: 999,
     height: '100%',
+  },
+  devControlsOverlay: {
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 22,
+    zIndex: 15,
+  },
+  devControls: {
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'center',
+  },
+  devButton: {
+    alignItems: 'center',
+    backgroundColor: '#EEF3FA',
+    borderColor: '#B9C7DA',
+    borderRadius: 999,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 38,
+    paddingHorizontal: 14,
+  },
+  devButtonText: {
+    color: palette.ink,
+    fontFamily: typography.bodyFamily,
+    fontSize: 14,
+    fontWeight: '700',
   },
   promptCard: {
     backgroundColor: palette.ink,
