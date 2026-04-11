@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { AppShell } from '@/components/app-shell';
+import { AppStoreBadgeButton } from '@/components/app-store-badge-button';
 import { HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { ModeCard } from '@/components/mode-card';
@@ -46,6 +47,12 @@ export default function HomeScreen() {
 
   return (
     <AppShell>
+      {Platform.OS === 'web' ? (
+        <View pointerEvents="box-none" style={styles.webAppStoreCta}>
+          <AppStoreBadgeButton />
+        </View>
+      ) : null}
+
       <HeaderBar
         title="Time Tutor"
         subtitle="Choose a mode"
@@ -83,6 +90,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  webAppStoreCta: {
+    left: 0,
+    position: 'absolute',
+    top: 0,
+    zIndex: 20,
+  },
   column: {
     gap: 14,
   },
