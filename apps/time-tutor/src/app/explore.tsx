@@ -1,6 +1,13 @@
 import { router, Stack } from 'expo-router';
-import React, { useEffect, useMemo, useState, type SetStateAction } from 'react';
-import { Platform, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState, type SetStateAction } from 'react';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { AppShell } from '@/components/app-shell';
 import { AnalogClock } from '@/components/analog-clock';
@@ -10,9 +17,9 @@ import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { Card } from '@education/ui';
 import { palette, typography } from '@/design/theme';
 import {
+  currentTimeValueForInterval,
   digitalValueToTimeValue,
   normalizeAnalogTimeFor24Hour,
-  randomTimeValueForInterval,
   stepDigitalTimeValue,
   timeValueToDigitalValue,
 } from '@/lib/time';
@@ -24,11 +31,15 @@ export default function ExploreScreen() {
   const { width } = useWindowDimensions();
   const [clockInteractionActive, setClockInteractionActive] = useState(false);
   const [time, setTime] = useState<TimeValue>(() =>
-    randomTimeValueForInterval(practiceInterval),
+    currentTimeValueForInterval(practiceInterval),
   );
 
   useEffect(() => {
-    setTime(randomTimeValueForInterval(practiceInterval));
+    setTime(currentTimeValueForInterval(practiceInterval));
+  }, [practiceInterval]);
+
+  const setCurrentTime = useCallback(() => {
+    setTime(currentTimeValueForInterval(practiceInterval));
   }, [practiceInterval]);
 
   const useMobileWebLayout = Platform.OS === 'web';
@@ -94,6 +105,16 @@ export default function ExploreScreen() {
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />
 
+      <View style={styles.actionRow}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={setCurrentTime}
+          style={styles.currentTimeButton}
+          testID="set-current-time-button">
+          <Text style={styles.currentTimeButtonText}>Set current time</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.exploreLayout}>
         <View style={styles.exploreColumn}>
           <Card style={styles.clockCard}>
@@ -133,18 +154,38 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
+  actionRow: {
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  currentTimeButton: {
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    backgroundColor: palette.coral,
+    borderRadius: 999,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: 16,
+  },
+  currentTimeButtonText: {
+    color: palette.white,
+    fontFamily: typography.bodyFamily,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
   exploreLayout: {
-    gap: 16,
+    gap: 12,
   },
   exploreColumn: {
-    gap: 16,
+    gap: 12,
   },
   clockCard: {
-    gap: 16,
+    gap: 12,
   },
   digitalCard: {
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
   },
   cardEyebrow: {
     color: palette.inkMuted,

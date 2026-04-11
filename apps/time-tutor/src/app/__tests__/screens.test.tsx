@@ -106,6 +106,7 @@ describe('time tutor screens', () => {
     );
 
     expect(screen.getByText('Explore Time')).toBeTruthy();
+    expect(screen.getByText('Set current time')).toBeTruthy();
     expect(screen.getByText('Analog clock')).toBeTruthy();
     expect(screen.getByText('Digital time')).toBeTruthy();
   });

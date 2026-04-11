@@ -31,6 +31,16 @@ export function randomTimeValue(random = Math.random): TimeValue {
   return randomTimeValueForInterval('5-minute', random);
 }
 
+export function currentTimeValueForInterval(
+  interval: PracticeInterval,
+  now: Date = new Date(),
+): TimeValue {
+  const totalMinutes = now.getHours() * 60 + now.getMinutes();
+  const roundedMinutes = Math.round(totalMinutes / getDurationStep(interval)) * getDurationStep(interval);
+
+  return absoluteMinutesToTimeValue(roundedMinutes);
+}
+
 export function randomTimeValueForInterval(
   interval: PracticeInterval,
   random = Math.random,
