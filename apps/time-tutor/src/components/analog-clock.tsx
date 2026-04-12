@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, type SetStateAction } from 'react';
+import React, { useMemo, useRef, useState, type SetStateAction } from 'react';
 import {
   Platform,
   Pressable,
@@ -7,7 +7,7 @@ import {
   View,
   type GestureResponderEvent,
 } from 'react-native';
-import Svg, { Circle, Line, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Polygon, Text as SvgText } from 'react-native-svg';
 
 import { palette, shadows, typography } from '@/design/theme';
 import type {
@@ -60,6 +60,7 @@ export function AnalogClock({
   timeFormat = '12-hour',
 }: AnalogClockProps) {
   const activeHandRef = useRef<HandName | null>(null);
+  const [activeHand, setActiveHand] = useState<HandName | null>(null);
   const minuteInteractionEnabled = practiceInterval !== 'hours-only';
   const shellPadding = Platform.OS === 'web' ? 0 : 6;
   const webClockInteractionStyle =
@@ -80,6 +81,8 @@ export function AnalogClock({
   const hourLength = size * 0.2;
   const minuteLength = size * 0.29;
   const numeralRadius = size * 0.324;
+  const hourStrokeWidth = size * 0.04;
+  const minuteStrokeWidth = size * 0.026;
   const { hourAngle, minuteAngle } = getClockHandAngles(time);
 
   const hourTip = useMemo(
@@ -89,6 +92,14 @@ export function AnalogClock({
   const minuteTip = useMemo(
     () => getTipPoint(minuteAngle, minuteLength, radius),
     [minuteAngle, minuteLength, radius],
+  );
+  const hourArrow = useMemo(
+    () => getArrowGeometry(hourAngle, hourTip, size),
+    [hourAngle, hourTip, size],
+  );
+  const minuteArrow = useMemo(
+    () => getArrowGeometry(minuteAngle, minuteTip, size),
+    [minuteAngle, minuteTip, size],
   );
 
   function updateFromTouch(event: GestureResponderEvent, hand: HandName) {
@@ -126,9 +137,11 @@ export function AnalogClock({
     }
 
     onInteractionStart?.();
-    activeHandRef.current = minuteInteractionEnabled
+    const nextActiveHand = minuteInteractionEnabled
       ? pickHand(event, size, hourTip, minuteTip, radius)
       : 'hour';
+    activeHandRef.current = nextActiveHand;
+    setActiveHand(nextActiveHand);
 
     if (activeHandRef.current) {
       updateFromTouch(event, activeHandRef.current);
@@ -143,6 +156,7 @@ export function AnalogClock({
 
   function handleEnd() {
     activeHandRef.current = null;
+    setActiveHand(null);
     onInteractionEnd?.();
   }
 
@@ -216,23 +230,51 @@ export function AnalogClock({
               </SvgText>
             );
           })}
+          {activeHand === 'hour' ? (
+            <Circle
+              cx={hourTip.x}
+              cy={hourTip.y}
+              fill="rgba(19, 54, 90, 0.14)"
+              r={size * 0.07}
+              stroke="rgba(19, 54, 90, 0.22)"
+              strokeWidth={3}
+            />
+          ) : null}
           <Line
             stroke={palette.ink}
             strokeLinecap="round"
-            strokeWidth={size * 0.04}
+            strokeWidth={hourStrokeWidth}
             x1={radius}
-            x2={hourTip.x}
+            x2={hourArrow.base.x}
             y1={radius}
-            y2={hourTip.y}
+            y2={hourArrow.base.y}
           />
+          <Polygon
+            fill={palette.ink}
+            points={hourArrow.points}
+          />
+          {activeHand === 'minute' ? (
+            <Circle
+              cx={minuteTip.x}
+              cy={minuteTip.y}
+              fill="rgba(255, 111, 97, 0.16)"
+              r={size * 0.07}
+              stroke="rgba(255, 111, 97, 0.28)"
+              strokeWidth={3}
+            />
+          ) : null}
           <Line
             stroke={palette.coral}
             strokeLinecap="round"
-            strokeWidth={size * 0.026}
+            strokeWidth={minuteStrokeWidth}
             x1={radius}
-            x2={minuteTip.x}
+            x2={minuteArrow.base.x}
             y1={radius}
-            y2={minuteTip.y}
+            y2={minuteArrow.base.y}
+          />
+          <Polygon
+            fill={palette.coral}
+            points={minuteArrow.points}
           />
           <Circle
             cx={radius}
@@ -293,6 +335,34 @@ function getTipPoint(angle: number, length: number, radius: number) {
   return {
     x: radius + Math.sin(radians) * length,
     y: radius - Math.cos(radians) * length,
+  };
+}
+
+function getArrowGeometry(
+  angle: number,
+  tip: { x: number; y: number },
+  size: number,
+) {
+  const radians = (angle * Math.PI) / 180;
+  const directionX = Math.sin(radians);
+  const directionY = -Math.cos(radians);
+  const normalX = -directionY;
+  const normalY = directionX;
+  const arrowLength = size * 0.04;
+  const arrowWidth = size * 0.024;
+  const baseX = tip.x - directionX * arrowLength;
+  const baseY = tip.y - directionY * arrowLength;
+  const leftX = baseX + normalX * arrowWidth;
+  const leftY = baseY + normalY * arrowWidth;
+  const rightX = baseX - normalX * arrowWidth;
+  const rightY = baseY - normalY * arrowWidth;
+
+  return {
+    base: {
+      x: baseX,
+      y: baseY,
+    },
+    points: `${tip.x},${tip.y} ${leftX},${leftY} ${rightX},${rightY}`,
   };
 }
 
