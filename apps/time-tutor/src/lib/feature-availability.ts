@@ -16,12 +16,12 @@ export function getFeatureAvailability(
       return platform === 'web' && !WEB_PRELAUNCH_ENTITLEMENTS[featureId]
         ? {
             enabled: false,
-            label: '1-Minute Challenge',
+            label: 'Challenge',
             reason: 'Available on the App Store',
           }
         : {
             enabled: true,
-            label: '1-Minute Challenge',
+            label: 'Challenge',
           };
     case 'time-format-24-hour':
       return platform === 'web' && !WEB_PRELAUNCH_ENTITLEMENTS[featureId]

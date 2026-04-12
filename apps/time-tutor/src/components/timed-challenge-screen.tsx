@@ -547,15 +547,16 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
 
         {runStatus === 'finished' && resultSummary ? (
           <ChallengeResultsOverlay
-            accuracy={resultSummary.accuracy}
-            accuracyThreshold={thresholds.accuracyThreshold}
-            didUnlockMastery={resultSummary.didUnlockMastery}
-            difficulty={resultSummary.difficulty}
-            intervalLabel={resultSummary.intervalLabel}
-            onPlayAgain={beginChallenge}
-            score={resultSummary.score}
-            scoreThreshold={thresholds.scoreThreshold}
-          />
+                accuracy={resultSummary.accuracy}
+                accuracyThreshold={thresholds.accuracyThreshold}
+                didUnlockMastery={resultSummary.didUnlockMastery}
+                difficulty={resultSummary.difficulty}
+                intervalLabel={resultSummary.intervalLabel}
+                onPlayAgain={beginChallenge}
+                score={resultSummary.score}
+                scoreThresholdOne={thresholds.scoreThresholdOne}
+                scoreThresholdTwo={thresholds.scoreThresholdTwo}
+              />
         ) : null}
       </View>
     </AppShell>

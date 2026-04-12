@@ -33,24 +33,25 @@ export const challengeThresholds: Record<
     ChallengeDifficulty,
     {
       accuracyThreshold: number;
-      scoreThreshold: number;
+      scoreThresholdOne: number;
+      scoreThresholdTwo: number;
     }
   >
 > = {
   'digital-to-analog': {
-    easy: { scoreThreshold: 10, accuracyThreshold: 80 },
-    medium: { scoreThreshold: 10, accuracyThreshold: 80 },
-    hard: { scoreThreshold: 10, accuracyThreshold: 80 },
+    easy: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+    medium: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+    hard: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
   },
   'analog-to-digital': {
-    easy: { scoreThreshold: 10, accuracyThreshold: 80 },
-    medium: { scoreThreshold: 10, accuracyThreshold: 80 },
-    hard: { scoreThreshold: 10, accuracyThreshold: 80 },
+    easy: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+    medium: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+    hard: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
   },
   'elapsed-time': {
-    easy: { scoreThreshold: 10, accuracyThreshold: 80 },
-    medium: { scoreThreshold: 10, accuracyThreshold: 80 },
-    hard: { scoreThreshold: 10, accuracyThreshold: 80 },
+    easy: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+    medium: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+    hard: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
   },
 };
 

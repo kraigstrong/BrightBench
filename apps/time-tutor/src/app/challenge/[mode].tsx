@@ -59,7 +59,7 @@ export default function ChallengeLaunchScreen() {
 
       <View pointerEvents="box-none" style={styles.centerWrap}>
         <Card style={styles.modalCard}>
-          <Text style={styles.eyebrow}>1-Minute Challenge</Text>
+          <Text style={styles.eyebrow}>Challenge</Text>
           <Text style={styles.title}>{getHomeModeTitle(mode)}</Text>
           <Text style={styles.body}>Choose your difficulty</Text>
 

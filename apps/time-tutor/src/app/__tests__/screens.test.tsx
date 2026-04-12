@@ -147,7 +147,7 @@ describe('time tutor screens', () => {
 
     expect(screen.getByText('Choose how you want to play.')).toBeTruthy();
     expect(screen.getByText('Practice')).toBeTruthy();
-    expect(screen.getByText('1-Minute Challenge')).toBeTruthy();
+    expect(screen.getByText('Challenge')).toBeTruthy();
     expect(screen.getByText('Easy')).toBeTruthy();
     expect(screen.getByText('Medium')).toBeTruthy();
     expect(screen.getByText('Hard')).toBeTruthy();
@@ -230,6 +230,7 @@ describe('time tutor screens', () => {
     );
 
     expect(screen.getByText('Choose your difficulty')).toBeTruthy();
+    expect(screen.getByText('Challenge')).toBeTruthy();
     expect(screen.getByText('Easy')).toBeTruthy();
     expect(screen.getByText('Medium')).toBeTruthy();
     expect(screen.getByText('Hard')).toBeTruthy();

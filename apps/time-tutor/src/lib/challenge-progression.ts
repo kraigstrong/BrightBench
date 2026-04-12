@@ -1,7 +1,6 @@
 import {
   CHALLENGE_DIFFICULTIES,
   CHALLENGE_DIFFICULTY_TO_INTERVAL,
-  PERFECT_ACCURACY,
 } from '@/config/challenge-thresholds';
 import type {
   ChallengeBestStars,
@@ -20,7 +19,8 @@ export type ChallengeRoundSummary = {
 
 type ChallengeThresholds = {
   accuracyThreshold: number;
-  scoreThreshold: number;
+  scoreThresholdOne: number;
+  scoreThresholdTwo: number;
 };
 
 const PLAYABLE_MODES: PlayableMode[] = [
@@ -89,7 +89,7 @@ export function calculateChallengeStars(
 ): StarCount {
   let stars = 0;
 
-  if (result.score >= thresholds.scoreThreshold) {
+  if (result.score >= thresholds.scoreThresholdOne) {
     stars += 1;
   }
 
@@ -97,7 +97,7 @@ export function calculateChallengeStars(
     stars += 1;
   }
 
-  if (result.accuracy === PERFECT_ACCURACY) {
+  if (result.score >= thresholds.scoreThresholdTwo) {
     stars += 1;
   }
 

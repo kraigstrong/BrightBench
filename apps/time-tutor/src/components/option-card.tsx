@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { FeatureCard } from '@education/ui';
+import { CompactFeatureCard } from '@education/ui';
 
 type OptionCardProps = {
   accentColor: string;
@@ -24,7 +24,7 @@ export function OptionCard({
   title,
 }: OptionCardProps) {
   return (
-    <FeatureCard
+    <CompactFeatureCard
       accentColor={accentColor}
       badgeLabel={label}
       description={description}

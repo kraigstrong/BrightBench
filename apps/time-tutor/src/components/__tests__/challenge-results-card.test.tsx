@@ -31,7 +31,8 @@ describe('ChallengeResultsCard', () => {
         intervalLabel="5 min"
         onPlayAgain={jest.fn()}
         score={8}
-        scoreThreshold={8}
+        scoreThresholdOne={5}
+        scoreThresholdTwo={8}
       />,
     );
 
@@ -44,21 +45,22 @@ describe('ChallengeResultsCard', () => {
       jest.runAllTimers();
     });
 
-    expect(screen.getByText('2 stars earned')).toBeTruthy();
+    expect(screen.getByText('3 stars earned')).toBeTruthy();
     expect(screen.getByTestId('challenge-play-again-button')).toBeTruthy();
   });
 
   it('fast-forwards the reveal when play again is tapped early', () => {
     render(
       <ChallengeResultsCard
-        accuracy={100}
+        accuracy={80}
         accuracyThreshold={80}
         didUnlockMastery
         difficulty="hard"
         intervalLabel="1 min"
         onPlayAgain={jest.fn()}
-        score={15}
-        scoreThreshold={14}
+        score={8}
+        scoreThresholdOne={5}
+        scoreThresholdTwo={8}
       />,
     );
 

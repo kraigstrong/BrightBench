@@ -18,7 +18,7 @@ describe('ChallengeOptionCard', () => {
             medium: 0,
           },
         }}
-        title="1-Minute Challenge"
+        title="Challenge"
       />,
     );
 

@@ -526,15 +526,16 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
 
         {runStatus === 'finished' && resultSummary ? (
           <ChallengeResultsOverlay
-            accuracy={resultSummary.accuracy}
-            accuracyThreshold={thresholds.accuracyThreshold}
-            didUnlockMastery={resultSummary.didUnlockMastery}
-            difficulty={resultSummary.difficulty}
-            intervalLabel={resultSummary.intervalLabel}
-            onPlayAgain={resetToReady}
-            score={resultSummary.score}
-            scoreThreshold={thresholds.scoreThreshold}
-          />
+                accuracy={resultSummary.accuracy}
+                accuracyThreshold={thresholds.accuracyThreshold}
+                didUnlockMastery={resultSummary.didUnlockMastery}
+                difficulty={resultSummary.difficulty}
+                intervalLabel={resultSummary.intervalLabel}
+                onPlayAgain={resetToReady}
+                score={resultSummary.score}
+                scoreThresholdOne={thresholds.scoreThresholdOne}
+                scoreThresholdTwo={thresholds.scoreThresholdTwo}
+              />
         ) : null}
       </View>
     </AppShell>

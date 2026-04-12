@@ -14,10 +14,7 @@ import { Card, CelebrationOverlay } from '@education/ui';
 
 import { ChallengeMasteryCrown } from '@/components/challenge-mastery-crown';
 import { ChallengeStarGroup, ChallengeStarIcon } from '@/components/challenge-star-group';
-import {
-  CHALLENGE_DIFFICULTY_LABELS,
-  PERFECT_ACCURACY,
-} from '@/config/challenge-thresholds';
+import { CHALLENGE_DIFFICULTY_LABELS } from '@/config/challenge-thresholds';
 import { palette, spacing, typography } from '@/design/theme';
 import type { ChallengeDifficulty } from '@/types/time';
 
@@ -29,7 +26,8 @@ type ChallengeResultsCardProps = {
   intervalLabel: string;
   onPlayAgain: () => void;
   score: number;
-  scoreThreshold: number;
+  scoreThresholdOne: number;
+  scoreThresholdTwo: number;
 };
 
 const CARD_POP_DURATION_MS = 220;
@@ -39,7 +37,7 @@ const BAR_HANDOFF_DELAY_MS = 180;
 const FINISH_REVEAL_DELAY_MS = 320;
 const MASTERY_REVEAL_HOLD_MS = 2400;
 const MASTERY_REVEAL_FADE_MS = 280;
-const SCORE_TARGET_POSITION = 0.8;
+const SCORE_THRESHOLD_TWO_POSITION = 0.75;
 const MASTERY_SPARKLE_POSITIONS = [
   { left: '20%', top: '26%', travelX: -16, travelY: -18, rotate: '-24deg' },
   { left: '35%', top: '18%', travelX: -8, travelY: -26, rotate: '32deg' },
@@ -57,7 +55,8 @@ export function ChallengeResultsCard({
   intervalLabel,
   onPlayAgain,
   score,
-  scoreThreshold,
+  scoreThresholdOne,
+  scoreThresholdTwo,
 }: ChallengeResultsCardProps) {
   const cardScale = useRef(new Animated.Value(0.96)).current;
   const accuracyProgress = useRef(new Animated.Value(0)).current;
@@ -69,15 +68,12 @@ export function ChallengeResultsCard({
   const masterySparkleValues = useRef(
     Array.from({ length: 6 }, () => new Animated.Value(0)),
   ).current;
-  const accuracyStarScales = useRef([
-    new Animated.Value(1),
-    new Animated.Value(1),
-  ]).current;
-  const scoreStarScale = useRef(new Animated.Value(1)).current;
+  const accuracyStarScale = useRef(new Animated.Value(1)).current;
+  const scoreStarScales = useRef([new Animated.Value(1), new Animated.Value(1)]).current;
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const accuracyThresholdTriggeredRef = useRef(false);
-  const accuracyPerfectTriggeredRef = useRef(false);
-  const scoreThresholdTriggeredRef = useRef(false);
+  const scoreThresholdOneTriggeredRef = useRef(false);
+  const scoreThresholdTwoTriggeredRef = useRef(false);
 
   const [accuracyTrackWidth, setAccuracyTrackWidth] = useState(0);
   const [scoreTrackWidth, setScoreTrackWidth] = useState(0);
@@ -88,19 +84,19 @@ export function ChallengeResultsCard({
   const [showAccuracyPlayerMarker, setShowAccuracyPlayerMarker] = useState(false);
   const [showScorePlayerMarker, setShowScorePlayerMarker] = useState(false);
   const [showAccuracyThresholdStar, setShowAccuracyThresholdStar] = useState(false);
-  const [showAccuracyPerfectStar, setShowAccuracyPerfectStar] = useState(false);
-  const [showScoreThresholdStar, setShowScoreThresholdStar] = useState(false);
+  const [showScoreThresholdOneStar, setShowScoreThresholdOneStar] = useState(false);
+  const [showScoreThresholdTwoStar, setShowScoreThresholdTwoStar] = useState(false);
 
   const accuracyNormalized = Math.max(0, Math.min(1, accuracy / 100));
-  const scoreVisualMax = Math.max(scoreThreshold / SCORE_TARGET_POSITION, 1);
+  const scoreVisualMax = Math.max(scoreThresholdTwo / SCORE_THRESHOLD_TWO_POSITION, 1);
   const scoreNormalized = Math.max(0, Math.min(1, score / scoreVisualMax));
   const accuracyEarnedThresholdStar = accuracy >= accuracyThreshold;
-  const accuracyEarnedPerfectStar = accuracy === PERFECT_ACCURACY;
-  const scoreEarnedStar = score >= scoreThreshold;
+  const scoreEarnedThresholdOneStar = score >= scoreThresholdOne;
+  const scoreEarnedThresholdTwoStar = score >= scoreThresholdTwo;
   const totalEarnedStars =
     Number(accuracyEarnedThresholdStar) +
-    Number(accuracyEarnedPerfectStar) +
-    Number(scoreEarnedStar);
+    Number(scoreEarnedThresholdOneStar) +
+    Number(scoreEarnedThresholdTwoStar);
 
   const clearTimers = useCallback(() => {
     for (const timer of timersRef.current) {
@@ -144,23 +140,23 @@ export function ChallengeResultsCard({
     masteryCrownScale.setValue(0.45);
     masteryTextOpacity.setValue(0);
     masterySparkleValues.forEach((value) => value.setValue(0));
-    accuracyStarScales[0].setValue(1);
-    accuracyStarScales[1].setValue(1);
-    scoreStarScale.setValue(1);
+    accuracyStarScale.setValue(1);
+    scoreStarScales[0].setValue(1);
+    scoreStarScales[1].setValue(1);
     setDisplayedStars(0);
     setIsFullyRevealed(false);
     setShowMasteryReveal(false);
     setShowAccuracyPlayerMarker(false);
     setShowScorePlayerMarker(false);
     setShowAccuracyThresholdStar(false);
-    setShowAccuracyPerfectStar(false);
-    setShowScoreThresholdStar(false);
+    setShowScoreThresholdOneStar(false);
+    setShowScoreThresholdTwoStar(false);
     accuracyThresholdTriggeredRef.current = false;
-    accuracyPerfectTriggeredRef.current = false;
-    scoreThresholdTriggeredRef.current = false;
+    scoreThresholdOneTriggeredRef.current = false;
+    scoreThresholdTwoTriggeredRef.current = false;
   }, [
     accuracyProgress,
-    accuracyStarScales,
+    accuracyStarScale,
     cardScale,
     clearTimers,
     masteryCrownOpacity,
@@ -169,7 +165,7 @@ export function ChallengeResultsCard({
     masterySparkleValues,
     masteryTextOpacity,
     scoreProgress,
-    scoreStarScale,
+    scoreStarScales,
   ]);
 
   const startReveal = useCallback(() => {
@@ -251,18 +247,7 @@ export function ChallengeResultsCard({
         accuracyThresholdTriggeredRef.current = true;
         setShowAccuracyThresholdStar(true);
         setDisplayedStars((current) => Math.max(current, 1));
-        runStarPop(accuracyStarScales[0]);
-      }
-
-      if (
-        accuracyEarnedPerfectStar &&
-        !accuracyPerfectTriggeredRef.current &&
-        value >= 0.999
-      ) {
-        accuracyPerfectTriggeredRef.current = true;
-        setShowAccuracyPerfectStar(true);
-        setDisplayedStars((current) => Math.max(current, 2));
-        runStarPop(accuracyStarScales[1]);
+        runStarPop(accuracyStarScale);
       }
     });
 
@@ -270,27 +255,35 @@ export function ChallengeResultsCard({
       accuracyProgress.removeListener(listenerId);
     };
   }, [
-    accuracyEarnedPerfectStar,
     accuracyEarnedThresholdStar,
     accuracyProgress,
-    accuracyStarScales,
+    accuracyStarScale,
     accuracyThreshold,
     runStarPop,
   ]);
 
   useEffect(() => {
-    const scoreThresholdPoint = SCORE_TARGET_POSITION;
-
     const listenerId = scoreProgress.addListener(({ value }) => {
       if (
-        scoreEarnedStar &&
-        !scoreThresholdTriggeredRef.current &&
-        value >= scoreThresholdPoint
+        scoreEarnedThresholdOneStar &&
+        !scoreThresholdOneTriggeredRef.current &&
+        value >= scoreThresholdOne / scoreVisualMax
       ) {
-        scoreThresholdTriggeredRef.current = true;
-        setShowScoreThresholdStar(true);
+        scoreThresholdOneTriggeredRef.current = true;
+        setShowScoreThresholdOneStar(true);
+        setDisplayedStars((current) => Math.max(current, 2));
+        runStarPop(scoreStarScales[0]);
+      }
+
+      if (
+        scoreEarnedThresholdTwoStar &&
+        !scoreThresholdTwoTriggeredRef.current &&
+        value >= scoreThresholdTwo / scoreVisualMax
+      ) {
+        scoreThresholdTwoTriggeredRef.current = true;
+        setShowScoreThresholdTwoStar(true);
         setDisplayedStars(totalEarnedStars);
-        runStarPop(scoreStarScale);
+        runStarPop(scoreStarScales[1]);
       }
     });
 
@@ -299,10 +292,12 @@ export function ChallengeResultsCard({
     };
   }, [
     runStarPop,
-    scoreEarnedStar,
+    scoreEarnedThresholdOneStar,
+    scoreEarnedThresholdTwoStar,
     scoreProgress,
-    scoreStarScale,
-    scoreThreshold,
+    scoreStarScales,
+    scoreThresholdOne,
+    scoreThresholdTwo,
     scoreVisualMax,
     totalEarnedStars,
   ]);
@@ -430,13 +425,13 @@ export function ChallengeResultsCard({
     masteryCrownScale.setValue(1);
     masteryTextOpacity.setValue(didUnlockMastery ? 1 : 0);
     masterySparkleValues.forEach((value) => value.setValue(didUnlockMastery ? 1 : 0));
-    accuracyStarScales[0].setValue(1);
-    accuracyStarScales[1].setValue(1);
-    scoreStarScale.setValue(1);
+    accuracyStarScale.setValue(1);
+    scoreStarScales[0].setValue(1);
+    scoreStarScales[1].setValue(1);
     setShowMasteryReveal(didUnlockMastery);
     setShowAccuracyThresholdStar(accuracyEarnedThresholdStar);
-    setShowAccuracyPerfectStar(accuracyEarnedPerfectStar);
-    setShowScoreThresholdStar(scoreEarnedStar);
+    setShowScoreThresholdOneStar(scoreEarnedThresholdOneStar);
+    setShowScoreThresholdTwoStar(scoreEarnedThresholdTwoStar);
     setShowAccuracyPlayerMarker(true);
     setShowScorePlayerMarker(true);
     finishReveal();
@@ -497,17 +492,10 @@ export function ChallengeResultsCard({
             />
 
             <View style={[styles.markerWrap, { left: `${accuracyThreshold}%` }]}>
-              <Animated.View style={{ transform: [{ scale: accuracyStarScales[0] }] }}>
-                <ChallengeStarIcon filled={showAccuracyThresholdStar} size={18} />
+              <Text style={styles.markerValueLabel}>{accuracyThreshold}%</Text>
+              <Animated.View style={{ transform: [{ scale: accuracyStarScale }] }}>
+                <ChallengeStarIcon filled={showAccuracyThresholdStar} size={22} />
               </Animated.View>
-              <View style={styles.markerLine} />
-            </View>
-
-            <View style={[styles.markerWrap, { left: '100%' }]}>
-              <Animated.View style={{ transform: [{ scale: accuracyStarScales[1] }] }}>
-                <ChallengeStarIcon filled={showAccuracyPerfectStar} size={18} />
-              </Animated.View>
-              <View style={styles.markerLine} />
             </View>
 
             {showAccuracyPlayerMarker ? (
@@ -530,14 +518,24 @@ export function ChallengeResultsCard({
 
             <View
               style={[
-                    styles.markerWrap,
-                { left: `${SCORE_TARGET_POSITION * 100}%` },
+                styles.markerWrap,
+                { left: `${(scoreThresholdOne / scoreVisualMax) * 100}%` },
               ]}>
-              <Animated.View style={{ transform: [{ scale: scoreStarScale }] }}>
-                <ChallengeStarIcon filled={showScoreThresholdStar} size={18} />
+              <Text style={styles.markerValueLabel}>{scoreThresholdOne}</Text>
+              <Animated.View style={{ transform: [{ scale: scoreStarScales[0] }] }}>
+                <ChallengeStarIcon filled={showScoreThresholdOneStar} size={22} />
               </Animated.View>
-              <View style={styles.markerLine} />
-              <Text style={styles.markerValueLabel}>{scoreThreshold}</Text>
+            </View>
+
+            <View
+              style={[
+                styles.markerWrap,
+                { left: `${(scoreThresholdTwo / scoreVisualMax) * 100}%` },
+              ]}>
+              <Text style={styles.markerValueLabel}>{scoreThresholdTwo}</Text>
+              <Animated.View style={{ transform: [{ scale: scoreStarScales[1] }] }}>
+                <ChallengeStarIcon filled={showScoreThresholdTwoStar} size={22} />
+              </Animated.View>
             </View>
 
             {showScorePlayerMarker ? (
@@ -727,7 +725,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9EEF4',
     borderRadius: 999,
     height: 18,
-    marginBottom: 28,
+    marginBottom: 34,
+    marginTop: 18,
     overflow: 'visible',
     position: 'relative',
   },
@@ -745,21 +744,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: -24,
     position: 'absolute',
-    top: -16,
+    top: -25,
     width: 48,
-  },
-  markerLine: {
-    backgroundColor: '#B9C4D2',
-    height: 26,
-    marginTop: 2,
-    width: 2,
   },
   markerValueLabel: {
     color: palette.inkMuted,
     fontFamily: typography.bodyFamily,
     fontSize: 13,
     fontWeight: '700',
-    marginTop: 4,
+    marginBottom: 4,
   },
   playerMarkerWrap: {
     alignItems: 'center',

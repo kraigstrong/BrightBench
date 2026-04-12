@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   accent: {
     borderRadius: radii.pill,
     flexShrink: 0,
-    height: 44,
+    height: 52,
     marginTop: 2,
     width: 14,
   },

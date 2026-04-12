@@ -27,53 +27,58 @@ describe('challenge progression helpers', () => {
 
   it('uses the same challenge thresholds across all modes and difficulties', () => {
     expect(challengeThresholds['digital-to-analog'].easy).toEqual({
-      scoreThreshold: 10,
+      scoreThresholdOne: 5,
+      scoreThresholdTwo: 8,
       accuracyThreshold: 80,
     });
     expect(challengeThresholds['digital-to-analog'].medium).toEqual({
-      scoreThreshold: 10,
+      scoreThresholdOne: 5,
+      scoreThresholdTwo: 8,
       accuracyThreshold: 80,
     });
     expect(challengeThresholds['digital-to-analog'].hard).toEqual({
-      scoreThreshold: 10,
+      scoreThresholdOne: 5,
+      scoreThresholdTwo: 8,
       accuracyThreshold: 80,
     });
     expect(challengeThresholds['analog-to-digital'].easy).toEqual({
-      scoreThreshold: 10,
+      scoreThresholdOne: 5,
+      scoreThresholdTwo: 8,
       accuracyThreshold: 80,
     });
     expect(challengeThresholds['elapsed-time'].hard).toEqual({
-      scoreThreshold: 10,
+      scoreThresholdOne: 5,
+      scoreThresholdTwo: 8,
       accuracyThreshold: 80,
     });
   });
 
-  it('calculates stars from score, accuracy, and perfect accuracy', () => {
+  it('calculates stars from 80 percent accuracy, score 5, and score 8', () => {
     expect(
       calculateChallengeStars(
-        { score: 10, accuracy: 60 },
-        { scoreThreshold: 10, accuracyThreshold: 80 },
+        { score: 5, accuracy: 60 },
+        { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
       ),
     ).toBe(1);
 
     expect(
       calculateChallengeStars(
-        { score: 10, accuracy: 80 },
-        { scoreThreshold: 10, accuracyThreshold: 80 },
+        { score: 4, accuracy: 80 },
+        { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+      ),
+    ).toBe(1);
+
+    expect(
+      calculateChallengeStars(
+        { score: 8, accuracy: 60 },
+        { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
       ),
     ).toBe(2);
 
     expect(
       calculateChallengeStars(
-        { score: 5, accuracy: 100 },
-        { scoreThreshold: 10, accuracyThreshold: 80 },
-      ),
-    ).toBe(2);
-
-    expect(
-      calculateChallengeStars(
-        { score: 10, accuracy: 100 },
-        { scoreThreshold: 10, accuracyThreshold: 80 },
+        { score: 8, accuracy: 80 },
+        { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
       ),
     ).toBe(3);
   });
