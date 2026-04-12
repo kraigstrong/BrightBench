@@ -368,7 +368,7 @@ describe('time tutor screens', () => {
       </SafeAreaProvider>,
     );
 
-    expect(screen.getByText('Challenge Mode')).toBeTruthy();
+    expect(screen.getByText('Set the Clock')).toBeTruthy();
     expect(screen.getByText('Medium · 5 min')).toBeTruthy();
     expect(screen.getByTestId('challenge-countdown-value')).toBeTruthy();
     expect(screen.getByTestId('challenge-prompt-content')).toHaveStyle({
@@ -397,7 +397,7 @@ describe('time tutor screens', () => {
       </SafeAreaProvider>,
     );
 
-    expect(screen.getByText('Challenge Mode')).toBeTruthy();
+    expect(screen.getByText('Elapsed Time')).toBeTruthy();
     expect(screen.getByText('Easy · 15 min')).toBeTruthy();
     expect(screen.getByTestId('challenge-countdown-value')).toBeTruthy();
     expect(screen.getByTestId('challenge-prompt-content')).toHaveStyle({

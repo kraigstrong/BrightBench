@@ -105,7 +105,6 @@ export function SetClockPracticeScreen({
     <AppShell maxWidth={contentMaxWidth} scrollEnabled={!clockInteractionActive}>
       <HeaderBar
         title="Set the Clock"
-        subtitle="Practice"
         leftAction={<BackButton onPress={() => router.back()} />}
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />

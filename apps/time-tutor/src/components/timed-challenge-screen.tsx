@@ -16,7 +16,7 @@ import { CelebrationOverlay, Card } from '@education/ui';
 import { AppShell } from '@/components/app-shell';
 import { AnalogClock } from '@/components/analog-clock';
 import { ChallengeCountdownOverlay } from '@/components/challenge-countdown-overlay';
-import { ChallengeResultsCard } from '@/components/challenge-results-card';
+import { ChallengeResultsOverlay } from '@/components/challenge-results-overlay';
 import { DigitalTimeInput } from '@/components/digital-time-input';
 import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
@@ -38,6 +38,7 @@ import {
   createInitialAnswer,
   createInitialDigitalAnswer,
   formatTimeValue,
+  getModeTitle,
   isDigitalAnswerCorrect,
   nextTimeValueForInterval,
   randomTimeValueForInterval,
@@ -388,7 +389,7 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
       maxWidth={contentMaxWidth}
       scrollEnabled={!clockInteractionActive && !isAdvancing && !resultSummary}>
       <HeaderBar
-        title="Challenge Mode"
+        title={getModeTitle(mode)}
         subtitle={`${CHALLENGE_DIFFICULTY_LABELS[difficulty]} · ${formatChallengeIntervalLabel(
           currentInterval,
         )}`}
@@ -436,16 +437,28 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
               </View>
             ) : null}
 
-            <View style={styles.promptCard}>
+            <View
+              style={[
+                styles.promptCard,
+                mode === 'digital-to-analog' && styles.promptCardDigital,
+              ]}>
               <View
                 pointerEvents="none"
                 style={[styles.promptContent, runStatus !== 'running' && styles.promptHidden]}
                 testID="challenge-prompt-content">
-                <Text style={styles.promptLabel}>{promptLabel}</Text>
+                <Text
+                  style={[
+                    styles.promptLabel,
+                    mode === 'digital-to-analog' && styles.promptLabelDigital,
+                  ]}>
+                  {promptLabel}
+                </Text>
 
                 {mode === 'digital-to-analog' ? (
-                  <View style={styles.promptStage}>
-                    <Text style={styles.promptTime} testID="challenge-prompt-time">
+                  <View style={[styles.promptStage, styles.promptStageDigital]}>
+                    <Text
+                      style={[styles.promptTime, styles.promptTimeDigital]}
+                      testID="challenge-prompt-time">
                       {formatTimeValue(promptTime, {
                         includeMeridiem: false,
                         timeFormat,
@@ -533,20 +546,16 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
         </View>
 
         {runStatus === 'finished' && resultSummary ? (
-          <View pointerEvents="box-none" style={styles.resultsOverlay}>
-            <View style={styles.resultsCardWrap}>
-              <ChallengeResultsCard
-                accuracy={resultSummary.accuracy}
-                accuracyThreshold={thresholds.accuracyThreshold}
-                didUnlockMastery={resultSummary.didUnlockMastery}
-                difficulty={resultSummary.difficulty}
-                intervalLabel={resultSummary.intervalLabel}
-                onPlayAgain={beginChallenge}
-                score={resultSummary.score}
-                scoreThreshold={thresholds.scoreThreshold}
-              />
-            </View>
-          </View>
+          <ChallengeResultsOverlay
+            accuracy={resultSummary.accuracy}
+            accuracyThreshold={thresholds.accuracyThreshold}
+            didUnlockMastery={resultSummary.didUnlockMastery}
+            difficulty={resultSummary.difficulty}
+            intervalLabel={resultSummary.intervalLabel}
+            onPlayAgain={beginChallenge}
+            score={resultSummary.score}
+            scoreThreshold={thresholds.scoreThreshold}
+          />
         ) : null}
       </View>
     </AppShell>
@@ -609,13 +618,15 @@ const styles = StyleSheet.create({
     backgroundColor: palette.ink,
     borderRadius: 30,
     paddingHorizontal: 22,
-    paddingVertical: 12,
+    paddingVertical: 10,
     ...shadows.card,
   },
+  promptCardDigital: {
+    paddingVertical: 16,
+  },
   promptContent: {
-    gap: 6,
-    justifyContent: 'center',
-    minHeight: 96,
+    gap: 4,
+    justifyContent: 'flex-start',
   },
   promptHidden: {
     opacity: 0,
@@ -624,8 +635,12 @@ const styles = StyleSheet.create({
     color: '#D8E5F0',
     fontFamily: typography.bodyFamily,
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 18,
     textAlign: 'center',
+  },
+  promptLabelDigital: {
+    fontSize: 16,
+    lineHeight: 24,
   },
   promptTime: {
     alignSelf: 'center',
@@ -636,16 +651,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
+  promptTimeDigital: {
+    fontSize: 48,
+  },
   promptStage: {
     alignItems: 'center',
-    height: 50,
+    height: 42,
     justifyContent: 'center',
-    marginTop: 4,
+    marginTop: 0,
+  },
+  promptStageDigital: {
+    height: 64,
+    marginTop: 10,
   },
   promptClockWrap: {
     alignItems: 'center',
-    marginTop: 4,
-    paddingBottom: 2,
+    marginTop: 0,
+    paddingBottom: 0,
   },
   answerCard: {
     gap: 12,
@@ -722,20 +744,5 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: palette.white,
-  },
-  resultsOverlay: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    paddingVertical: 20,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: 40,
-  },
-  resultsCardWrap: {
-    maxWidth: 440,
-    width: '100%',
   },
 });

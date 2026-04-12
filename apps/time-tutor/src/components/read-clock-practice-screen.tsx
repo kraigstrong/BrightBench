@@ -104,7 +104,6 @@ export function ReadClockPracticeScreen({
     <AppShell maxWidth={contentMaxWidth}>
       <HeaderBar
         title="Read the Clock"
-        subtitle="Practice"
         leftAction={<BackButton onPress={() => router.back()} />}
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />

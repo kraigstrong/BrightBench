@@ -136,7 +136,6 @@ export function ElapsedTimePracticeScreen({
     <AppShell maxWidth={contentMaxWidth}>
       <HeaderBar
         title="Elapsed Time"
-        subtitle="Practice"
         leftAction={<BackButton onPress={() => router.back()} />}
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />

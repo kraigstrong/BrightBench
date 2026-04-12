@@ -15,7 +15,7 @@ import { CelebrationOverlay, Card } from '@education/ui';
 
 import { AppShell } from '@/components/app-shell';
 import { ChallengeCountdownOverlay } from '@/components/challenge-countdown-overlay';
-import { ChallengeResultsCard } from '@/components/challenge-results-card';
+import { ChallengeResultsOverlay } from '@/components/challenge-results-overlay';
 import { ElapsedDurationInput } from '@/components/elapsed-duration-input';
 import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
@@ -34,6 +34,7 @@ import {
 } from '@/lib/challenge-progression';
 import {
   createInitialElapsedDuration,
+  getHomeModeTitle,
   formatTimeValue,
   isElapsedDurationCorrect,
   nextElapsedTimePairForInterval,
@@ -394,7 +395,7 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       maxWidth={contentMaxWidth}
       scrollEnabled={!isAdvancing && !resultSummary}>
       <HeaderBar
-        title="Challenge Mode"
+        title={getHomeModeTitle(MODE)}
         subtitle={`${CHALLENGE_DIFFICULTY_LABELS[difficulty]} · ${formatChallengeIntervalLabel(
           currentInterval,
         )}`}
@@ -524,20 +525,16 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
         </View>
 
         {runStatus === 'finished' && resultSummary ? (
-          <View pointerEvents="box-none" style={styles.resultsOverlay}>
-            <View style={styles.resultsCardWrap}>
-              <ChallengeResultsCard
-                accuracy={resultSummary.accuracy}
-                accuracyThreshold={thresholds.accuracyThreshold}
-                didUnlockMastery={resultSummary.didUnlockMastery}
-                difficulty={resultSummary.difficulty}
-                intervalLabel={resultSummary.intervalLabel}
-                onPlayAgain={resetToReady}
-                score={resultSummary.score}
-                scoreThreshold={thresholds.scoreThreshold}
-              />
-            </View>
-          </View>
+          <ChallengeResultsOverlay
+            accuracy={resultSummary.accuracy}
+            accuracyThreshold={thresholds.accuracyThreshold}
+            didUnlockMastery={resultSummary.didUnlockMastery}
+            difficulty={resultSummary.difficulty}
+            intervalLabel={resultSummary.intervalLabel}
+            onPlayAgain={resetToReady}
+            score={resultSummary.score}
+            scoreThreshold={thresholds.scoreThreshold}
+          />
         ) : null}
       </View>
     </AppShell>
@@ -605,8 +602,6 @@ const styles = StyleSheet.create({
   },
   promptContent: {
     gap: 18,
-    justifyContent: 'center',
-    minHeight: 210,
   },
   promptHidden: {
     opacity: 0,
@@ -620,72 +615,72 @@ const styles = StyleSheet.create({
   },
   promptContentArea: {
     justifyContent: 'center',
-    minHeight: 122,
   },
   promptTimesRow: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   promptTimeCard: {
+    backgroundColor: palette.surface,
+    borderRadius: 24,
     alignItems: 'center',
     flex: 1,
-    gap: 8,
+    gap: 4,
+    minWidth: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   promptTimeEyebrow: {
-    color: '#9EABC0',
+    color: palette.inkMuted,
     fontFamily: typography.bodyFamily,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
     textTransform: 'uppercase',
   },
   promptTimeInlineRow: {
-    alignItems: 'center',
+    alignItems: 'baseline',
     flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'center',
+    gap: 4,
   },
   promptTimeMain: {
-    color: palette.white,
+    color: palette.ink,
+    flexShrink: 1,
     fontFamily: typography.displayFamily,
-    fontSize: 58,
+    fontSize: 24,
+    fontVariant: ['tabular-nums'],
     fontWeight: '700',
-    letterSpacing: 0.4,
-    lineHeight: 66,
   },
   promptTimeSuffix: {
-    color: '#D8E5F0',
+    color: palette.inkMuted,
     fontFamily: typography.bodyFamily,
-    fontSize: 28,
+    fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 0.8,
-    lineHeight: 34,
+    textTransform: 'uppercase',
   },
   promptTimeValue: {
-    color: palette.white,
+    color: palette.ink,
     fontFamily: typography.displayFamily,
-    fontSize: 52,
+    fontSize: 30,
+    fontVariant: ['tabular-nums'],
     fontWeight: '700',
-    letterSpacing: 0.6,
-    lineHeight: 60,
-    textAlign: 'center',
   },
   connectorPill: {
     alignItems: 'center',
-    backgroundColor: '#243040',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
     borderRadius: 999,
     justifyContent: 'center',
-    minHeight: 34,
-    minWidth: 44,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   connectorText: {
-    color: '#D8E5F0',
+    color: palette.white,
     fontFamily: typography.bodyFamily,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
+    textTransform: 'uppercase',
   },
   answerCard: {
     gap: 16,
@@ -734,15 +729,6 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: palette.white,
-  },
-  resultsOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-  },
-  resultsCardWrap: {
-    width: '100%',
   },
   promptClockWrap: {
     alignItems: 'center',
