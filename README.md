@@ -58,10 +58,10 @@ around the concepts that are hardest to teach and hardest to make click.
     `npm run typecheck -w fraction-finder`, `npm run lint -w fraction-finder`, `npm test -w fraction-finder -- --runInBand`
 - `apps/time-tutor`
   - Healthy Expo app in the monorepo
-  - Core gameplay and settings are ported
+  - Core gameplay and settings are established in the monorepo
   - Challenge cards now show persisted Easy/Medium/Hard star progression with crown mastery state
   - Challenge launch now uses a dedicated difficulty popup before the timed run, followed by a separate in-screen Start step, a countdown bar, and a skippable animated end-of-run reveal
-  - Contains intentional migration differences documented in `apps/time-tutor/MIGRATION_NOTES.md`
+  - Uses the original standalone app as read-only visual reference material, but no longer maintains a separate migration-notes file
 - `apps/marketing`
   - Next.js App Router site is working
   - Homepage is positioned around the BrightBench suite brand and product philosophy

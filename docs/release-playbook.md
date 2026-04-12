@@ -28,11 +28,11 @@
 - App Store releases should remain independent
 
 ### Current Bundle ID Convention
-- Use a shared prefix plus a compacted slug
-- Current pattern in this repo: `com.kraig.<slug-without-hyphens>`
-- Examples:
-  - `fraction-finder` → `com.kraig.fractionfinder`
-  - `time-tutor` → `com.kraig.timetutor`
+- Bundle IDs are app-specific and do not need to follow one exact repo-wide pattern
+- Current examples:
+  - `fraction-finder` iOS/Android → `com.kraig.fractionfinder`
+  - `time-tutor` iOS → `com.timetutor.app`
+  - `time-tutor` Android → `com.kraig.timetutor`
 
 ### Current EAS Profile Convention
 - `development`

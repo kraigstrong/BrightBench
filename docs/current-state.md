@@ -66,8 +66,7 @@ Notes:
 - the settings screen no longer includes a practice interval control
 - challenge runs now start with an automatic 3-2-1-GO countdown overlay, use a simple countdown bar, and end with a centered animated end-of-round star reveal
 - reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
-- intentional differences from the original app are documented in:
-  - `apps/time-tutor/MIGRATION_NOTES.md`
+- the original standalone app remains a read-only visual reference, but migration-specific notes are no longer maintained as a separate document
 
 ### Marketing
 Status:
@@ -98,15 +97,12 @@ Notes:
   - keep gameplay logic app-local until reuse is clearly proven
 
 ## Important Intentional Differences
-- Some migration changes are deliberate improvements, not regressions
+- Some monorepo changes are deliberate improvements, not regressions
 - Example categories:
   - gesture handling on interactive gameplay routes
   - shared celebration copy
-  - some challenge start button placement changes
-  - some layout stability improvements
-
-For Time Tutor specifics, always read:
-- `apps/time-tutor/MIGRATION_NOTES.md`
+  - challenge start and results layout refinements
+  - layout stability improvements
 
 ## Remaining Open Work
 - Link and configure Vercel projects for the monorepo
@@ -135,4 +131,4 @@ Current env-backed defaults:
 3. Read this file
 4. Read `docs/design-canon.md`
 5. Read the specific app folder you are changing
-6. Read `apps/time-tutor/MIGRATION_NOTES.md` before changing Time Tutor behavior
+6. Use the original `/Users/kraig/code/time-tutor` app only as read-only reference material when a Time Tutor visual or behavior comparison is genuinely needed

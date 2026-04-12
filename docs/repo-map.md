@@ -34,8 +34,6 @@
   - explore time
   - practice modes
   - challenge modes
-- Intentional migration differences are documented in:
-  - `apps/time-tutor/MIGRATION_NOTES.md`
 
 ### `apps/marketing`
 - Next.js App Router site
@@ -107,8 +105,6 @@
   - how to create a new app/site correctly
 - `docs/release-playbook.md`
   - deployment and release conventions
-- `docs/implementation-checklist.md`
-  - historical implementation plan and completion state
 
 ## Read Boundaries
 - Do not edit `/Users/kraig/code/time-tutor`

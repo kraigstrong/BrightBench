@@ -43,7 +43,6 @@ This monorepo contains multiple educational apps that share one technical founda
 - `apps/time-tutor` is a working Expo app in the monorepo
 - `apps/marketing` is a working Next.js App Router site scaffold
 - `apps/grammar-guide`, `apps/letter-bingo`, and `apps/place-value` are still placeholders
-- `apps/time-tutor/MIGRATION_NOTES.md` documents intentional differences from the original app
 
 ## Architectural Rules
 - Time Tutor wins when design and visual patterns conflict
@@ -102,7 +101,7 @@ Prefer patterns derived from Time Tutor:
 - Keep app identity, content, and store metadata local to the app
 
 ## When Updating Docs
-- Keep `README.md`, `docs/current-state.md`, and `docs/implementation-checklist.md` in sync
+- Keep `README.md` and `docs/current-state.md` in sync
 - If an intentional design or behavior difference is introduced during a migration, document it near the app, not only in chat history
 
 ## Documentation Maintenance Rule
@@ -114,7 +113,7 @@ Examples:
   - update `docs/repo-map.md` if folder roles changed
 - app status, migration progress, or validated workflow changes
   - update `docs/current-state.md`
-  - update `docs/implementation-checklist.md`
+  - update `README.md` if the high-level status or quick-start guidance changed
 - design-source-of-truth or shared UI decisions
   - update `docs/design-canon.md`
 - app scaffolding or workflow convention changes
@@ -123,6 +122,7 @@ Examples:
 - deployment, env var, naming, or release process changes
   - update `docs/release-playbook.md`
 - intentional app-specific migration differences
-  - update the app-local note such as `apps/time-tutor/MIGRATION_NOTES.md`
+  - update `docs/current-state.md`
+  - add or update an app-local README only if the difference is long-lived and genuinely app-specific
 
 Do not leave major structural or workflow changes documented only in chat history.
