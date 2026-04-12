@@ -64,7 +64,7 @@ Notes:
 - Explore Time now uses the same interval chooser pattern and receives its interval through the route instead of relying on the settings page
 - challenge mode is disabled on web and shows the official App Store badge button
 - the settings screen no longer includes a practice interval control
-- challenge runs now use a separate Start step, a simple countdown bar, and a centered animated end-of-round star reveal
+- challenge runs now start with an automatic 3-2-1-GO countdown overlay, use a simple countdown bar, and end with a centered animated end-of-round star reveal
 - reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
 - intentional differences from the original app are documented in:
   - `apps/time-tutor/MIGRATION_NOTES.md`

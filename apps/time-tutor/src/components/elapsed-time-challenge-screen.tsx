@@ -14,6 +14,7 @@ import {
 import { CelebrationOverlay, Card } from '@education/ui';
 
 import { AppShell } from '@/components/app-shell';
+import { ChallengeCountdownOverlay } from '@/components/challenge-countdown-overlay';
 import { ChallengeResultsCard } from '@/components/challenge-results-card';
 import { ElapsedDurationInput } from '@/components/elapsed-duration-input';
 import { BackButton, HeaderBar } from '@/components/header-bar';
@@ -39,6 +40,7 @@ import {
   randomElapsedTimePairForInterval,
 } from '@/lib/time';
 import { useAppState } from '@/state/app-state';
+import { useChallengeCountdown } from '@/lib/challenge-countdown';
 import type {
   ChallengeDifficulty,
   ElapsedDurationValue,
@@ -100,8 +102,16 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrongAnswerShake = useRef(new Animated.Value(0)).current;
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
+  const { countdownValue, startCountdown, clearCountdown } = useChallengeCountdown({
+    onComplete: () => {
+      loadPrompt(randomElapsedTimePairForInterval(currentInterval));
+      setTimeRemaining(CHALLENGE_DURATION_SECONDS);
+      setRunStatus('running');
+    },
+  });
 
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
+  const isCountdownVisible = countdownValue !== null;
   const timerProgress =
     runStatus === 'running'
       ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
@@ -195,16 +205,16 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     setAnswer(createInitialElapsedDuration());
   }, []);
 
-  const startRun = useCallback(() => {
+  const beginChallenge = useCallback(() => {
+    clearCountdown();
+
     if (feedbackTimerRef.current) {
       clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = null;
     }
 
-    loadPrompt(randomElapsedTimePairForInterval(currentInterval));
     setScore(0);
     setAttempts(0);
-    setTimeRemaining(CHALLENGE_DURATION_SECONDS);
     setIsAdvancing(false);
     setShowWrongAnswerFeedback(false);
     wrongAnswerShake.stopAnimation();
@@ -212,29 +222,23 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     wrongAnswerFlashOpacity.stopAnimation();
     wrongAnswerFlashOpacity.setValue(0);
     setResultSummary(null);
-    setRunStatus('running');
-  }, [currentInterval, loadPrompt, wrongAnswerFlashOpacity, wrongAnswerShake]);
+    setTimeRemaining(CHALLENGE_DURATION_SECONDS);
+    setRunStatus('ready');
+    startCountdown();
+  }, [
+    clearCountdown,
+    wrongAnswerFlashOpacity,
+    wrongAnswerShake,
+    startCountdown,
+  ]);
+
+  useEffect(() => {
+    beginChallenge();
+  }, [beginChallenge]);
 
   const resetToReady = useCallback(() => {
-    if (feedbackTimerRef.current) {
-      clearTimeout(feedbackTimerRef.current);
-      feedbackTimerRef.current = null;
-    }
-
-    setPromptPair(randomElapsedTimePairForInterval(currentInterval));
-    setAnswer(createInitialElapsedDuration());
-    setScore(0);
-    setAttempts(0);
-    setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setIsAdvancing(false);
-    setShowWrongAnswerFeedback(false);
-    wrongAnswerShake.stopAnimation();
-    wrongAnswerShake.setValue(0);
-    wrongAnswerFlashOpacity.stopAnimation();
-    wrongAnswerFlashOpacity.setValue(0);
-    setResultSummary(null);
-    setRunStatus('ready');
-  }, [currentInterval, wrongAnswerFlashOpacity, wrongAnswerShake]);
+    beginChallenge();
+  }, [beginChallenge]);
 
   const triggerWrongAnswerFeedback = useCallback(
     (nextPrompt: PromptPair) => {
@@ -332,6 +336,7 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       return;
     }
 
+    clearCountdown();
     if (feedbackTimerRef.current) {
       clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = null;
@@ -398,150 +403,142 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       />
 
       <View style={styles.screenBody}>
+        <ChallengeCountdownOverlay value={countdownValue} />
         <View style={styles.challengeLayout}>
-        <View style={styles.challengeColumn}>
-          <View style={styles.timerRail} testID="challenge-timer-bar">
-            <View
-              style={[styles.timerFill, { width: `${timerProgress * 100}%` }]}
-              testID="challenge-timer-bar-fill"
-            />
-          </View>
-
-          {__DEV__ ? (
-            <View pointerEvents="box-none" style={styles.devControlsOverlay}>
-              <View style={styles.devControls}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={runStatus !== 'running'}
-                onPress={addDebugScore}
-                style={[
-                  styles.devButton,
-                  runStatus !== 'running' ? styles.actionButtonDisabled : null,
-                ]}
-                testID="challenge-dev-add-score-button">
-                <Text style={styles.devButtonText}>+5</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={runStatus !== 'running'}
-                onPress={endDebugRun}
-                style={[
-                  styles.devButton,
-                  runStatus !== 'running' ? styles.actionButtonDisabled : null,
-                ]}
-                testID="challenge-dev-end-button">
-                <Text style={styles.devButtonText}>End Now</Text>
-              </Pressable>
+          <View style={styles.challengeColumn}>
+            <View style={styles.timerRail} testID="challenge-timer-bar">
+              <View
+                style={[styles.timerFill, { width: `${timerProgress * 100}%` }]}
+                testID="challenge-timer-bar-fill"
+              />
             </View>
-            </View>
-          ) : null}
 
-          <View style={styles.promptCard}>
-            <Text style={styles.promptLabel}>How much time passes?</Text>
-            <View style={styles.promptContentArea}>
-              <View style={styles.promptTimesRow}>
-                <View style={styles.promptTimeCard}>
-                  <Text style={styles.promptTimeEyebrow}>Start</Text>
-                  {renderPromptTime(promptPair[0], 'elapsed-challenge-start-time')}
-                </View>
-                <View style={styles.connectorPill}>
-                  <Text style={styles.connectorText}>to</Text>
-                </View>
-                <View style={styles.promptTimeCard}>
-                  <Text style={styles.promptTimeEyebrow}>End</Text>
-                  {renderPromptTime(promptPair[1], 'elapsed-challenge-end-time')}
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.challengeColumn}>
-          <Card style={styles.answerCard}>
-            <Text style={styles.cardEyebrow}>Elapsed time</Text>
-            <Animated.View
-              style={[
-                styles.answerSurface,
-                {
-                  transform: [{ translateX: wrongAnswerShake }],
-                },
-              ]}>
-              <View style={styles.answerOverlayWrap}>
-                <ElapsedDurationInput
-                  compact={useCompactInput}
-                  disabled={runStatus !== 'running' || isAdvancing}
-                  onChange={setAnswer}
-                  practiceInterval={currentInterval}
-                  value={answer}
-                />
-
-                {showWrongAnswerFeedback ? (
-                  <Animated.View
-                    pointerEvents="none"
+            {__DEV__ ? (
+              <View pointerEvents="box-none" style={styles.devControlsOverlay}>
+                <View style={styles.devControls}>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={runStatus !== 'running'}
+                    onPress={addDebugScore}
                     style={[
-                      styles.answerFlashOverlay,
-                      {
-                        opacity: wrongAnswerFlashOpacity,
-                      },
+                      styles.devButton,
+                      runStatus !== 'running' ? styles.actionButtonDisabled : null,
                     ]}
-                  />
-                ) : null}
-              </View>
-
-              {showSuccessOverlay ? <CelebrationOverlay visible /> : null}
-            </Animated.View>
-
-            {runStatus === 'ready' ? (
-              <View pointerEvents="box-none" style={styles.startOverlay}>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={startRun}
-                  style={styles.startActionButton}
-                  testID="challenge-start-button">
-                  <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                    Start
-                  </Text>
-                </Pressable>
+                    testID="challenge-dev-add-score-button">
+                    <Text style={styles.devButtonText}>+5</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={runStatus !== 'running'}
+                    onPress={endDebugRun}
+                    style={[
+                      styles.devButton,
+                      runStatus !== 'running' ? styles.actionButtonDisabled : null,
+                    ]}
+                    testID="challenge-dev-end-button">
+                    <Text style={styles.devButtonText}>End Now</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : null}
-          </Card>
 
-          {runStatus !== 'finished' || !resultSummary ? (
-            <Pressable
-              accessibilityRole="button"
-              disabled={runStatus !== 'running' || isAdvancing}
-              onPress={checkAnswer}
-              style={[
-                styles.actionButton,
-                styles.primaryButton,
-                (runStatus !== 'running' || isAdvancing) &&
-                  styles.actionButtonDisabled,
-              ]}
-              testID="challenge-check-answer-button">
-              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                Check Answer
-              </Text>
-            </Pressable>
-          ) : null}
+            <View style={styles.promptCard}>
+              <View
+                pointerEvents="none"
+                style={[styles.promptContent, runStatus !== 'running' && styles.promptHidden]}
+                testID="challenge-prompt-content">
+                <Text style={styles.promptLabel}>How much time passes?</Text>
+                <View style={styles.promptContentArea}>
+                  <View style={styles.promptTimesRow}>
+                    <View style={styles.promptTimeCard}>
+                      <Text style={styles.promptTimeEyebrow}>Start</Text>
+                      {renderPromptTime(promptPair[0], 'elapsed-challenge-start-time')}
+                    </View>
+                    <View style={styles.connectorPill}>
+                      <Text style={styles.connectorText}>to</Text>
+                    </View>
+                    <View style={styles.promptTimeCard}>
+                      <Text style={styles.promptTimeEyebrow}>End</Text>
+                      {renderPromptTime(promptPair[1], 'elapsed-challenge-end-time')}
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.challengeColumn}>
+            <Card style={styles.answerCard}>
+              <Text style={styles.cardEyebrow}>Elapsed time</Text>
+              <Animated.View
+                style={[
+                  styles.answerSurface,
+                  {
+                    transform: [{ translateX: wrongAnswerShake }],
+                  },
+                ]}>
+                <View style={styles.answerOverlayWrap}>
+                  <ElapsedDurationInput
+                    compact={useCompactInput}
+                    disabled={runStatus !== 'running' || isAdvancing}
+                    onChange={setAnswer}
+                    practiceInterval={currentInterval}
+                    value={answer}
+                  />
+
+                  {showWrongAnswerFeedback ? (
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.answerFlashOverlay,
+                        {
+                          opacity: wrongAnswerFlashOpacity,
+                        },
+                      ]}
+                    />
+                  ) : null}
+                </View>
+
+                {showSuccessOverlay ? <CelebrationOverlay visible /> : null}
+              </Animated.View>
+            </Card>
+
+            {runStatus !== 'finished' || !resultSummary ? (
+              <Pressable
+                accessibilityRole="button"
+                disabled={runStatus !== 'running' || isAdvancing}
+                onPress={checkAnswer}
+                style={[
+                  styles.actionButton,
+                  styles.primaryButton,
+                  (runStatus !== 'running' || isAdvancing) &&
+                    styles.actionButtonDisabled,
+                ]}
+                testID="challenge-check-answer-button">
+                <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
+                  Check Answer
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
 
         {runStatus === 'finished' && resultSummary ? (
           <View pointerEvents="box-none" style={styles.resultsOverlay}>
             <View style={styles.resultsCardWrap}>
               <ChallengeResultsCard
-              accuracy={resultSummary.accuracy}
-              accuracyThreshold={thresholds.accuracyThreshold}
-              didUnlockMastery={resultSummary.didUnlockMastery}
-              difficulty={resultSummary.difficulty}
-              intervalLabel={resultSummary.intervalLabel}
-              onPlayAgain={resetToReady}
-              score={resultSummary.score}
-              scoreThreshold={thresholds.scoreThreshold}
-            />
+                accuracy={resultSummary.accuracy}
+                accuracyThreshold={thresholds.accuracyThreshold}
+                didUnlockMastery={resultSummary.didUnlockMastery}
+                difficulty={resultSummary.difficulty}
+                intervalLabel={resultSummary.intervalLabel}
+                onPlayAgain={resetToReady}
+                score={resultSummary.score}
+                scoreThreshold={thresholds.scoreThreshold}
+              />
+            </View>
           </View>
-        </View>
         ) : null}
-      </View>
       </View>
     </AppShell>
   );
@@ -606,6 +603,14 @@ const styles = StyleSheet.create({
     padding: 22,
     ...shadows.card,
   },
+  promptContent: {
+    gap: 18,
+    justifyContent: 'center',
+    minHeight: 210,
+  },
+  promptHidden: {
+    opacity: 0,
+  },
   promptLabel: {
     color: '#D8E5F0',
     fontFamily: typography.bodyFamily,
@@ -615,158 +620,132 @@ const styles = StyleSheet.create({
   },
   promptContentArea: {
     justifyContent: 'center',
-    minHeight: 120,
+    minHeight: 122,
   },
   promptTimesRow: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: 10,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   promptTimeCard: {
-    backgroundColor: palette.surface,
-    borderRadius: 24,
+    alignItems: 'center',
     flex: 1,
-    gap: 4,
-    minWidth: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    gap: 8,
   },
   promptTimeEyebrow: {
-    color: palette.inkMuted,
+    color: '#9EABC0',
     fontFamily: typography.bodyFamily,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   promptTimeInlineRow: {
-    alignItems: 'baseline',
+    alignItems: 'center',
     flexDirection: 'row',
-    gap: 4,
+    gap: 8,
+    justifyContent: 'center',
   },
   promptTimeMain: {
-    color: palette.ink,
-    flexShrink: 1,
+    color: palette.white,
     fontFamily: typography.displayFamily,
-    fontSize: 24,
-    fontVariant: ['tabular-nums'],
+    fontSize: 58,
     fontWeight: '700',
+    letterSpacing: 0.4,
+    lineHeight: 66,
   },
   promptTimeSuffix: {
+    color: '#D8E5F0',
+    fontFamily: typography.bodyFamily,
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    lineHeight: 34,
+  },
+  promptTimeValue: {
+    color: palette.white,
+    fontFamily: typography.displayFamily,
+    fontSize: 52,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    lineHeight: 60,
+    textAlign: 'center',
+  },
+  connectorPill: {
+    alignItems: 'center',
+    backgroundColor: '#243040',
+    borderRadius: 999,
+    justifyContent: 'center',
+    minHeight: 34,
+    minWidth: 44,
+    paddingHorizontal: 10,
+  },
+  connectorText: {
+    color: '#D8E5F0',
+    fontFamily: typography.bodyFamily,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  answerCard: {
+    gap: 16,
+    padding: 22,
+  },
+  cardEyebrow: {
     color: palette.inkMuted,
     fontFamily: typography.bodyFamily,
     fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 0.4,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-  },
-  promptTimeValue: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 28,
-    fontVariant: ['tabular-nums'],
-    fontWeight: '700',
-  },
-  connectorPill: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.14)',
-    borderRadius: 999,
-    justifyContent: 'center',
-    minHeight: 38,
-    paddingHorizontal: 12,
-  },
-  connectorText: {
-    color: palette.white,
-    fontFamily: typography.bodyFamily,
-    fontSize: 14,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  answerCard: {
-    alignItems: 'center',
-    gap: 16,
-    position: 'relative',
   },
   answerSurface: {
     position: 'relative',
-    width: '100%',
   },
   answerOverlayWrap: {
     position: 'relative',
   },
   answerFlashOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(231, 76, 60, 0.22)',
+    backgroundColor: palette.coral,
     borderRadius: 24,
   },
-  cardEyebrow: {
-    alignSelf: 'stretch',
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-  },
-  startOverlay: {
+  answerClockWrap: {
     alignItems: 'center',
-    borderRadius: 24,
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 38,
-    zIndex: 25,
+    paddingVertical: 4,
   },
   actionButton: {
     alignItems: 'center',
-    borderRadius: 999,
+    borderRadius: 20,
     justifyContent: 'center',
-    minHeight: 56,
-    paddingHorizontal: 16,
-  },
-  startActionButton: {
-    alignItems: 'center',
-    backgroundColor: palette.success,
-    borderColor: '#3E985B',
-    borderRadius: 999,
-    borderWidth: 1.5,
-    justifyContent: 'center',
-    minHeight: 58,
-    minWidth: 140,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    minHeight: 54,
+    paddingHorizontal: 20,
   },
   primaryButton: {
     backgroundColor: palette.coral,
   },
   actionButtonDisabled: {
-    opacity: 0.65,
+    opacity: 0.5,
   },
   actionButtonText: {
-    color: palette.ink,
     fontFamily: typography.bodyFamily,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
   },
   primaryButtonText: {
     color: palette.white,
   },
   resultsOverlay: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    bottom: 0,
     justifyContent: 'center',
-    left: 0,
-    paddingVertical: 20,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: 40,
+    padding: 12,
   },
   resultsCardWrap: {
-    maxWidth: 440,
     width: '100%',
+  },
+  promptClockWrap: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
 });

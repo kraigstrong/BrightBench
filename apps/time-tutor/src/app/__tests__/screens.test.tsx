@@ -1,5 +1,11 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -36,6 +42,10 @@ describe('time tutor screens', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseLocalSearchParams.mockReturnValue({ mode: 'digital-to-analog' });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('renders the home screen', () => {
@@ -343,7 +353,9 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Check Answer')).toBeTruthy();
   });
 
-  it('renders the timed challenge screen', () => {
+  it('renders the timed challenge screen with a countdown before the first prompt', () => {
+    jest.useFakeTimers();
+
     render(
       <SafeAreaProvider>
         <AppStateProvider skipHydration>
@@ -358,11 +370,25 @@ describe('time tutor screens', () => {
 
     expect(screen.getByText('Challenge Mode')).toBeTruthy();
     expect(screen.getByText('Medium · 5 min')).toBeTruthy();
+    expect(screen.getByTestId('challenge-countdown-value')).toBeTruthy();
+    expect(screen.getByTestId('challenge-prompt-content')).toHaveStyle({
+      opacity: 0,
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(2500);
+    });
+
+    expect(screen.getByText('Match this digital time')).toBeTruthy();
     expect(screen.getByTestId('challenge-timer-bar')).toBeTruthy();
-    expect(screen.getByTestId('challenge-start-button')).toBeTruthy();
+    expect(screen.getByTestId('challenge-check-answer-button')).toBeTruthy();
+
+    jest.useRealTimers();
   });
 
-  it('renders the elapsed time challenge screen', () => {
+  it('renders the elapsed time challenge screen with a countdown before the first prompt', () => {
+    jest.useFakeTimers();
+
     render(
       <SafeAreaProvider>
         <AppStateProvider skipHydration>
@@ -372,11 +398,22 @@ describe('time tutor screens', () => {
     );
 
     expect(screen.getByText('Challenge Mode')).toBeTruthy();
+    expect(screen.getByText('Easy · 15 min')).toBeTruthy();
+    expect(screen.getByTestId('challenge-countdown-value')).toBeTruthy();
+    expect(screen.getByTestId('challenge-prompt-content')).toHaveStyle({
+      opacity: 0,
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(2500);
+    });
+
     expect(screen.getByText('How much time passes?')).toBeTruthy();
     expect(screen.getByText('Elapsed time')).toBeTruthy();
-    expect(screen.getByText('Easy · 15 min')).toBeTruthy();
     expect(screen.getByTestId('challenge-timer-bar')).toBeTruthy();
-    expect(screen.getByTestId('challenge-start-button')).toBeTruthy();
+    expect(screen.getByTestId('challenge-check-answer-button')).toBeTruthy();
+
+    jest.useRealTimers();
   });
 
   it('uses the chosen interval when opening practice sessions', () => {

@@ -15,6 +15,7 @@ import { CelebrationOverlay, Card } from '@education/ui';
 
 import { AppShell } from '@/components/app-shell';
 import { AnalogClock } from '@/components/analog-clock';
+import { ChallengeCountdownOverlay } from '@/components/challenge-countdown-overlay';
 import { ChallengeResultsCard } from '@/components/challenge-results-card';
 import { DigitalTimeInput } from '@/components/digital-time-input';
 import { BackButton, HeaderBar } from '@/components/header-bar';
@@ -41,6 +42,7 @@ import {
   nextTimeValueForInterval,
   randomTimeValueForInterval,
 } from '@/lib/time';
+import { useChallengeCountdown } from '@/lib/challenge-countdown';
 import { useAppState } from '@/state/app-state';
 import type {
   ChallengeDifficulty,
@@ -114,8 +116,16 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrongAnswerShake = useRef(new Animated.Value(0)).current;
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
+  const { countdownValue, startCountdown, clearCountdown } = useChallengeCountdown({
+    onComplete: () => {
+      loadPrompt(randomTimeValueForInterval(currentInterval));
+      setTimeRemaining(CHALLENGE_DURATION_SECONDS);
+      setRunStatus('running');
+    },
+  });
 
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
+  const isCountdownVisible = countdownValue !== null;
   const timerProgress =
     runStatus === 'running'
       ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
@@ -214,16 +224,16 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
     [timeFormat],
   );
 
-  const startRun = useCallback(() => {
+  const beginChallenge = useCallback(() => {
+    clearCountdown();
+
     if (feedbackTimerRef.current) {
       clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = null;
     }
 
-    loadPrompt(randomTimeValueForInterval(currentInterval));
     setScore(0);
     setAttempts(0);
-    setTimeRemaining(CHALLENGE_DURATION_SECONDS);
     setIsAdvancing(false);
     setShowWrongAnswerFeedback(false);
     wrongAnswerShake.stopAnimation();
@@ -231,30 +241,19 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
     wrongAnswerFlashOpacity.stopAnimation();
     wrongAnswerFlashOpacity.setValue(0);
     setResultSummary(null);
-    setRunStatus('running');
-  }, [currentInterval, loadPrompt, wrongAnswerFlashOpacity, wrongAnswerShake]);
-
-  const resetToReady = useCallback(() => {
-    if (feedbackTimerRef.current) {
-      clearTimeout(feedbackTimerRef.current);
-      feedbackTimerRef.current = null;
-    }
-
-    setAnalogAnswer(createInitialAnswer());
-    setDigitalAnswer(createInitialDigitalAnswer(timeFormat));
-    setScore(0);
-    setAttempts(0);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setIsAdvancing(false);
-    setShowWrongAnswerFeedback(false);
-    wrongAnswerShake.stopAnimation();
-    wrongAnswerShake.setValue(0);
-    wrongAnswerFlashOpacity.stopAnimation();
-    wrongAnswerFlashOpacity.setValue(0);
-    setResultSummary(null);
-    setPromptTime(randomTimeValueForInterval(currentInterval));
     setRunStatus('ready');
-  }, [currentInterval, timeFormat, wrongAnswerFlashOpacity, wrongAnswerShake]);
+    startCountdown();
+  }, [
+    clearCountdown,
+    wrongAnswerFlashOpacity,
+    wrongAnswerShake,
+    startCountdown,
+  ]);
+
+  useEffect(() => {
+    beginChallenge();
+  }, [beginChallenge]);
 
   const triggerWrongAnswerFeedback = useCallback(
     (nextPrompt: TimeValue) => {
@@ -368,6 +367,7 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
       return;
     }
 
+    clearCountdown();
     if (feedbackTimerRef.current) {
       clearTimeout(feedbackTimerRef.current);
       feedbackTimerRef.current = null;
@@ -380,7 +380,7 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
     wrongAnswerFlashOpacity.stopAnimation();
     wrongAnswerFlashOpacity.setValue(0);
     setTimeRemaining(0);
-    setRunStatus('finished');
+      setRunStatus('finished');
   }
 
   return (
@@ -397,165 +397,157 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
       />
 
       <View style={styles.screenBody}>
+        <ChallengeCountdownOverlay value={countdownValue} />
         <View style={styles.challengeLayout}>
-        <View style={styles.challengeColumn}>
-          <View style={styles.timerRail} testID="challenge-timer-bar">
-            <View
-              style={[styles.timerFill, { width: `${timerProgress * 100}%` }]}
-              testID="challenge-timer-bar-fill"
-            />
-          </View>
-
-          {__DEV__ ? (
-            <View pointerEvents="box-none" style={styles.devControlsOverlay}>
-              <View style={styles.devControls}>
-              <Pressable
-                accessibilityRole="button"
-                disabled={runStatus !== 'running'}
-                onPress={addDebugScore}
-                style={[
-                  styles.devButton,
-                  runStatus !== 'running' ? styles.actionButtonDisabled : null,
-                ]}
-                testID="challenge-dev-add-score-button">
-                <Text style={styles.devButtonText}>+5</Text>
-              </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                disabled={runStatus !== 'running'}
-                onPress={endDebugRun}
-                style={[
-                  styles.devButton,
-                  runStatus !== 'running' ? styles.actionButtonDisabled : null,
-                ]}
-                testID="challenge-dev-end-button">
-                <Text style={styles.devButtonText}>End Now</Text>
-              </Pressable>
+          <View style={styles.challengeColumn}>
+            <View style={styles.timerRail} testID="challenge-timer-bar">
+              <View
+                style={[styles.timerFill, { width: `${timerProgress * 100}%` }]}
+                testID="challenge-timer-bar-fill"
+              />
             </View>
-            </View>
-          ) : null}
 
-          <View style={styles.promptCard}>
-            <Text style={styles.promptLabel}>{promptLabel}</Text>
-
-            {mode === 'digital-to-analog' ? (
-              <View style={styles.promptStage}>
-                <Text style={styles.promptTime} testID="challenge-prompt-time">
-                  {formatTimeValue(promptTime, {
-                    includeMeridiem: false,
-                    timeFormat,
-                  })}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.promptClockWrap}>
-                <AnalogClock size={clockSize} time={promptTime} />
-              </View>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.challengeColumn}>
-          <Card style={styles.answerCard}>
-            <Text style={styles.cardEyebrow}>Your answer</Text>
-            <Animated.View
-              style={[
-                styles.answerSurface,
-                {
-                  transform: [{ translateX: wrongAnswerShake }],
-                },
-              ]}>
-              {mode === 'digital-to-analog' ? (
-                <View style={styles.answerClockWrap}>
-                  <AnalogClock
-                    interactive={runStatus === 'running' && !isAdvancing}
-                    onChange={handleAnalogAnswerChange}
-                    onInteractionEnd={() => setClockInteractionActive(false)}
-                    onInteractionStart={() => setClockInteractionActive(true)}
-                    practiceInterval={currentInterval}
-                    size={clockSize}
-                    time={analogAnswer}
-                  />
+            {__DEV__ ? (
+              <View pointerEvents="box-none" style={styles.devControlsOverlay}>
+                <View style={styles.devControls}>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={runStatus !== 'running'}
+                    onPress={addDebugScore}
+                    style={[
+                      styles.devButton,
+                      runStatus !== 'running' ? styles.actionButtonDisabled : null,
+                    ]}
+                    testID="challenge-dev-add-score-button">
+                    <Text style={styles.devButtonText}>+5</Text>
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={runStatus !== 'running'}
+                    onPress={endDebugRun}
+                    style={[
+                      styles.devButton,
+                      runStatus !== 'running' ? styles.actionButtonDisabled : null,
+                    ]}
+                    testID="challenge-dev-end-button">
+                    <Text style={styles.devButtonText}>End Now</Text>
+                  </Pressable>
                 </View>
-              ) : (
-                <View style={styles.answerOverlayWrap}>
-                  <DigitalTimeInput
-                    compact={useCompactDigitalInput}
-                    disabled={runStatus !== 'running' || isAdvancing}
-                    onChange={handleDigitalAnswerChange}
-                    practiceInterval={currentInterval}
-                    timeFormat={timeFormat}
-                    value={digitalAnswer}
-                  />
-                </View>
-              )}
-
-              {showWrongAnswerFeedback ? (
-                <Animated.View
-                  pointerEvents="none"
-                  style={[
-                    styles.answerFlashOverlay,
-                    {
-                      opacity: wrongAnswerFlashOpacity,
-                    },
-                  ]}
-                />
-              ) : null}
-            </Animated.View>
-
-            {showSuccessOverlay ? <CelebrationOverlay visible /> : null}
-
-            {runStatus === 'ready' ? (
-              <View pointerEvents="box-none" style={styles.startOverlay}>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={startRun}
-                  style={styles.startActionButton}
-                  testID="challenge-start-button">
-                  <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                    Start
-                  </Text>
-                </Pressable>
               </View>
             ) : null}
-          </Card>
 
-          {runStatus !== 'finished' || !resultSummary ? (
-            <Pressable
-              accessibilityRole="button"
-              disabled={runStatus !== 'running' || isAdvancing}
-              onPress={checkAnswer}
-              style={[
-                styles.actionButton,
-                styles.primaryButton,
-                (runStatus !== 'running' || isAdvancing) &&
-                  styles.actionButtonDisabled,
-              ]}
-              testID="challenge-check-answer-button">
-              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                Check Answer
-              </Text>
-            </Pressable>
-          ) : null}
+            <View style={styles.promptCard}>
+              <View
+                pointerEvents="none"
+                style={[styles.promptContent, runStatus !== 'running' && styles.promptHidden]}
+                testID="challenge-prompt-content">
+                <Text style={styles.promptLabel}>{promptLabel}</Text>
+
+                {mode === 'digital-to-analog' ? (
+                  <View style={styles.promptStage}>
+                    <Text style={styles.promptTime} testID="challenge-prompt-time">
+                      {formatTimeValue(promptTime, {
+                        includeMeridiem: false,
+                        timeFormat,
+                      })}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.promptClockWrap}>
+                    <AnalogClock size={clockSize} time={promptTime} />
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.challengeColumn}>
+            <Card style={styles.answerCard}>
+              <Text style={styles.cardEyebrow}>Your answer</Text>
+              <Animated.View
+                style={[
+                  styles.answerSurface,
+                  {
+                    transform: [{ translateX: wrongAnswerShake }],
+                  },
+                ]}>
+                {mode === 'digital-to-analog' ? (
+                  <View style={styles.answerClockWrap}>
+                    <AnalogClock
+                      interactive={runStatus === 'running' && !isAdvancing}
+                      onChange={handleAnalogAnswerChange}
+                      onInteractionEnd={() => setClockInteractionActive(false)}
+                      onInteractionStart={() => setClockInteractionActive(true)}
+                      practiceInterval={currentInterval}
+                      size={clockSize}
+                      time={analogAnswer}
+                    />
+                  </View>
+                ) : (
+                  <View style={styles.answerOverlayWrap}>
+                    <DigitalTimeInput
+                      compact={useCompactDigitalInput}
+                      disabled={runStatus !== 'running' || isAdvancing}
+                      onChange={handleDigitalAnswerChange}
+                      practiceInterval={currentInterval}
+                      timeFormat={timeFormat}
+                      value={digitalAnswer}
+                    />
+                  </View>
+                )}
+
+                {showWrongAnswerFeedback ? (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.answerFlashOverlay,
+                      {
+                        opacity: wrongAnswerFlashOpacity,
+                      },
+                    ]}
+                  />
+                ) : null}
+              </Animated.View>
+
+              {showSuccessOverlay ? <CelebrationOverlay visible /> : null}
+            </Card>
+
+            {runStatus !== 'finished' || !resultSummary ? (
+              <Pressable
+                accessibilityRole="button"
+                disabled={runStatus !== 'running' || isAdvancing}
+                onPress={checkAnswer}
+                style={[
+                  styles.actionButton,
+                  styles.primaryButton,
+                  (runStatus !== 'running' || isAdvancing) &&
+                    styles.actionButtonDisabled,
+                ]}
+                testID="challenge-check-answer-button">
+                <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
+                  Check Answer
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
 
         {runStatus === 'finished' && resultSummary ? (
           <View pointerEvents="box-none" style={styles.resultsOverlay}>
             <View style={styles.resultsCardWrap}>
               <ChallengeResultsCard
-              accuracy={resultSummary.accuracy}
-              accuracyThreshold={thresholds.accuracyThreshold}
-              didUnlockMastery={resultSummary.didUnlockMastery}
-              difficulty={resultSummary.difficulty}
-              intervalLabel={resultSummary.intervalLabel}
-              onPlayAgain={resetToReady}
-              score={resultSummary.score}
-              scoreThreshold={thresholds.scoreThreshold}
-            />
+                accuracy={resultSummary.accuracy}
+                accuracyThreshold={thresholds.accuracyThreshold}
+                didUnlockMastery={resultSummary.didUnlockMastery}
+                difficulty={resultSummary.difficulty}
+                intervalLabel={resultSummary.intervalLabel}
+                onPlayAgain={beginChallenge}
+                score={resultSummary.score}
+                scoreThreshold={thresholds.scoreThreshold}
+              />
+            </View>
           </View>
-        </View>
         ) : null}
-      </View>
       </View>
     </AppShell>
   );
@@ -617,35 +609,43 @@ const styles = StyleSheet.create({
     backgroundColor: palette.ink,
     borderRadius: 30,
     paddingHorizontal: 22,
-    paddingVertical: 16,
+    paddingVertical: 12,
     ...shadows.card,
+  },
+  promptContent: {
+    gap: 6,
+    justifyContent: 'center',
+    minHeight: 96,
+  },
+  promptHidden: {
+    opacity: 0,
   },
   promptLabel: {
     color: '#D8E5F0',
     fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 20,
     textAlign: 'center',
   },
   promptTime: {
     alignSelf: 'center',
     color: palette.white,
     fontFamily: typography.displayFamily,
-    fontSize: 48,
+    fontSize: 44,
     fontVariant: ['tabular-nums'],
     fontWeight: '700',
     textAlign: 'center',
   },
   promptStage: {
     alignItems: 'center',
-    height: 64,
+    height: 50,
     justifyContent: 'center',
-    marginTop: 10,
+    marginTop: 4,
   },
   promptClockWrap: {
     alignItems: 'center',
-    marginTop: 10,
-    paddingBottom: 8,
+    marginTop: 4,
+    paddingBottom: 2,
   },
   answerCard: {
     gap: 12,
