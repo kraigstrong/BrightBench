@@ -393,7 +393,9 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
         subtitle={`${CHALLENGE_DIFFICULTY_LABELS[difficulty]} · ${formatChallengeIntervalLabel(
           currentInterval,
         )}`}
-        leftAction={<BackButton onPress={() => router.back()} />}
+        leftAction={
+          resultSummary ? null : <BackButton onPress={() => router.back()} />
+        }
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />
 
