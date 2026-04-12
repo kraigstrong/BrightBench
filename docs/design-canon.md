@@ -23,6 +23,9 @@ Time Tutor is the design source of truth when there is any conflict with Fractio
 - Settings controls
 - Celebration patterns
 - Feedback banners
+- Reward stars and mastery crown treatment
+- Tiered challenge launcher
+- End-of-round reward/results flow
 
 ## Initial Extraction Plan
 Seed the shared design layer from these Time Tutor references:
@@ -50,6 +53,10 @@ Seed the shared design layer from these Time Tutor references:
 - shared app shell
 - shared header bar
 - shared action/selectable button primitives
+- shared reward stars and mastery crown badge
+- shared progress footer
+- shared challenge results card and overlay
+- shared tiered challenge launcher
 
 ## Design Conflict Rule
 If Fraction Finder and Time Tutor differ:

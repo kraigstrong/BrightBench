@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -10,24 +9,29 @@ import {
   View,
 } from 'react-native';
 
-import { Card, CelebrationOverlay } from '@education/ui';
+import { palette, spacing } from '@education/design';
+import { typography } from '@education/design/native';
 
-import { ChallengeMasteryCrown } from '@/components/challenge-mastery-crown';
-import { ChallengeStarGroup, ChallengeStarIcon } from '@/components/challenge-star-group';
-import { CHALLENGE_DIFFICULTY_LABELS } from '@/config/challenge-thresholds';
-import { palette, spacing, typography } from '@/design/theme';
-import type { ChallengeDifficulty } from '@/types/time';
+import { Card } from './card';
+import { CelebrationOverlay } from './celebration-overlay';
+import { MasteryCrownBadge } from './mastery-crown-badge';
+import { RewardStarGroup, RewardStarIcon } from './reward-star';
 
-type ChallengeResultsCardProps = {
+export type ChallengeResultsCardProps = {
   accuracy: number;
   accuracyThreshold: number;
   didUnlockMastery: boolean;
-  difficulty: ChallengeDifficulty;
-  intervalLabel: string;
+  masterySubtitle?: string;
+  masteryTitle?: string;
+  onBack: () => void;
   onPlayAgain: () => void;
+  primaryActionLabel?: string;
   score: number;
   scoreThresholdOne: number;
   scoreThresholdTwo: number;
+  secondaryActionLabel?: string;
+  subtitle: string;
+  title: string;
 };
 
 const CARD_POP_DURATION_MS = 220;
@@ -51,12 +55,17 @@ export function ChallengeResultsCard({
   accuracy,
   accuracyThreshold,
   didUnlockMastery,
-  difficulty,
-  intervalLabel,
+  masterySubtitle = 'You mastered this challenge.',
+  masteryTitle = 'Crown Unlocked!',
+  onBack,
   onPlayAgain,
+  primaryActionLabel = 'Play Again',
   score,
   scoreThresholdOne,
   scoreThresholdTwo,
+  secondaryActionLabel = 'Back',
+  subtitle,
+  title,
 }: ChallengeResultsCardProps) {
   const cardScale = useRef(new Animated.Value(0.96)).current;
   const accuracyProgress = useRef(new Animated.Value(0)).current;
@@ -456,7 +465,7 @@ export function ChallengeResultsCard({
       return;
     }
 
-    router.back();
+    onBack();
   }
 
   function handleAccuracyTrackLayout(event: LayoutChangeEvent) {
@@ -475,12 +484,8 @@ export function ChallengeResultsCard({
   return (
     <Animated.View style={[styles.cardWrap, { transform: [{ scale: cardScale }] }]}>
       <Card style={styles.card} testID="challenge-summary">
-        <Text style={styles.title}>Time&apos;s up!</Text>
-        <Text style={styles.body}>
-          {CHALLENGE_DIFFICULTY_LABELS[difficulty]} challenge
-          {' · '}
-          {intervalLabel}
-        </Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.body}>{subtitle}</Text>
 
         <View style={styles.barSection}>
           <View style={styles.barHeader}>
@@ -494,7 +499,7 @@ export function ChallengeResultsCard({
             <View style={[styles.markerWrap, { left: `${accuracyThreshold}%` }]}>
               <Text style={styles.markerValueLabel}>{accuracyThreshold}%</Text>
               <Animated.View style={{ transform: [{ scale: accuracyStarScale }] }}>
-                <ChallengeStarIcon filled={showAccuracyThresholdStar} size={22} />
+                <RewardStarIcon filled={showAccuracyThresholdStar} size={22} />
               </Animated.View>
             </View>
 
@@ -523,7 +528,7 @@ export function ChallengeResultsCard({
               ]}>
               <Text style={styles.markerValueLabel}>{scoreThresholdOne}</Text>
               <Animated.View style={{ transform: [{ scale: scoreStarScales[0] }] }}>
-                <ChallengeStarIcon filled={showScoreThresholdOneStar} size={22} />
+                <RewardStarIcon filled={showScoreThresholdOneStar} size={22} />
               </Animated.View>
             </View>
 
@@ -534,7 +539,7 @@ export function ChallengeResultsCard({
               ]}>
               <Text style={styles.markerValueLabel}>{scoreThresholdTwo}</Text>
               <Animated.View style={{ transform: [{ scale: scoreStarScales[1] }] }}>
-                <ChallengeStarIcon filled={showScoreThresholdTwoStar} size={22} />
+                <RewardStarIcon filled={showScoreThresholdTwoStar} size={22} />
               </Animated.View>
             </View>
 
@@ -548,7 +553,7 @@ export function ChallengeResultsCard({
         </View>
 
         <View style={styles.starsWrap}>
-          <ChallengeStarGroup starSize={20} stars={displayedStars as 0 | 1 | 2 | 3} />
+          <RewardStarGroup starSize={20} stars={displayedStars} />
           <Text style={styles.starsLabel}>
             {isFullyRevealed
               ? totalEarnedStars === 1
@@ -565,7 +570,7 @@ export function ChallengeResultsCard({
             style={[styles.actionButton, styles.primaryButton]}
             testID="challenge-play-again-button">
             <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-              Play Again
+              {primaryActionLabel}
             </Text>
           </Pressable>
           <Pressable
@@ -573,7 +578,7 @@ export function ChallengeResultsCard({
             onPress={handleBackPress}
             style={[styles.actionButton, styles.secondaryButton]}
             testID="challenge-summary-back-button">
-            <Text style={styles.actionButtonText}>Back</Text>
+            <Text style={styles.actionButtonText}>{secondaryActionLabel}</Text>
           </Pressable>
         </View>
 
@@ -640,7 +645,7 @@ export function ChallengeResultsCard({
                   transform: [{ scale: masteryCrownScale }],
                 },
               ]}>
-              <ChallengeMasteryCrown size={72} />
+              <MasteryCrownBadge size={72} />
             </Animated.View>
 
             <Animated.View
@@ -648,10 +653,8 @@ export function ChallengeResultsCard({
                 styles.masteryTextWrap,
                 { opacity: masteryTextOpacity },
               ]}>
-              <Text style={styles.masteryTitle}>Crown Unlocked!</Text>
-              <Text style={styles.masterySubtitle}>
-                You mastered this challenge.
-              </Text>
+              <Text style={styles.masteryTitle}>{masteryTitle}</Text>
+              <Text style={styles.masterySubtitle}>{masterySubtitle}</Text>
             </Animated.View>
 
             <CelebrationOverlay
@@ -846,21 +849,17 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surfaceMuted,
     borderColor: palette.ring,
   },
-  devButton: {
-    backgroundColor: '#EEF3FA',
-    borderColor: '#B9C7DA',
-  },
   actionButtonText: {
     color: palette.ink,
     fontFamily: typography.displayFamily,
     fontSize: 20,
     fontWeight: '700',
   },
-  devButtonText: {
-    color: palette.ink,
-    fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    fontWeight: '700',
+  primaryButtonText: {
+    color: palette.white,
+  },
+  skipOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
   devOverlay: {
     position: 'absolute',
@@ -878,10 +877,10 @@ const styles = StyleSheet.create({
     minHeight: 34,
     paddingHorizontal: 12,
   },
-  primaryButtonText: {
-    color: palette.white,
-  },
-  skipOverlay: {
-    ...StyleSheet.absoluteFillObject,
+  devButtonText: {
+    color: palette.ink,
+    fontFamily: typography.bodyFamily,
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

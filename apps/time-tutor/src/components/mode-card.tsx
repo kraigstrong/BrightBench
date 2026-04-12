@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { FeatureCard } from '@education/ui';
-import { ChallengeMasteryCrown } from '@/components/challenge-mastery-crown';
+import { FeatureCard, MasteryCrownBadge } from '@education/ui';
 import { isChallengeModeMastered } from '@/lib/challenge-progression';
 import type { ChallengeModeProgress } from '@/types/time';
 
@@ -26,7 +25,7 @@ export function ModeCard({
     <FeatureCard
       accentColor={accentColor}
       cornerAdornment={
-        progress && isChallengeModeMastered(progress) ? <ChallengeMasteryCrown /> : null
+        progress && isChallengeModeMastered(progress) ? <MasteryCrownBadge /> : null
       }
       description={description}
       descriptionNumberOfLines={1}

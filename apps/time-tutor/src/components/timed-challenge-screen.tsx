@@ -11,12 +11,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { CelebrationOverlay, Card } from '@education/ui';
+import { CelebrationOverlay, Card, ChallengeResultsOverlay } from '@education/ui';
 
 import { AppShell } from '@/components/app-shell';
 import { AnalogClock } from '@/components/analog-clock';
 import { ChallengeCountdownOverlay } from '@/components/challenge-countdown-overlay';
-import { ChallengeResultsOverlay } from '@/components/challenge-results-overlay';
 import { DigitalTimeInput } from '@/components/digital-time-input';
 import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
@@ -126,7 +125,6 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
   });
 
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
-  const isCountdownVisible = countdownValue !== null;
   const timerProgress =
     runStatus === 'running'
       ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
@@ -549,16 +547,17 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
 
         {runStatus === 'finished' && resultSummary ? (
           <ChallengeResultsOverlay
-                accuracy={resultSummary.accuracy}
-                accuracyThreshold={thresholds.accuracyThreshold}
-                didUnlockMastery={resultSummary.didUnlockMastery}
-                difficulty={resultSummary.difficulty}
-                intervalLabel={resultSummary.intervalLabel}
-                onPlayAgain={beginChallenge}
-                score={resultSummary.score}
-                scoreThresholdOne={thresholds.scoreThresholdOne}
-                scoreThresholdTwo={thresholds.scoreThresholdTwo}
-              />
+            accuracy={resultSummary.accuracy}
+            accuracyThreshold={thresholds.accuracyThreshold}
+            didUnlockMastery={resultSummary.didUnlockMastery}
+            onBack={() => router.back()}
+            onPlayAgain={beginChallenge}
+            score={resultSummary.score}
+            scoreThresholdOne={thresholds.scoreThresholdOne}
+            scoreThresholdTwo={thresholds.scoreThresholdTwo}
+            subtitle={`${CHALLENGE_DIFFICULTY_LABELS[resultSummary.difficulty]} challenge · ${resultSummary.intervalLabel}`}
+            title="Time's up!"
+          />
         ) : null}
       </View>
     </AppShell>

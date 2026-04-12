@@ -1,13 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
-import { ChallengeResultsCard } from '@/components/challenge-results-card';
-
-jest.mock('expo-router', () => ({
-  router: {
-    back: jest.fn(),
-  },
-}));
+import { ChallengeResultsCard } from '@education/ui';
 
 describe('ChallengeResultsCard', () => {
   beforeEach(() => {
@@ -27,12 +21,13 @@ describe('ChallengeResultsCard', () => {
         accuracy={80}
         accuracyThreshold={80}
         didUnlockMastery={false}
-        difficulty="medium"
-        intervalLabel="5 min"
+        onBack={jest.fn()}
         onPlayAgain={jest.fn()}
         score={8}
         scoreThresholdOne={5}
         scoreThresholdTwo={8}
+        subtitle="Medium challenge · 5 min"
+        title="Time's up!"
       />,
     );
 
@@ -55,12 +50,13 @@ describe('ChallengeResultsCard', () => {
         accuracy={80}
         accuracyThreshold={80}
         didUnlockMastery
-        difficulty="hard"
-        intervalLabel="1 min"
+        onBack={jest.fn()}
         onPlayAgain={jest.fn()}
         score={8}
         scoreThresholdOne={5}
         scoreThresholdTwo={8}
+        subtitle="Hard challenge · 1 min"
+        title="Time's up!"
       />,
     );
 

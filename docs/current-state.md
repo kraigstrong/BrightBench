@@ -39,6 +39,7 @@ Status:
 Notes:
 - built on the shared Expo stack
 - now uses shared app shell, header, card, celebration, action-button, and feature-card primitives
+- now uses the shared progress footer for mode/session progress summaries
 - includes six game modes, including a number-line placement mode with difficulty-based scaffolding
 - `Find the Fraction` now routes through a Practice vs 1-Minute Challenge chooser modeled after Time Tutor
 - `Find the Fraction` challenge progress is now tracked separately from practice progress
@@ -66,6 +67,7 @@ Notes:
 - the settings screen no longer includes a practice interval control
 - challenge runs now start with an automatic 3-2-1-GO countdown overlay, use a simple countdown bar, and end with a centered animated end-of-round star reveal
 - reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
+- reward flow UI now shares the suite-standard results card/overlay, tiered challenge launcher, star group, crown badge, and progress footer from `@education/ui`
 - the original standalone app remains a read-only visual reference, but migration-specific notes are no longer maintained as a separate document
 
 ### Marketing

@@ -1,11 +1,9 @@
-import React, { type ComponentProps } from 'react';
+import React from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
 
-import { ChallengeResultsCard } from '@/components/challenge-results-card';
+import { ChallengeResultsCard, type ChallengeResultsCardProps } from './challenge-results-card';
 
-type ChallengeResultsOverlayProps = ComponentProps<typeof ChallengeResultsCard>;
-
-export function ChallengeResultsOverlay(props: ChallengeResultsOverlayProps) {
+export function ChallengeResultsOverlay(props: ChallengeResultsCardProps) {
   return (
     <Modal
       animationType="fade"

@@ -60,6 +60,11 @@ Should contain:
 - card shells
 - celebration overlays
 - reusable header/button building blocks
+- suite-standard reward and progression surfaces when the interaction model is intentionally shared across apps
+  - reward stars and mastery crown badge
+  - progress footer
+  - challenge results card and overlay
+  - tiered challenge launcher
 
 Should not contain:
 - per-app gameplay widgets

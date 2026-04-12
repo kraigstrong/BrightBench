@@ -2,34 +2,36 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { palette } from '@/design/theme';
-import type { StarCount } from '@/types/time';
+import { palette } from '@education/design';
 
-type ChallengeStarGroupProps = {
-  starSize?: number;
-  stars: StarCount;
+type RewardStarIconProps = {
+  filled: boolean;
+  size: number;
 };
 
-export function ChallengeStarGroup({
+type RewardStarGroupProps = {
+  maxStars?: number;
+  starSize?: number;
+  stars: number;
+};
+
+export function RewardStarGroup({
+  maxStars = 3,
   starSize = 14,
   stars,
-}: ChallengeStarGroupProps) {
+}: RewardStarGroupProps) {
+  const filledStars = Math.max(0, Math.min(maxStars, Math.floor(stars)));
+
   return (
     <View style={styles.row}>
-      {[0, 1, 2].map((index) => (
-        <ChallengeStarIcon key={index} filled={index < stars} size={starSize} />
+      {Array.from({ length: maxStars }, (_, index) => (
+        <RewardStarIcon key={index} filled={index < filledStars} size={starSize} />
       ))}
     </View>
   );
 }
 
-export function ChallengeStarIcon({
-  filled,
-  size,
-}: {
-  filled: boolean;
-  size: number;
-}) {
+export function RewardStarIcon({ filled, size }: RewardStarIconProps) {
   return (
     <Svg height={size} viewBox="0 0 24 24" width={size}>
       <Path

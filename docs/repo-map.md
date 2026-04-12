@@ -73,6 +73,10 @@
 - app shell
 - header bar
 - action/selectable button primitive
+- reward stars and mastery crown badge
+- shared progress footer
+- challenge results card and overlay
+- tiered challenge launcher
 - other stable primitives
 - should not contain app-specific gameplay widgets
 

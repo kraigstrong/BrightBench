@@ -1,9 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { CompactFeatureCard } from '@education/ui';
+import { CompactFeatureCard, MasteryCrownBadge } from '@education/ui';
 import { AppStoreBadgeButton } from '@/components/app-store-badge-button';
-import { ChallengeMasteryCrown } from '@/components/challenge-mastery-crown';
 import { ChallengeStarProgressFooter } from '@/components/challenge-star-progress-footer';
 import { isChallengeModeMastered } from '@/lib/challenge-progression';
 import type { ChallengeModeProgress } from '@/types/time';
@@ -30,7 +29,7 @@ export function ChallengeOptionCard({
   title,
 }: ChallengeOptionCardProps) {
   const cornerAdornment = !disabled && isChallengeModeMastered(progress) ? (
-    <ChallengeMasteryCrown />
+    <MasteryCrownBadge />
   ) : null;
 
   return (

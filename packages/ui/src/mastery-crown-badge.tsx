@@ -2,20 +2,22 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { palette } from '@/design/theme';
+import { palette } from '@education/design';
 
-type ChallengeMasteryCrownProps = {
+type MasteryCrownBadgeProps = {
+  accessibilityLabel?: string;
   size?: number;
 };
 
-export function ChallengeMasteryCrown({
+export function MasteryCrownBadge({
+  accessibilityLabel = 'Mastered',
   size = 22,
-}: ChallengeMasteryCrownProps) {
+}: MasteryCrownBadgeProps) {
   const wrapSize = Math.round(size * 1.45);
 
   return (
     <View
-      accessibilityLabel="Mastered"
+      accessibilityLabel={accessibilityLabel}
       style={[
         styles.wrap,
         {
@@ -49,8 +51,6 @@ const styles = StyleSheet.create({
     borderColor: '#EAC66A',
     borderRadius: 999,
     borderWidth: 1,
-    height: 32,
     justifyContent: 'center',
-    width: 32,
   },
 });
