@@ -199,6 +199,20 @@ describe('time tutor screens', () => {
     expect(router.push).toHaveBeenCalledWith('/practice/digital-to-analog');
   });
 
+  it('uses a real back navigation on the mode chooser', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <ModeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    fireEvent.press(screen.getByTestId('mode-back-button'));
+
+    expect(router.back).toHaveBeenCalled();
+  });
+
   it('routes explore time through the interval chooser', () => {
     render(
       <SafeAreaProvider>
@@ -211,6 +225,22 @@ describe('time tutor screens', () => {
     fireEvent.press(screen.getByTestId('explore-time-card'));
 
     expect(router.push).toHaveBeenCalledWith('/explore-time');
+  });
+
+  it('uses a real back navigation on the explore screen', () => {
+    mockUseLocalSearchParams.mockReturnValue({ interval: '5-minute' });
+
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <ExploreScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    fireEvent.press(screen.getByText('Back'));
+
+    expect(router.back).toHaveBeenCalled();
   });
 
   it('clears challenge progress for the current mode from the dev button', () => {

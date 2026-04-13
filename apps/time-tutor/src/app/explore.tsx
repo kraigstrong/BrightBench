@@ -109,7 +109,7 @@ export default function ExploreScreen() {
       <Stack.Screen options={{ gestureEnabled: false }} />
       <HeaderBar
         title="Explore Time"
-        leftAction={<BackButton onPress={() => router.replace('/')} />}
+        leftAction={<BackButton onPress={() => router.back()} />}
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />
 

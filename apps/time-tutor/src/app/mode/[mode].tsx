@@ -64,7 +64,7 @@ export default function ModeScreen() {
     <AppShell>
       <HeaderBar
         title={getHomeModeTitle(mode)}
-        leftAction={<BackButton onPress={() => router.replace('/')} testID="mode-back-button" />}
+        leftAction={<BackButton onPress={() => router.back()} testID="mode-back-button" />}
         rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
       />
 
