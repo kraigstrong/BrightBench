@@ -14,9 +14,11 @@ import ExploreTimeLaunchScreen from '@/app/explore-time';
 import HomeScreen from '@/app/index';
 import ChallengeLaunchScreen from '@/app/challenge/[mode]';
 import ModeScreen from '@/app/mode/[mode]';
+import PrivacyScreen from '@/app/privacy';
 import PracticeLaunchScreen from '@/app/practice/[mode]';
 import SessionScreen from '@/app/session/[mode]/[session]';
 import SettingsScreen from '@/app/settings';
+import SupportScreen from '@/app/support';
 import { ElapsedTimeChallengeScreen } from '@/components/elapsed-time-challenge-screen';
 import { ElapsedTimePracticeScreen } from '@/components/elapsed-time-practice-screen';
 import { ReadClockPracticeScreen } from '@/components/read-clock-practice-screen';
@@ -107,6 +109,36 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Support')).toBeTruthy();
     expect(screen.getByText('Privacy Policy')).toBeTruthy();
     expect(screen.getByText('Version 1.1.0')).toBeTruthy();
+  });
+
+  it('renders the support page', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <SupportScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Need help?')).toBeTruthy();
+    expect(screen.getByText('support@timetutor.app')).toBeTruthy();
+  });
+
+  it('renders the privacy page', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <PrivacyScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Privacy Policy')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Time Tutor does not require an account, and we do not collect personal information through the app.',
+      ),
+    ).toBeTruthy();
   });
 
   it('renders the explore screen', () => {

@@ -65,6 +65,7 @@ Notes:
 - Explore Time now uses the same interval chooser pattern and receives its interval through the route instead of relying on the settings page
 - challenge mode is disabled on web and shows the official App Store badge button
 - the settings screen no longer includes a practice interval control
+- the Time Tutor web export now serves `/support` and `/privacy` directly so in-app help links work on `timetutor.app`
 - challenge runs now start with an automatic 3-2-1-GO countdown overlay, use a simple countdown bar, and end with a centered animated end-of-round star reveal
 - reveal can be skipped with a tap and includes `New Best` plus mastery unlock treatment
 - reward flow UI now shares the suite-standard results card/overlay, tiered challenge launcher, star group, crown badge, and progress footer from `@education/ui`

@@ -21,6 +21,7 @@
 - `time-tutor`
   - Build command: `npm run web:export -w time-tutor`
   - Output directory: `apps/time-tutor/dist`
+  - support/privacy links on `timetutor.app` are served by the Time Tutor web export at `/support` and `/privacy`
 
 ## iOS Deployment
 - Each app should have its own bundle identifier
