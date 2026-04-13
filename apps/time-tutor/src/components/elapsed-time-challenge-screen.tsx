@@ -23,6 +23,7 @@ import {
   challengeThresholds,
   formatChallengeIntervalLabel,
 } from '@/config/challenge-thresholds';
+import { getDemoChallengeResultOverride } from '@/config/demo-video';
 import { palette, shadows, typography } from '@/design/theme';
 import {
   calculateChallengeAccuracy,
@@ -157,11 +158,15 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
     setShowWrongAnswerFeedback(false);
     setIsAdvancing(false);
 
-    const accuracy = calculateChallengeAccuracy(score, attempts);
-    const earnedStars = calculateChallengeStars(
-      { accuracy, score },
-      thresholds,
-    );
+    const demoOverride = getDemoChallengeResultOverride(difficulty);
+    const accuracy = demoOverride?.accuracy ?? calculateChallengeAccuracy(score, attempts);
+    const finalScore = demoOverride?.score ?? score;
+    const earnedStars =
+      demoOverride?.stars ??
+      calculateChallengeStars(
+        { accuracy, score: finalScore },
+        thresholds,
+      );
     const previousBest = progress.bestStars[difficulty];
     const nextBest = earnedStars > previousBest ? earnedStars : previousBest;
     const nextProgress = {
@@ -185,7 +190,7 @@ export function ElapsedTimeChallengeScreen({ difficulty, timeFormat }: Props) {
       difficulty,
       intervalLabel: formatChallengeIntervalLabel(currentInterval),
       isNewBest,
-      score,
+      score: finalScore,
     });
   }, [
     attempts,

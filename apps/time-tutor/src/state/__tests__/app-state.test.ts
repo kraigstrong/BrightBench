@@ -47,7 +47,6 @@ describe('time tutor app state normalization', () => {
         timeFormat: '12-hour',
       },
     });
-
     expect(snapshot.challengeProgress['digital-to-analog'].bestStars.easy).toBe(2);
     expect(snapshot.challengeProgress['digital-to-analog'].bestStars.medium).toBe(3);
     expect(snapshot.challengeProgress['digital-to-analog'].bestStars.hard).toBe(0);

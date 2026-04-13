@@ -2,6 +2,7 @@ import {
   CHALLENGE_DIFFICULTIES,
   CHALLENGE_DIFFICULTY_TO_INTERVAL,
 } from '@/config/challenge-thresholds';
+import { DEMO_VIDEO_REWARD_SHORTCUT, DEMO_VIDEO_SEEDED_STARS } from '@/config/demo-video';
 import type {
   ChallengeBestStars,
   ChallengeDifficulty,
@@ -30,6 +31,10 @@ const PLAYABLE_MODES: PlayableMode[] = [
 ];
 
 export function createEmptyChallengeBestStars(): ChallengeBestStars {
+  if (DEMO_VIDEO_REWARD_SHORTCUT) {
+    return { ...DEMO_VIDEO_SEEDED_STARS };
+  }
+
   return {
     easy: 0,
     medium: 0,
@@ -65,10 +70,14 @@ export function normalizeChallengeProgress(
   const normalized = createDefaultChallengeProgress();
 
   for (const mode of PLAYABLE_MODES) {
+    const defaultStars = createEmptyChallengeBestStars();
+    const storedStars = value?.[mode]?.bestStars ?? {};
+
     normalized[mode] = {
       bestStars: {
-        ...createEmptyChallengeBestStars(),
-        ...(value?.[mode]?.bestStars ?? {}),
+        easy: Math.max(defaultStars.easy, storedStars.easy ?? 0) as StarCount,
+        medium: Math.max(defaultStars.medium, storedStars.medium ?? 0) as StarCount,
+        hard: Math.max(defaultStars.hard, storedStars.hard ?? 0) as StarCount,
       },
       lastSelectedDifficulty: value?.[mode]?.lastSelectedDifficulty,
     };
