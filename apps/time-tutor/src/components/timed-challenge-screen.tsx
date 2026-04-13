@@ -497,6 +497,7 @@ export function TimedChallengeScreen({ difficulty, mode, timeFormat }: Props) {
                       onInteractionEnd={() => setClockInteractionActive(false)}
                       onInteractionStart={() => setClockInteractionActive(true)}
                       practiceInterval={currentInterval}
+                      showInteractionHint={runStatus !== 'finished'}
                       size={clockSize}
                       time={analogAnswer}
                     />

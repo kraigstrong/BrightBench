@@ -7,7 +7,7 @@
     "scheme": "timetutor",
     "userInterfaceStyle": "light",
     "ios": {
-      "buildNumber": "3",
+      "buildNumber": "4",
       "supportsTablet": true,
       "bundleIdentifier": "com.timetutor.app"
     },
