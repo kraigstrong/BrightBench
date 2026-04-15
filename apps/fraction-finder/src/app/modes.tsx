@@ -8,10 +8,8 @@ import { ModeCard } from '@/components/ui/mode-card';
 import { layout } from '@/design/tokens';
 import { MODE_META } from '@/features/game/mode-meta';
 import { GameMode } from '@/features/game/types';
-import { modeProgressSummary, useAppState } from '@/state/app-state';
 
 export default function ModesScreen() {
-  const { progress } = useAppState();
   const modes: GameMode[] = ['find', 'build', 'estimate', 'line', 'pour', 'compare'];
 
   return (
@@ -35,7 +33,7 @@ export default function ModesScreen() {
             title={MODE_META[mode].title}
             description={MODE_META[mode].description}
             accent={MODE_META[mode].accent}
-            progressSummary={mode === 'find' ? undefined : modeProgressSummary(progress, mode)}
+            surface={mode === 'find' ? undefined : MODE_META[mode].surface}
             onPress={() => router.push(mode === 'find' ? `/mode/${mode}` : `/play/${mode}`)}
           />
         ))}

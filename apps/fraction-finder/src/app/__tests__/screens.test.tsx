@@ -80,10 +80,12 @@ describe('app screens', () => {
 
     expect(screen.getByText('Choose a Mode')).toBeTruthy();
     expect(screen.getByText('Find the Fraction')).toBeTruthy();
-    expect(screen.getByText('Place on the Number Line')).toBeTruthy();
-    expect(screen.getAllByText('Played').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('High score').length).toBeGreaterThan(0);
-    expect(screen.getByText('Ready for your first round.')).toBeTruthy();
+    expect(screen.getByText('Number Line')).toBeTruthy();
+    expect(screen.queryByText('Played')).toBeNull();
+    expect(screen.queryByText('High score')).toBeNull();
+    expect(screen.getByText('Match a picture to the right fraction.')).toBeTruthy();
+    expect(screen.getByText('Drag the marker to match the fraction.')).toBeTruthy();
+    expect(screen.getByText('Choose the fraction that is larger.')).toBeTruthy();
     expect(screen.getByLabelText('Open settings')).toBeTruthy();
   });
 

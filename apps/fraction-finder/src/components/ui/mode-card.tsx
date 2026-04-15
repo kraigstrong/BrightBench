@@ -1,29 +1,26 @@
 import React from 'react';
 
-import { FeatureCard } from '@education/ui';
-import { ModeProgressSummary } from '@/components/ui/mode-progress-summary';
-import { ProgressSummaryData } from '@/state/app-state';
+import { CompactFeatureCard } from '@education/ui';
 
 export function ModeCard({
   title,
   description,
   accent,
-  progressSummary,
+  surface,
   onPress,
 }: {
   title: string;
   description: string;
   accent: string;
-  progressSummary?: ProgressSummaryData;
+  surface?: string;
   onPress: () => void;
 }) {
   return (
-    <FeatureCard
+    <CompactFeatureCard
       accentColor={accent}
       description={description}
-      descriptionNumberOfLines={2}
-      footer={progressSummary ? <ModeProgressSummary summary={progressSummary} /> : undefined}
       onPress={onPress}
+      tintColor={surface}
       title={title}
     />
   );

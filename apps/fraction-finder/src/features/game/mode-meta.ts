@@ -52,9 +52,9 @@ export const MODE_META: Record<
     surface: '#F3EDFF',
   },
   line: {
-    title: 'Place on the Number Line',
+    title: 'Number Line',
     shortTitle: 'Line',
-    description: 'Drag the marker to where the fraction belongs.',
+    description: 'Drag the marker to match the fraction.',
     promptHint: 'Place the marker, then check how close you are.',
     accent: '#2F9C95',
     surface: '#EAF8F6',
