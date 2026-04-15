@@ -19,7 +19,6 @@ export default function RootLayout() {
             screenOptions={{
               headerShown: false,
               contentStyle: { backgroundColor: palette.background },
-              animation: 'fade',
             }}
           />
         </AppStateProvider>
