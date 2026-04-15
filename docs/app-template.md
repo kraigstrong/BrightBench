@@ -74,6 +74,17 @@ Each app should import from:
 
 Gameplay and curriculum logic should remain app-local unless patterns clearly repeat across products.
 
+## Challenge Standard
+When a product app adds a timed or star-based challenge mode:
+- default to the shared challenge primitives from `@education/ui`
+  - `TieredChallengeLauncher`
+  - challenge countdown overlay
+  - challenge timer bar
+  - challenge results overlay and reveal card
+  - reward stars and mastery crown badge
+- keep round generation, answer checking, scoring thresholds, and progression rules app-local
+- do not invent a different challenge flow unless the user explicitly confirms that deviation
+
 ## Local Structure For Expo Product Apps
 - `src/app`
 - `src/features`

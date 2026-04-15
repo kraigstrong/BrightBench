@@ -5,10 +5,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { goBackOrReplace } from '@education/app-config';
 import { palette, spacing } from '@education/design';
 import { typography } from '@education/design/native';
-import { ActionButton, AppShell, Card, HeaderBar } from '@education/ui';
+import { ActionButton, AppShell, Card, HeaderBar, ProgressFooter } from '@education/ui';
 import { ModeProgressSummary } from '@/components/ui/mode-progress-summary';
 import { StatCard } from '@/components/ui/stat-card';
 import { fractionPalette, layout } from '@/design/tokens';
+import {
+  CHALLENGE_DIFFICULTIES,
+  CHALLENGE_DIFFICULTY_LABELS,
+} from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
 import { SettingsToggleRow } from '@/features/game/mode-play-scene';
 import { GameMode } from '@/features/game/types';
@@ -23,6 +27,7 @@ import {
 export default function SettingsScreen() {
   const { hydrated, progress, settings, updateSettings } = useAppState();
   const modes: GameMode[] = ['find', 'build', 'estimate', 'line', 'pour', 'compare'];
+  const challengeProgress = progress.challengeProgress.find;
 
   return (
     <AppShell maxWidth={layout.maxContentWidth}>
@@ -141,7 +146,13 @@ export default function SettingsScreen() {
                   </Card>
                   <Card style={styles.sessionCard}>
                     <Text style={styles.sessionTitle}>1-Minute Challenge</Text>
-                    <ModeProgressSummary summary={sessionProgressSummary(progress, mode, 'challenge')} />
+                    <ProgressFooter
+                      items={CHALLENGE_DIFFICULTIES.map((difficulty) => ({
+                        key: difficulty,
+                        label: CHALLENGE_DIFFICULTY_LABELS[difficulty],
+                        stars: challengeProgress.bestStars[difficulty],
+                      }))}
+                    />
                   </Card>
                 </View>
               ) : (

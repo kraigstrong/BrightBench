@@ -1,18 +1,33 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { goBackOrReplace } from '@education/app-config';
 import { palette, radii, spacing } from '@education/design';
-import { typography } from '@education/design/native';
 import {
-  ActionButton,
-  Card,
+  ChallengeCountdownOverlay,
+  ChallengeResultsOverlay,
+  ChallengeTimerBar,
   HeaderBar,
   HeaderBackButton,
   HeaderIconButton,
   SettingsCogIcon,
+  useChallengeCountdown,
 } from '@education/ui';
+import {
+  calculateChallengeAccuracy,
+  calculateChallengeStars,
+  challengeThresholds,
+  CHALLENGE_DIFFICULTY_LABELS,
+  getDefaultChallengeDifficulty,
+  isChallengeModeMastered,
+  shouldUpdateBestStars,
+} from '@/features/game/challenge-stars';
 import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { MODE_META } from '@/features/game/mode-meta';
@@ -21,18 +36,72 @@ import { FindRound } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
 const CHALLENGE_DURATION_SECONDS = 60;
+const SUCCESS_ADVANCE_DELAY_MS = 700;
+const WRONG_ANSWER_ADVANCE_DELAY_MS = 520;
+const WRONG_ANSWER_SHAKE_KEYFRAMES = [0, -8, 8, -6, 6, -3, 0] as const;
+const WRONG_ANSWER_SHAKE_DURATIONS = [0, 55, 50, 45, 40, 35, 30] as const;
+const WRONG_ANSWER_FLASH_OPACITY = 0.5;
 
 type RunStatus = 'finished' | 'ready' | 'running';
 
-export function FindChallengeScene() {
-  const { settings, progress, recordRound, startSession, completeSession } = useAppState();
+type ChallengeResultSummary = {
+  accuracy: number;
+  didUnlockMastery: boolean;
+  difficultyLabel: string;
+  isNewBest: boolean;
+  score: number;
+};
+
+export function FindChallengeScene({
+  difficultyLevel,
+}: {
+  difficultyLevel?: FindRound['difficultyLevel'];
+}) {
+  const {
+    progress,
+    recordRound,
+    setChallengeBestStars,
+  } = useAppState();
+  const challengeProgress = progress.challengeProgress.find;
+  const activeDifficultyLevel =
+    difficultyLevel ?? getDefaultChallengeDifficulty(challengeProgress);
+  const thresholds = challengeThresholds[activeDifficultyLevel];
   const [runStatus, setRunStatus] = useState<RunStatus>('ready');
   const [timeRemaining, setTimeRemaining] = useState(CHALLENGE_DURATION_SECONDS);
   const [score, setScore] = useState(0);
-  const [round, setRound] = useState<FindRound | null>(null);
-  const completionRecordedRef = useRef(false);
+  const [attempts, setAttempts] = useState(0);
+  const [round, setRound] = useState<FindRound>(() =>
+    generateFindRound({ difficultyLevel: activeDifficultyLevel })
+  );
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [showWrongAnswerFeedback, setShowWrongAnswerFeedback] = useState(false);
+  const [resultSummary, setResultSummary] = useState<ChallengeResultSummary | null>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wrongAnswerShake = useRef(new Animated.Value(0)).current;
+  const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
   const meta = MODE_META.find;
-  const highScore = progress.sessionStats.find.challenge.highScore;
+  const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
+  const timerProgress =
+    runStatus === 'running'
+      ? Math.max(0, Math.min(1, timeRemaining / CHALLENGE_DURATION_SECONDS))
+      : 1;
+  const { countdownValue, startCountdown, clearCountdown } = useChallengeCountdown({
+    onComplete: () => {
+      setRound(generateFindRound({ difficultyLevel: activeDifficultyLevel }));
+      setTimeRemaining(CHALLENGE_DURATION_SECONDS);
+      setRunStatus('running');
+    },
+  });
+
+  useEffect(
+    () => () => {
+      clearCountdown();
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    },
+    [clearCountdown]
+  );
 
   useEffect(() => {
     if (runStatus !== 'running') {
@@ -54,41 +123,148 @@ export function FindChallengeScene() {
   }, [runStatus]);
 
   useEffect(() => {
-    if (runStatus !== 'finished' || completionRecordedRef.current) {
+    if (runStatus !== 'finished' || resultSummary) {
       return;
     }
 
-    completionRecordedRef.current = true;
-    completeSession({ mode: 'find', score, sessionType: 'challenge' });
-  }, [completeSession, runStatus, score]);
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
 
-  function nextRound() {
-    setRound(generateFindRound({ difficultyLevel: settings.difficultyLevel }));
-  }
+    setShowWrongAnswerFeedback(false);
+    setIsAdvancing(false);
 
-  function startRun() {
-    completionRecordedRef.current = false;
-    startSession({ mode: 'find', sessionType: 'challenge' });
+    const accuracy = calculateChallengeAccuracy(score, attempts);
+    const earnedStars = calculateChallengeStars(
+      { accuracy, score },
+      thresholds
+    );
+    const previousBest = challengeProgress.bestStars[activeDifficultyLevel];
+    const nextBest = earnedStars > previousBest ? earnedStars : previousBest;
+    const nextProgress = {
+      ...challengeProgress,
+      bestStars: {
+        ...challengeProgress.bestStars,
+        [activeDifficultyLevel]: nextBest,
+      },
+    };
+    const isNewBest = shouldUpdateBestStars(previousBest, earnedStars);
+    const didUnlockMastery =
+      !isChallengeModeMastered(challengeProgress) &&
+      isChallengeModeMastered(nextProgress);
+
+    if (isNewBest) {
+      setChallengeBestStars('find', activeDifficultyLevel, earnedStars);
+    }
+
+    setResultSummary({
+      accuracy,
+      didUnlockMastery,
+      difficultyLabel: CHALLENGE_DIFFICULTY_LABELS[activeDifficultyLevel],
+      isNewBest,
+      score,
+    });
+  }, [
+    activeDifficultyLevel,
+    attempts,
+    challengeProgress,
+    resultSummary,
+    runStatus,
+    score,
+    setChallengeBestStars,
+    thresholds,
+  ]);
+
+  const resetFeedbackVisuals = useCallback(() => {
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
+  }, [wrongAnswerFlashOpacity, wrongAnswerShake]);
+
+  const loadNextRound = useCallback(() => {
+    setRound(generateFindRound({ difficultyLevel: activeDifficultyLevel }));
+    setShowWrongAnswerFeedback(false);
+    setIsAdvancing(false);
+    feedbackTimerRef.current = null;
+  }, [activeDifficultyLevel]);
+
+  const beginChallenge = useCallback(() => {
+    clearCountdown();
+
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+
+    resetFeedbackVisuals();
     setScore(0);
+    setAttempts(0);
+    setIsAdvancing(false);
+    setShowWrongAnswerFeedback(false);
+    setResultSummary(null);
     setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setRunStatus('running');
-    setRound(generateFindRound({ difficultyLevel: settings.difficultyLevel }));
-  }
-
-  function handlePlayAgain() {
     setRunStatus('ready');
-    setScore(0);
-    setTimeRemaining(CHALLENGE_DURATION_SECONDS);
-    setRound(null);
-  }
+    setRound(generateFindRound({ difficultyLevel: activeDifficultyLevel }));
+    startCountdown();
+  }, [activeDifficultyLevel, clearCountdown, resetFeedbackVisuals, startCountdown]);
+
+  useEffect(() => {
+    beginChallenge();
+  }, [beginChallenge]);
+
+  const triggerWrongAnswerFeedback = useCallback(() => {
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+
+    resetFeedbackVisuals();
+    setShowWrongAnswerFeedback(true);
+    setIsAdvancing(true);
+
+    Animated.parallel([
+      Animated.sequence(
+        WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
+          Animated.timing(wrongAnswerShake, {
+            duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
+            easing: Easing.out(Easing.quad),
+            toValue: offset,
+            useNativeDriver: true,
+          })
+        )
+      ),
+      Animated.sequence([
+        Animated.timing(wrongAnswerFlashOpacity, {
+          duration: 80,
+          toValue: WRONG_ANSWER_FLASH_OPACITY,
+          useNativeDriver: true,
+        }),
+        Animated.timing(wrongAnswerFlashOpacity, {
+          duration: 220,
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    feedbackTimerRef.current = setTimeout(() => {
+      loadNextRound();
+      resetFeedbackVisuals();
+    }, WRONG_ANSWER_ADVANCE_DELAY_MS);
+  }, [loadNextRound, resetFeedbackVisuals, wrongAnswerFlashOpacity, wrongAnswerShake]);
 
   function submit(answerId: string) {
-    if (runStatus !== 'running' || !round) {
+    if (runStatus !== 'running' || isAdvancing) {
       return;
     }
 
     const evaluation = evaluateFindRound(round, answerId);
+    setAttempts((current) => current + 1);
+
     recordRound({
+      difficultyLevel: activeDifficultyLevel,
       mode: 'find',
       sessionType: 'challenge',
       targetFractionId: round.targetFractionId,
@@ -99,17 +275,26 @@ export function FindChallengeScene() {
     });
 
     if (evaluation.isCorrect) {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+
+      resetFeedbackVisuals();
+      setShowWrongAnswerFeedback(false);
+      setIsAdvancing(true);
       setScore((current) => current + 1);
+      feedbackTimerRef.current = setTimeout(loadNextRound, SUCCESS_ADVANCE_DELAY_MS);
+      return;
     }
 
-    nextRound();
+    triggerWrongAnswerFeedback();
   }
 
   return (
     <View style={styles.scene}>
       <HeaderBar
         title={meta.title}
-        subtitle="1-Minute Challenge"
+        subtitle={`${CHALLENGE_DIFFICULTY_LABELS[activeDifficultyLevel]} - 1-Minute Challenge`}
         leftAction={
           <HeaderBackButton onPress={() => goBackOrReplace(router, '/mode/find')} />
         }
@@ -123,107 +308,89 @@ export function FindChallengeScene() {
         }
       />
 
-      <View style={styles.statsRow}>
-        <View style={styles.statChip}>
-          <Text style={styles.statLabel}>Time left</Text>
-          <Text style={styles.statValue} testID="find-challenge-time-remaining">
-            {formatCountdown(timeRemaining)}
-          </Text>
-        </View>
-        <View style={styles.statChip}>
-          <Text style={styles.statLabel}>Score</Text>
-          <Text style={styles.statValue} testID="find-challenge-score">
-            {score}
-          </Text>
-        </View>
-      </View>
+      <View style={styles.screenBody}>
+        <ChallengeCountdownOverlay value={countdownValue} />
 
-      {runStatus === 'running' && round ? (
+        <ChallengeTimerBar
+          fillTestID="challenge-timer-bar-fill"
+          progress={timerProgress}
+          testID="challenge-timer-bar"
+        />
+
         <GameScreenShell
-          prompt={round.prompt}
+          accent={meta.accent}
+          celebrationVisible={showSuccessOverlay}
           hint="Tap the matching fraction as quickly as you can."
-          accent={meta.accent}>
-          <FindRoundPanel disabled={false} onSubmit={submit} round={round} />
+          prompt={round.prompt}
+          successMessage="Nice work!">
+          <Animated.View
+            style={[
+              styles.answerSurface,
+              {
+                transform: [{ translateX: wrongAnswerShake }],
+              },
+            ]}>
+            <FindRoundPanel
+              disabled={runStatus !== 'running' || isAdvancing}
+              onSubmit={submit}
+              round={round}
+            />
+
+            {showWrongAnswerFeedback ? (
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.answerFlashOverlay,
+                  {
+                    opacity: wrongAnswerFlashOpacity,
+                  },
+                ]}
+              />
+            ) : null}
+          </Animated.View>
         </GameScreenShell>
-      ) : (
-        <Card style={styles.calloutCard}>
-          {runStatus === 'ready' ? (
-            <>
-              <Text style={styles.calloutTitle}>Ready for a fast round?</Text>
-              <Text style={styles.calloutBody}>
-                You&apos;ll have one minute to answer as many fraction matches as you can.
-              </Text>
-              <ActionButton label="Start challenge" onPress={startRun} />
-            </>
-          ) : (
-            <>
-              <Text style={styles.calloutTitle}>Time&apos;s up!</Text>
-              <Text style={styles.calloutScore}>Final score: {score}</Text>
-              <Text style={styles.calloutBody}>High score: {Math.max(highScore, score)}</Text>
-              <ActionButton label="Play again" onPress={handlePlayAgain} />
-            </>
-          )}
-        </Card>
-      )}
+
+        {runStatus === 'finished' && resultSummary ? (
+          <ChallengeResultsOverlay
+            accuracy={resultSummary.accuracy}
+            accuracyThreshold={thresholds.accuracyThreshold}
+            didUnlockMastery={resultSummary.didUnlockMastery}
+            onBack={() => goBackOrReplace(router, '/mode/find')}
+            onPlayAgain={beginChallenge}
+            score={resultSummary.score}
+            scoreThresholdOne={thresholds.scoreThresholdOne}
+            scoreThresholdTwo={thresholds.scoreThresholdTwo}
+            subtitle={`${resultSummary.difficultyLabel} challenge${resultSummary.isNewBest ? ' - New Best' : ''}`}
+            title="Time's up!"
+          />
+        ) : null}
+      </View>
     </View>
   );
 }
 
-function formatCountdown(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}:${String(remainder).padStart(2, '0')}`;
-}
-
 const styles = StyleSheet.create({
   scene: {
-    gap: spacing.md,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  statChip: {
-    backgroundColor: palette.surfaceMuted,
-    borderColor: palette.ring,
-    borderRadius: radii.xl,
-    borderWidth: 1,
     flex: 1,
-    gap: 4,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  statLabel: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  statValue: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  calloutCard: {
     gap: spacing.md,
   },
-  calloutTitle: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 28,
-    fontWeight: '700',
+  screenBody: {
+    flex: 1,
+    gap: spacing.md,
+    position: 'relative',
   },
-  calloutScore: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 22,
-    fontWeight: '700',
+  answerSurface: {
+    minHeight: 260,
+    position: 'relative',
+    width: '100%',
   },
-  calloutBody: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    lineHeight: 24,
+  answerFlashOverlay: {
+    backgroundColor: palette.danger,
+    borderRadius: radii.lg,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
   },
 });

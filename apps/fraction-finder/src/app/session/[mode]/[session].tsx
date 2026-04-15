@@ -3,9 +3,14 @@ import React from 'react';
 
 import { AppShell } from '@education/ui';
 import { layout } from '@/design/tokens';
+import {
+  CHALLENGE_DIFFICULTIES,
+  getDefaultChallengeDifficulty,
+} from '@/features/game/challenge-stars';
 import { FindChallengeScene } from '@/features/game/find-challenge-scene';
 import { ModePlayScene } from '@/features/game/mode-play-scene';
-import { GameMode, SessionType } from '@/features/game/types';
+import { DifficultyLevel, GameMode, SessionType } from '@/features/game/types';
+import { useAppState } from '@/state/app-state';
 
 const VALID_MODES: GameMode[] = ['find'];
 const VALID_SESSIONS: SessionType[] = ['practice', 'challenge'];
@@ -17,13 +22,26 @@ export function generateStaticParams() {
 }
 
 export default function SessionScreen() {
-  const params = useLocalSearchParams<{ mode?: string; session?: string }>();
+  const params = useLocalSearchParams<{
+    difficulty?: string;
+    mode?: string;
+    session?: string;
+  }>();
   const mode = params.mode as GameMode | undefined;
   const session = params.session as SessionType | undefined;
+  const requestedDifficulty = CHALLENGE_DIFFICULTIES.includes(
+    params.difficulty as DifficultyLevel
+  )
+    ? (params.difficulty as DifficultyLevel)
+    : undefined;
+  const { progress } = useAppState();
 
   if (!mode || !session || !VALID_MODES.includes(mode) || !VALID_SESSIONS.includes(session)) {
     return <Redirect href="/modes" />;
   }
+
+  const challengeDifficulty =
+    requestedDifficulty ?? getDefaultChallengeDifficulty(progress.challengeProgress.find);
 
   return (
     <>
@@ -32,11 +50,11 @@ export default function SessionScreen() {
           gestureEnabled: false,
         }}
       />
-      <AppShell maxWidth={layout.maxContentWidth}>
+      <AppShell maxWidth={layout.maxContentWidth} scroll={session !== 'challenge'}>
         {session === 'practice' ? (
           <ModePlayScene mode={mode} sessionType="practice" />
         ) : (
-          <FindChallengeScene />
+          <FindChallengeScene difficultyLevel={challengeDifficulty} />
         )}
       </AppShell>
     </>

@@ -41,12 +41,12 @@ describe('app state normalization', () => {
     expect(progress.modeStats.find.played).toBe(4);
     expect(progress.modeStats.find.correct).toBe(3);
     expect(progress.sessionStats.find.practice.played).toBe(4);
-    expect(progress.sessionStats.find.challenge.highScore).toBe(0);
+    expect(progress.challengeProgress.find.bestStars.easy).toBe(0);
     expect(progress.modeStats.compare.played).toBe(0);
     expect(progress.modeStats.line.played).toBe(0);
   });
 
-  it('prefers stored session stats over legacy find mode stats', () => {
+  it('normalizes stored challenge stars and practice stats separately', () => {
     const progress = normalizeProgressSnapshot({
       modeStats: {
         find: {
@@ -64,20 +64,26 @@ describe('app state normalization', () => {
             bestStreak: 3,
             currentStreak: 2,
           },
-          challenge: {
-            played: 2,
-            correct: 3,
-            attempts: 4,
-            highScore: 3,
+        },
+      },
+      challengeProgress: {
+        find: {
+          bestStars: {
+            easy: 2,
+            medium: 3,
           },
+          lastSelectedDifficulty: 'medium',
         },
       },
     });
 
     expect(progress.sessionStats.find.practice.played).toBe(5);
-    expect(progress.sessionStats.find.challenge.highScore).toBe(3);
-    expect(progress.modeStats.find.played).toBe(9);
-    expect(progress.modeStats.find.correct).toBe(7);
+    expect(progress.challengeProgress.find.bestStars.easy).toBe(2);
+    expect(progress.challengeProgress.find.bestStars.medium).toBe(3);
+    expect(progress.challengeProgress.find.bestStars.hard).toBe(0);
+    expect(progress.challengeProgress.find.lastSelectedDifficulty).toBe('medium');
+    expect(progress.modeStats.find.played).toBe(4);
+    expect(progress.modeStats.find.correct).toBe(3);
   });
 
   it('builds separate practice and challenge summaries for find', () => {
@@ -90,12 +96,16 @@ describe('app state normalization', () => {
           bestStreak: 2,
           currentStreak: 1,
         },
-          challenge: {
-            played: 2,
-            correct: 3,
-            attempts: 4,
-            highScore: 3,
+        },
+      },
+      challengeProgress: {
+        find: {
+          bestStars: {
+            easy: 2,
+            medium: 1,
+            hard: 0,
           },
+          lastSelectedDifficulty: 'medium',
         },
       },
     });
@@ -109,13 +119,9 @@ describe('app state normalization', () => {
       ],
     });
     expect(sessionProgressSummary(progress, 'find', 'challenge')).toEqual({
-      emptyText: 'Ready for your first challenge.',
+      emptyText: 'Pick a challenge to start earning stars.',
       hasProgress: true,
-      metrics: [
-        { label: 'Played', value: '2' },
-        { label: 'Accuracy', value: '75%' },
-        { label: 'High Score', value: '3' },
-      ],
+      metrics: [{ label: 'Total Stars', value: '3' }],
     });
     expect(modeProgressSummary(progress, 'line').hasProgress).toBe(false);
   });
@@ -130,15 +136,24 @@ describe('app state normalization', () => {
             bestStreak: 2,
             currentStreak: 1,
           },
-          challenge: {
-            played: 2,
-            correct: 1,
-            attempts: 3,
-            highScore: 2,
+        },
+      },
+      challengeProgress: {
+        find: {
+          bestStars: {
+            easy: 2,
+            medium: 1,
+            hard: 0,
           },
         },
       },
       modeStats: {
+        find: {
+          played: 7,
+          correct: 4,
+          bestStreak: 2,
+          currentStreak: 1,
+        },
         pour: {
           played: 2,
           correct: 1,

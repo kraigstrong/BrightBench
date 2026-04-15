@@ -27,8 +27,7 @@ const evaluateFindRoundMock = jest.mocked(evaluateFindRound);
 
 describe('FindChallengeScene', () => {
   const recordRound = jest.fn();
-  const startSession = jest.fn();
-  const completeSession = jest.fn();
+  const setChallengeBestStars = jest.fn();
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -47,7 +46,16 @@ describe('FindChallengeScene', () => {
         sessionStats: {
           find: {
             practice: { played: 0, correct: 0, bestStreak: 0, currentStreak: 0 },
-            challenge: { played: 0, correct: 0, attempts: 0, highScore: 3 },
+          },
+        },
+        challengeProgress: {
+          find: {
+            bestStars: {
+              easy: 0,
+              medium: 0,
+              hard: 0,
+            },
+            lastSelectedDifficulty: 'easy',
           },
         },
         recentResults: [],
@@ -60,8 +68,8 @@ describe('FindChallengeScene', () => {
       },
       lastResult: null,
       recordRound,
-      startSession,
-      completeSession,
+      setChallengeBestStars,
+      setLastSelectedChallengeDifficulty: jest.fn(),
       updateSettings: jest.fn(),
       clearLastResult: jest.fn(),
     });
@@ -87,13 +95,17 @@ describe('FindChallengeScene', () => {
     jest.clearAllMocks();
   });
 
-  it('starts a run, scores correct answers, and completes when time ends', () => {
-    render(<FindChallengeScene />);
+  it('starts with a countdown, scores correct answers, and shows the results overlay', () => {
+    render(<FindChallengeScene difficultyLevel="easy" />);
 
-    fireEvent.press(screen.getByText('Start challenge'));
+    expect(screen.getByTestId('challenge-countdown-value')).toBeTruthy();
 
-    expect(startSession).toHaveBeenCalledWith({ mode: 'find', sessionType: 'challenge' });
-    expect(screen.getByTestId('find-challenge-time-remaining')).toHaveTextContent('1:00');
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    expect(screen.getByTestId('challenge-timer-bar')).toBeTruthy();
+    expect(screen.getByTestId('challenge-timer-bar-fill')).toBeTruthy();
 
     fireEvent.press(screen.getByText('1/2'));
 
@@ -101,26 +113,52 @@ describe('FindChallengeScene', () => {
       expect.objectContaining({
         mode: 'find',
         sessionType: 'challenge',
+        difficultyLevel: 'easy',
         wasCorrect: true,
       })
     );
-    expect(screen.getByTestId('find-challenge-score')).toHaveTextContent('1');
 
     act(() => {
       jest.advanceTimersByTime(1000);
     });
 
-    expect(screen.getByTestId('find-challenge-time-remaining')).toHaveTextContent('0:59');
-
     act(() => {
       jest.advanceTimersByTime(59000);
     });
 
-    expect(completeSession).toHaveBeenCalledWith({
-      mode: 'find',
-      score: 1,
-      sessionType: 'challenge',
-    });
     expect(screen.getByText("Time's up!")).toBeTruthy();
+    expect(screen.getByText('Revealing your stars...')).toBeTruthy();
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(setChallengeBestStars).toHaveBeenCalledWith('find', 'easy', 1);
+    expect(screen.getByText('1 star earned')).toBeTruthy();
+  });
+
+  it('auto-advances after a wrong answer', () => {
+    render(<FindChallengeScene difficultyLevel="easy" />);
+
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    fireEvent.press(screen.getByText('1/4'));
+
+    expect(recordRound).toHaveBeenCalledWith(
+      expect.objectContaining({
+        difficultyLevel: 'easy',
+        wasCorrect: false,
+      })
+    );
+
+    expect(generateFindRoundMock).toHaveBeenCalledTimes(3);
+
+    act(() => {
+      jest.advanceTimersByTime(520);
+    });
+
+    expect(generateFindRoundMock).toHaveBeenCalledTimes(4);
   });
 });

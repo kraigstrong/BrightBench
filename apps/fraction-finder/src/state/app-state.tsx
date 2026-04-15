@@ -2,13 +2,20 @@ import * as Haptics from 'expo-haptics';
 import React, { createContext, useContext, useEffect, useReducer } from 'react';
 
 import {
-  ChallengeSessionStat,
+  createDefaultChallengeProgress,
+  normalizeChallengeProgress,
+  totalStarsForMode,
+} from '@/features/game/challenge-stars';
+import {
+  ChallengeBestStars,
+  DifficultyLevel,
   FindSessionStats,
   GameMode,
   ProgressSnapshot,
   RecentRoundResult,
   SessionType,
   SettingsSnapshot,
+  StarCount,
 } from '@/features/game/types';
 import { loadSnapshot, saveSnapshot } from '@/lib/storage';
 
@@ -20,11 +27,19 @@ type AppState = {
 };
 
 type ProgressSnapshotInput = {
+  challengeProgress?: Partial<
+    Record<
+      keyof ProgressSnapshot['challengeProgress'],
+      {
+        bestStars?: Partial<ChallengeBestStars>;
+        lastSelectedDifficulty?: DifficultyLevel;
+      }
+    >
+  >;
   modeStats?: Partial<Record<GameMode, Partial<ProgressSnapshot['modeStats'][GameMode]>>>;
   sessionStats?: {
     find?: {
       practice?: Partial<FindSessionStats['practice']>;
-      challenge?: Partial<ChallengeSessionStat>;
     };
   };
   recentResults?: ProgressSnapshot['recentResults'];
@@ -33,18 +48,28 @@ type ProgressSnapshotInput = {
 type Action =
   | { type: 'hydrate'; progress: ProgressSnapshot; settings: SettingsSnapshot }
   | { type: 'record-round'; payload: RecentRoundResult }
-  | { type: 'start-session'; payload: { mode: 'find'; sessionType: 'challenge' } }
   | {
-      type: 'complete-session';
-      payload: { mode: 'find'; score: number; sessionType: 'challenge' };
+      type: 'set-challenge-best-stars';
+      payload: { difficultyLevel: DifficultyLevel; mode: 'find'; stars: StarCount };
+    }
+  | {
+      type: 'set-last-selected-challenge-difficulty';
+      payload: { difficultyLevel: DifficultyLevel; mode: 'find' };
     }
   | { type: 'update-settings'; payload: Partial<SettingsSnapshot> }
   | { type: 'clear-last-result' };
 
 type AppContextValue = AppState & {
   recordRound: (result: RecentRoundResult) => void;
-  startSession: (payload: { mode: 'find'; sessionType: 'challenge' }) => void;
-  completeSession: (payload: { mode: 'find'; score: number; sessionType: 'challenge' }) => void;
+  setChallengeBestStars: (
+    mode: 'find',
+    difficultyLevel: DifficultyLevel,
+    stars: StarCount
+  ) => void;
+  setLastSelectedChallengeDifficulty: (
+    mode: 'find',
+    difficultyLevel: DifficultyLevel
+  ) => void;
   updateSettings: (settings: Partial<SettingsSnapshot>) => void;
   clearLastResult: () => void;
 };
@@ -67,22 +92,6 @@ const defaultModeStat = {
   currentStreak: 0,
 };
 
-const defaultChallengeStat: ChallengeSessionStat = {
-  played: 0,
-  correct: 0,
-  attempts: 0,
-  highScore: 0,
-};
-
-function recomputeFindModeStat(sessionStats: FindSessionStats) {
-  return {
-    played: sessionStats.practice.played + sessionStats.challenge.attempts,
-    correct: sessionStats.practice.correct + sessionStats.challenge.correct,
-    bestStreak: sessionStats.practice.bestStreak,
-    currentStreak: sessionStats.practice.currentStreak,
-  };
-}
-
 export const defaultProgress: ProgressSnapshot = {
   modeStats: {
     find: { ...defaultModeStat },
@@ -95,9 +104,9 @@ export const defaultProgress: ProgressSnapshot = {
   sessionStats: {
     find: {
       practice: { ...defaultModeStat },
-      challenge: { ...defaultChallengeStat },
     },
   },
+  challengeProgress: createDefaultChallengeProgress(),
   recentResults: [],
 };
 
@@ -122,27 +131,25 @@ export function normalizeProgressSnapshot(
     ...defaultModeStat,
     ...(progress?.sessionStats?.find?.practice ?? progress?.modeStats?.find ?? {}),
   };
-  const challenge = {
-    ...defaultChallengeStat,
-    ...(progress?.sessionStats?.find?.challenge ?? {}),
-  };
-  const sessionStats = {
-    find: {
-      practice,
-      challenge,
-    },
-  };
 
   return {
     modeStats: {
-      find: recomputeFindModeStat(sessionStats.find),
+      find: {
+        ...defaultModeStat,
+        ...(progress?.modeStats?.find ?? practice),
+      },
       build: { ...defaultModeStat, ...(progress?.modeStats?.build ?? {}) },
       compare: { ...defaultModeStat, ...(progress?.modeStats?.compare ?? {}) },
       estimate: { ...defaultModeStat, ...(progress?.modeStats?.estimate ?? {}) },
       pour: { ...defaultModeStat, ...(progress?.modeStats?.pour ?? {}) },
       line: { ...defaultModeStat, ...(progress?.modeStats?.line ?? {}) },
     },
-    sessionStats,
+    sessionStats: {
+      find: {
+        practice,
+      },
+    },
+    challengeProgress: normalizeChallengeProgress(progress?.challengeProgress),
     recentResults: progress?.recentResults ?? [],
   };
 }
@@ -168,20 +175,13 @@ function reducer(state: AppState, action: Action): AppState {
     case 'record-round': {
       if (action.payload.mode === 'find') {
         const sessionType = action.payload.sessionType ?? 'practice';
+        const previousMode = state.progress.modeStats.find;
 
         if (sessionType === 'challenge') {
-          const previousChallenge = state.progress.sessionStats.find.challenge;
-          const challenge = {
-            ...previousChallenge,
-            attempts: previousChallenge.attempts + 1,
-            correct: previousChallenge.correct + (action.payload.wasCorrect ? 1 : 0),
-          };
-          const sessionStats = {
-            ...state.progress.sessionStats,
-            find: {
-              ...state.progress.sessionStats.find,
-              challenge,
-            },
+          const modeStat = {
+            ...previousMode,
+            played: previousMode.played + 1,
+            correct: previousMode.correct + (action.payload.wasCorrect ? 1 : 0),
           };
 
           return {
@@ -190,9 +190,8 @@ function reducer(state: AppState, action: Action): AppState {
               ...state.progress,
               modeStats: {
                 ...state.progress.modeStats,
-                find: recomputeFindModeStat(sessionStats.find),
+                find: modeStat,
               },
-              sessionStats,
               recentResults: [action.payload, ...state.progress.recentResults].slice(0, 12),
             },
             lastResult: action.payload,
@@ -208,23 +207,27 @@ function reducer(state: AppState, action: Action): AppState {
         };
         practice.bestStreak = Math.max(practice.bestStreak, practice.currentStreak);
 
-        const sessionStats = {
-          ...state.progress.sessionStats,
-          find: {
-            ...state.progress.sessionStats.find,
-            practice,
-          },
-        };
-
         return {
           ...state,
           progress: {
             ...state.progress,
             modeStats: {
               ...state.progress.modeStats,
-              find: recomputeFindModeStat(sessionStats.find),
+              find: {
+                ...previousMode,
+                played: previousMode.played + 1,
+                correct: previousMode.correct + (action.payload.wasCorrect ? 1 : 0),
+                currentStreak: practice.currentStreak,
+                bestStreak: practice.bestStreak,
+              },
             },
-            sessionStats,
+            sessionStats: {
+              ...state.progress.sessionStats,
+              find: {
+                ...state.progress.sessionStats.find,
+                practice,
+              },
+            },
             recentResults: [action.payload, ...state.progress.recentResults].slice(0, 12),
           },
           lastResult: action.payload,
@@ -235,79 +238,66 @@ function reducer(state: AppState, action: Action): AppState {
       const played = previous.played + 1;
       const correct = previous.correct + (action.payload.wasCorrect ? 1 : 0);
       const currentStreak = action.payload.wasCorrect ? previous.currentStreak + 1 : 0;
-      const modeStats = {
-        ...state.progress.modeStats,
-        [action.payload.mode]: {
-          played,
-          correct,
-          currentStreak,
-          bestStreak: Math.max(previous.bestStreak, currentStreak),
-        },
-      };
 
       return {
         ...state,
         progress: {
           ...state.progress,
-          modeStats,
+          modeStats: {
+            ...state.progress.modeStats,
+            [action.payload.mode]: {
+              played,
+              correct,
+              currentStreak,
+              bestStreak: Math.max(previous.bestStreak, currentStreak),
+            },
+          },
           recentResults: [action.payload, ...state.progress.recentResults].slice(0, 12),
         },
         lastResult: action.payload,
       };
     }
-    case 'start-session': {
-      const challenge = {
-        ...state.progress.sessionStats.find.challenge,
-        played: state.progress.sessionStats.find.challenge.played + 1,
-      };
-      const sessionStats = {
-        ...state.progress.sessionStats,
-        find: {
-          ...state.progress.sessionStats.find,
-          challenge,
-        },
-      };
+    case 'set-challenge-best-stars': {
+      const current =
+        state.progress.challengeProgress[action.payload.mode].bestStars[
+          action.payload.difficultyLevel
+        ];
+
+      if (action.payload.stars <= current) {
+        return state;
+      }
 
       return {
         ...state,
         progress: {
           ...state.progress,
-          modeStats: {
-            ...state.progress.modeStats,
-            find: recomputeFindModeStat(sessionStats.find),
+          challengeProgress: {
+            ...state.progress.challengeProgress,
+            [action.payload.mode]: {
+              ...state.progress.challengeProgress[action.payload.mode],
+              bestStars: {
+                ...state.progress.challengeProgress[action.payload.mode].bestStars,
+                [action.payload.difficultyLevel]: action.payload.stars,
+              },
+            },
           },
-          sessionStats,
         },
       };
     }
-    case 'complete-session': {
-      const challenge = {
-        ...state.progress.sessionStats.find.challenge,
-        highScore: Math.max(
-          state.progress.sessionStats.find.challenge.highScore,
-          action.payload.score
-        ),
-      };
-      const sessionStats = {
-        ...state.progress.sessionStats,
-        find: {
-          ...state.progress.sessionStats.find,
-          challenge,
-        },
-      };
-
+    case 'set-last-selected-challenge-difficulty':
       return {
         ...state,
         progress: {
           ...state.progress,
-          modeStats: {
-            ...state.progress.modeStats,
-            find: recomputeFindModeStat(sessionStats.find),
+          challengeProgress: {
+            ...state.progress.challengeProgress,
+            [action.payload.mode]: {
+              ...state.progress.challengeProgress[action.payload.mode],
+              lastSelectedDifficulty: action.payload.difficultyLevel,
+            },
           },
-          sessionStats,
         },
       };
-    }
     case 'update-settings':
       return {
         ...state,
@@ -369,8 +359,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       dispatch({ type: 'record-round', payload: result });
     },
-    startSession: (payload) => dispatch({ type: 'start-session', payload }),
-    completeSession: (payload) => dispatch({ type: 'complete-session', payload }),
+    setChallengeBestStars: (mode, difficultyLevel, stars) =>
+      dispatch({
+        type: 'set-challenge-best-stars',
+        payload: { difficultyLevel, mode, stars },
+      }),
+    setLastSelectedChallengeDifficulty: (mode, difficultyLevel) =>
+      dispatch({
+        type: 'set-last-selected-challenge-difficulty',
+        payload: { difficultyLevel, mode },
+      }),
     updateSettings: (settings) => dispatch({ type: 'update-settings', payload: settings }),
     clearLastResult: () => dispatch({ type: 'clear-last-result' }),
   };
@@ -406,7 +404,6 @@ export function modeProgressSummary(
   mode: GameMode
 ): ProgressSummaryData {
   const stat = progress.modeStats[mode];
-  const challenge = progress.sessionStats.find.challenge;
 
   return {
     hasProgress: stat.played > 0,
@@ -414,7 +411,6 @@ export function modeProgressSummary(
       { label: 'Played', value: String(stat.played) },
       { label: 'Streak', value: String(stat.bestStreak) },
       { label: 'Accuracy', value: `${accuracyForMode(progress, mode)}%` },
-      { label: 'High score', value: String(mode === 'find' ? challenge.highScore : 0) },
     ],
   };
 }
@@ -441,16 +437,12 @@ export function sessionProgressSummary(
     };
   }
 
-  const challenge = progress.sessionStats.find.challenge;
+  const challenge = progress.challengeProgress.find;
 
   return {
-    hasProgress: challenge.played > 0,
-    emptyText: 'Ready for your first challenge.',
-    metrics: [
-      { label: 'Played', value: String(challenge.played) },
-      { label: 'Accuracy', value: `${accuracyFromCounts(challenge.correct, challenge.attempts)}%` },
-      { label: 'High Score', value: String(challenge.highScore) },
-    ],
+    hasProgress: totalStarsForMode(challenge) > 0,
+    emptyText: 'Pick a challenge to start earning stars.',
+    metrics: [{ label: 'Total Stars', value: String(totalStarsForMode(challenge)) }],
   };
 }
 

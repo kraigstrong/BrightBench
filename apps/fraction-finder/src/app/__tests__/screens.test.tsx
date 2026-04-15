@@ -1,6 +1,7 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
+import ChallengeLaunchScreen from '@/app/challenge/[mode]';
 import HomeScreen from '@/app/index';
 import ModeDetailScreen from '@/app/mode/[mode]';
 import ModesScreen from '@/app/modes';
@@ -13,6 +14,10 @@ jest.mock('expo-router', () => ({
   router: {
     back: jest.fn(),
     push: jest.fn(),
+    replace: jest.fn(),
+  },
+  Stack: {
+    Screen: () => null,
   },
   useLocalSearchParams: jest.fn(() => ({ mode: 'find' })),
 }));
@@ -23,10 +28,15 @@ jest.mock('@/state/app-state', () => ({
 }));
 
 const useAppStateMock = jest.mocked(useAppState);
+const routerMock = jest.requireMock('expo-router').router as {
+  back: jest.Mock;
+  push: jest.Mock;
+  replace: jest.Mock;
+};
 
 describe('app screens', () => {
-  beforeEach(() => {
-    useAppStateMock.mockReturnValue({
+  function buildAppState() {
+    return {
       hydrated: true,
       progress: {
         modeStats: {
@@ -40,7 +50,16 @@ describe('app screens', () => {
         sessionStats: {
           find: {
             practice: { played: 4, correct: 3, bestStreak: 2, currentStreak: 1 },
-            challenge: { played: 2, correct: 1, attempts: 2, highScore: 3 },
+          },
+        },
+        challengeProgress: {
+          find: {
+            bestStars: {
+              easy: 2 as const,
+              medium: 1 as const,
+              hard: 0 as const,
+            },
+            lastSelectedDifficulty: 'easy' as const,
           },
         },
         recentResults: [],
@@ -48,23 +67,33 @@ describe('app screens', () => {
       settings: {
         soundEnabled: false,
         reducedMotion: false,
-        difficultyLevel: 'easy',
-        preferredRepresentation: 'mixed',
+        difficultyLevel: 'easy' as const,
+        preferredRepresentation: 'mixed' as const,
       },
       lastResult: {
-        mode: 'find',
+        mode: 'find' as const,
         targetFractionId: '1-2',
-        scoreBand: 'exact',
+        scoreBand: 'exact' as const,
         wasCorrect: true,
         feedbackKey: 'Nice work!',
         createdAt: '2026-04-07T00:00:00.000Z',
       },
       recordRound: jest.fn(),
-      startSession: jest.fn(),
-      completeSession: jest.fn(),
+      setChallengeBestStars: jest.fn(),
+      setLastSelectedChallengeDifficulty: jest.fn(),
       updateSettings: jest.fn(),
       clearLastResult: jest.fn(),
-    });
+    };
+  }
+
+  beforeEach(() => {
+    useAppStateMock.mockReturnValue(buildAppState());
+  });
+
+  afterEach(() => {
+    routerMock.back.mockReset();
+    routerMock.push.mockReset();
+    routerMock.replace.mockReset();
   });
 
   it('renders the home screen', () => {
@@ -95,8 +124,40 @@ describe('app screens', () => {
     expect(screen.getByText('Choose how you want to play.')).toBeTruthy();
     expect(screen.getByText('Practice')).toBeTruthy();
     expect(screen.getByText('1-Minute Challenge')).toBeTruthy();
-    expect(screen.getByText('Best Streak')).toBeTruthy();
-    expect(screen.getByText('High Score')).toBeTruthy();
+    expect(screen.queryByText('Best Streak')).toBeNull();
+    expect(screen.queryByText('High Score')).toBeNull();
+    expect(screen.getByText('Easy')).toBeTruthy();
+    expect(screen.getByText('Medium')).toBeTruthy();
+    expect(screen.getByText('Hard')).toBeTruthy();
+  });
+
+  it('opens the challenge launch route from the challenge card', () => {
+    render(<ModeDetailScreen />);
+
+    fireEvent.press(screen.getByText('1-Minute Challenge'));
+
+    expect(routerMock.push).toHaveBeenCalledWith('/challenge/find');
+  });
+
+  it('renders the challenge launcher screen and routes to the chosen difficulty', () => {
+    const setLastSelectedChallengeDifficulty = jest.fn();
+    useAppStateMock.mockReturnValue({
+      ...buildAppState(),
+      lastResult: null,
+      setLastSelectedChallengeDifficulty,
+    });
+
+    render(<ChallengeLaunchScreen />);
+
+    expect(screen.getByText('Choose your difficulty')).toBeTruthy();
+    expect(screen.getByText('Friendly benchmark fractions')).toBeTruthy();
+    expect(screen.getByText('Adds thirds, sixths, and eighths')).toBeTruthy();
+    expect(screen.getByText('Full mixed fraction pool')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('challenge-tier-medium'));
+
+    expect(setLastSelectedChallengeDifficulty).toHaveBeenCalledWith('find', 'medium');
+    expect(routerMock.replace).toHaveBeenCalledWith('/session/find/challenge?difficulty=medium');
   });
 
   it('renders the settings screen with shared selectable controls', () => {

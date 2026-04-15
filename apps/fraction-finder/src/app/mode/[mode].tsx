@@ -1,6 +1,6 @@
 import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { spacing } from '@education/design';
 import {
@@ -9,13 +9,20 @@ import {
   HeaderBar,
   HeaderBackButton,
   HeaderIconButton,
+  MasteryCrownBadge,
+  ProgressFooter,
   SettingsCogIcon,
+  type ProgressFooterItem,
 } from '@education/ui';
-import { ModeProgressSummary } from '@/components/ui/mode-progress-summary';
 import { layout } from '@/design/tokens';
+import {
+  CHALLENGE_DIFFICULTIES,
+  CHALLENGE_DIFFICULTY_LABELS,
+  isChallengeModeMastered,
+} from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
 import { GameMode } from '@/features/game/types';
-import { sessionProgressSummary, useAppState } from '@/state/app-state';
+import { useAppState } from '@/state/app-state';
 
 const VALID_MODES: GameMode[] = ['find'];
 
@@ -33,12 +40,19 @@ export default function ModeDetailScreen() {
   }
 
   const meta = MODE_META[mode];
+  const challengeProgress = progress.challengeProgress.find;
+  const challengeFooterItems: ProgressFooterItem[] = CHALLENGE_DIFFICULTIES.map(
+    (difficulty) => ({
+      key: difficulty,
+      label: CHALLENGE_DIFFICULTY_LABELS[difficulty],
+      stars: challengeProgress.bestStars[difficulty],
+    })
+  );
 
   return (
     <AppShell maxWidth={layout.maxContentWidth}>
       <HeaderBar
         title={meta.title}
-        subtitle="Choose how you want to play."
         leftAction={<HeaderBackButton onPress={() => router.back()} />}
         rightAction={
           <HeaderIconButton
@@ -50,23 +64,23 @@ export default function ModeDetailScreen() {
         }
       />
 
+      <Text style={styles.subtitle}>Choose how you want to play.</Text>
+
       <View style={styles.column}>
         <CompactFeatureCard
           accentColor={meta.accent}
           description="Go at your own pace with instant feedback on each answer."
-          footer={
-            <ModeProgressSummary summary={sessionProgressSummary(progress, mode, 'practice')} />
-          }
           onPress={() => router.push(`/session/${mode}/practice`)}
           title="Practice"
         />
         <CompactFeatureCard
           accentColor={meta.accent}
-          description="Answer as many questions as you can in one minute."
-          footer={
-            <ModeProgressSummary summary={sessionProgressSummary(progress, mode, 'challenge')} />
+          cornerAdornment={
+            isChallengeModeMastered(challengeProgress) ? <MasteryCrownBadge /> : null
           }
-          onPress={() => router.push(`/session/${mode}/challenge`)}
+          description="Answer as many questions as you can in one minute."
+          footer={<ProgressFooter items={challengeFooterItems} />}
+          onPress={() => router.push(`/challenge/${mode}`)}
           title="1-Minute Challenge"
           tintColor={meta.surface}
         />
@@ -76,6 +90,13 @@ export default function ModeDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  subtitle: {
+    color: '#5E6B78',
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: -4,
+    textAlign: 'center',
+  },
   column: {
     gap: spacing.sm,
   },

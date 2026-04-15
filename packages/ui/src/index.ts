@@ -1,8 +1,10 @@
 export * from './action-button';
 export * from './app-shell';
 export * from './card';
+export * from './challenge-countdown-overlay';
 export * from './challenge-results-card';
 export * from './challenge-results-overlay';
+export * from './challenge-timer-bar';
 export * from './celebration-overlay';
 export * from './compact-feature-card';
 export * from './feature-card';
@@ -14,3 +16,4 @@ export * from './progress-footer';
 export * from './reward-star';
 export * from './settings-cog-icon';
 export * from './tiered-challenge-launcher';
+export * from './use-challenge-countdown';

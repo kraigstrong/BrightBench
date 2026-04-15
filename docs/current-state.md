@@ -42,7 +42,13 @@ Notes:
 - now uses the shared progress footer for mode/session progress summaries
 - includes six game modes, including a number-line placement mode with difficulty-based scaffolding
 - `Find the Fraction` now routes through a Practice vs 1-Minute Challenge chooser modeled after Time Tutor
-- `Find the Fraction` challenge progress is now tracked separately from practice progress
+- the `Find the Fraction` chooser now mirrors Time Tutor's card layout, keeps the practice card stat-free, and opens challenge difficulty selection through a transparent modal launcher route
+- `Find the Fraction` challenge flow now follows the Time Tutor reward standard:
+  - shared countdown overlay
+  - shared timer bar
+  - shared challenge results overlay and star reveal
+  - mastery crown unlock treatment
+- `Find the Fraction` challenge progress now uses Time Tutor-style per-difficulty star tracking instead of local score summary stats
 - mode progress now lives on the chooser cards and in settings instead of on a separate progress screen
 - keeps game-specific logic and fraction interaction widgets app-local
 - not currently the design source of truth

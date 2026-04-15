@@ -83,21 +83,27 @@ export type ModeStat = {
   currentStreak: number;
 };
 
-export type ChallengeSessionStat = {
-  played: number;
-  correct: number;
-  attempts: number;
-  highScore: number;
+export type StarCount = 0 | 1 | 2 | 3;
+
+export type ChallengeBestStars = Record<DifficultyLevel, StarCount>;
+
+export type ChallengeModeProgress = {
+  bestStars: ChallengeBestStars;
+  lastSelectedDifficulty?: DifficultyLevel;
+};
+
+export type ChallengeProgressSnapshot = {
+  find: ChallengeModeProgress;
 };
 
 export type FindSessionStats = {
   practice: ModeStat;
-  challenge: ChallengeSessionStat;
 };
 
 export type RecentRoundResult = {
   mode: GameMode;
   sessionType?: SessionType;
+  difficultyLevel?: DifficultyLevel;
   targetFractionId: string;
   scoreBand: ScoreBand;
   wasCorrect: boolean;
@@ -110,6 +116,7 @@ export type ProgressSnapshot = {
   sessionStats: {
     find: FindSessionStats;
   };
+  challengeProgress: ChallengeProgressSnapshot;
   recentResults: RecentRoundResult[];
 };
 

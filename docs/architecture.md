@@ -63,6 +63,8 @@ Should contain:
 - suite-standard reward and progression surfaces when the interaction model is intentionally shared across apps
   - reward stars and mastery crown badge
   - progress footer
+  - challenge countdown overlay
+  - challenge timer bar
   - challenge results card and overlay
   - tiered challenge launcher
 
@@ -93,6 +95,16 @@ Each app should own:
 - assets and iconography
 - bundle IDs and EAS config
 - Vercel project linkage
+
+Challenge-specific rule:
+- future challenge modes should default to the shared challenge primitives in `@education/ui`
+  - tiered challenge launcher
+  - countdown overlay
+  - timer bar
+  - results overlay and star reveal
+  - mastery crown treatment
+- challenge orchestration and scoring rules should stay app-local unless reuse is clearly proven
+- do not introduce an alternate challenge UX pattern without explicit confirmation from the user
 
 ## Deployment Model
 
