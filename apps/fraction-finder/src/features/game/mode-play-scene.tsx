@@ -329,7 +329,7 @@ function EstimatePlay({
     <View style={styles.modeBody}>
       <View style={styles.visualStage}>
         {round.representation === 'container' ? (
-          <FractionContainer fillRatio={round.actualValue} fillColor={fractionPalette.sky} />
+          <FractionContainer fillRatio={round.actualValue} fillColor={fractionPalette.water} />
         ) : (
           <FractionMeter fillRatio={round.actualValue} fillColor={fractionPalette.plum} />
         )}
@@ -382,7 +382,7 @@ function PourPlay({
           onResponderGrant={(event) => updateFill(event.nativeEvent.locationY)}
           onResponderMove={(event) => updateFill(event.nativeEvent.locationY)}
           style={styles.pourSurface}>
-          <FractionContainer fillRatio={fill} fillColor={fractionPalette.sky} />
+          <FractionContainer fillRatio={fill} fillColor={fractionPalette.water} />
         </View>
       </View>
       <ChoiceButton label="This feels right" onPress={() => onSubmit(fill)} disabled={disabled} />

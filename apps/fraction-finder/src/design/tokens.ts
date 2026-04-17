@@ -5,6 +5,7 @@ export const fractionPalette = {
   peach: '#FFE9DA',
   plum: '#E8E0F6',
   sky: '#E6F1FB',
+  water: '#7DB7E8',
 } as const;
 
 export const layout = {

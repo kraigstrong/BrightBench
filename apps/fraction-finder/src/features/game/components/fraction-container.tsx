@@ -31,6 +31,8 @@ export function FractionContainer({
   const fillTop = bodyBottom - bodyHeight * safeFill;
   const innerLeft = glassLeft + strokeWidth;
   const innerWidth = glassWidth - strokeWidth * 2;
+  const innerBottomY = bodyBottom - 1;
+  const innerBottomRadiusY = rimHeight / 2 - 1;
 
   return (
     <View style={{ width, height }}>
@@ -38,6 +40,12 @@ export function FractionContainer({
         <Defs>
           <ClipPath id="glass-body">
             <Rect x={innerLeft} y={bodyTop} width={innerWidth} height={bodyHeight} />
+            <Ellipse
+              cx={width / 2}
+              cy={innerBottomY}
+              rx={innerWidth / 2}
+              ry={innerBottomRadiusY}
+            />
           </ClipPath>
         </Defs>
 
@@ -45,15 +53,15 @@ export function FractionContainer({
           x={innerLeft}
           y={fillTop}
           width={innerWidth}
-          height={bodyBottom - fillTop}
+          height={bodyBottom + rimHeight - fillTop}
           fill={fillColor}
           clipPath="url(#glass-body)"
         />
         <Ellipse
           cx={width / 2}
-          cy={bodyBottom}
+          cy={innerBottomY}
           rx={innerWidth / 2}
-          ry={rimHeight / 2 - 2}
+          ry={innerBottomRadiusY}
           fill={fillColor}
           opacity={0.9}
           clipPath="url(#glass-body)"
@@ -111,7 +119,7 @@ export function FractionContainer({
           cy={bodyBottom}
           rx={glassWidth / 2}
           ry={rimHeight / 2}
-          fill="rgba(255,255,255,0.08)"
+          fill="none"
           stroke={palette.ink}
           strokeWidth={strokeWidth}
         />
