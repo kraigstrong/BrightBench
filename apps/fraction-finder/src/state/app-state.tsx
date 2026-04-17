@@ -7,6 +7,7 @@ import {
   totalStarsForMode,
 } from '@/features/game/challenge-stars';
 import {
+  ACTIVE_GAME_MODES,
   ChallengeBestStars,
   DifficultyLevel,
   FindSessionStats,
@@ -447,7 +448,7 @@ export function sessionProgressSummary(
 }
 
 export function totalRoundsPlayed(progress: ProgressSnapshot) {
-  return Object.values(progress.modeStats).reduce((sum, stat) => sum + stat.played, 0);
+  return ACTIVE_GAME_MODES.reduce((sum, mode) => sum + progress.modeStats[mode].played, 0);
 }
 
 export function overallAccuracy(progress: ProgressSnapshot) {
@@ -457,6 +458,9 @@ export function overallAccuracy(progress: ProgressSnapshot) {
     return 0;
   }
 
-  const correct = Object.values(progress.modeStats).reduce((sum, stat) => sum + stat.correct, 0);
+  const correct = ACTIVE_GAME_MODES.reduce(
+    (sum, mode) => sum + progress.modeStats[mode].correct,
+    0
+  );
   return Math.round((correct / played) * 100);
 }

@@ -6,7 +6,19 @@ import { siteMeta } from '@/lib/site';
 
 export const metadata: Metadata = {
   description: siteMeta.description,
+  metadataBase: siteMeta.origin ? new URL(siteMeta.origin) : undefined,
+  openGraph: {
+    description: siteMeta.description,
+    siteName: siteMeta.title,
+    title: siteMeta.title,
+    type: 'website',
+  },
   title: siteMeta.title,
+  twitter: {
+    card: 'summary_large_image',
+    description: siteMeta.description,
+    title: siteMeta.title,
+  },
 };
 
 export default function RootLayout({

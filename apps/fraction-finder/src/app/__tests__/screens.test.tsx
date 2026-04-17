@@ -114,7 +114,7 @@ describe('app screens', () => {
     expect(screen.queryByText('High score')).toBeNull();
     expect(screen.getByText('Match a picture to the right fraction.')).toBeTruthy();
     expect(screen.getByText('Drag the marker to match the fraction.')).toBeTruthy();
-    expect(screen.getByText('Choose the fraction that is larger.')).toBeTruthy();
+    expect(screen.queryByText('Choose the fraction that is larger.')).toBeNull();
     expect(screen.getByLabelText('Open settings')).toBeTruthy();
   });
 
@@ -168,11 +168,12 @@ describe('app screens', () => {
     expect(screen.getByText('Preferred visuals')).toBeTruthy();
     expect(screen.getByText('Progress')).toBeTruthy();
     expect(screen.getByText('Rounds played')).toBeTruthy();
-    expect(screen.getByText('17')).toBeTruthy();
+    expect(screen.getByText('16')).toBeTruthy();
     expect(screen.getByText('Total accuracy')).toBeTruthy();
-    expect(screen.getByText('71%')).toBeTruthy();
+    expect(screen.getByText('69%')).toBeTruthy();
     expect(screen.getAllByText('Practice').length).toBeGreaterThan(0);
     expect(screen.getByText('1-Minute Challenge')).toBeTruthy();
     expect(screen.getByText('Settings save automatically on this device.')).toBeTruthy();
+    expect(screen.queryByText('Compare Fractions')).toBeNull();
   });
 });

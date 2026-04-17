@@ -50,7 +50,8 @@ around the concepts that are hardest to teach and hardest to make click.
 - `apps/fraction-finder`
   - Healthy Expo app in the monorepo
   - Uses shared app shell, header, card, celebration, and action primitives
-  - Includes six playable modes, including the new number-line placement mode
+  - Includes five playable modes, including the number-line placement mode
+  - The compare-fractions mode is temporarily removed from the live mode lineup
   - `Find the Fraction` now has a Time Tutor-style Practice vs 1-Minute Challenge split
   - Progress now shows on mode cards and in settings instead of a dedicated progress screen
   - Validated on iOS simulator, web dev, and static web export
@@ -64,8 +65,9 @@ around the concepts that are hardest to teach and hardest to make click.
   - Uses the original standalone app as read-only visual reference material, but no longer maintains a separate migration-notes file
 - `apps/marketing`
   - Next.js App Router site is working
-  - Homepage is positioned around the BrightBench suite brand and product philosophy
-  - Time Tutor App Store CTA is embedded directly in the suite card
+  - Homepage now acts as the BrightBench brand hub
+  - Time Tutor now has a dedicated product page at `/products/time-tutor`
+  - Supporting learning-intent pages now live under `/learn/*` for analog clock practice and elapsed time practice
   - Local build is validated
   - Vercel project linking is still the main remaining deployment task
 

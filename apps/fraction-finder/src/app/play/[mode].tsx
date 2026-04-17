@@ -4,9 +4,9 @@ import React from 'react';
 import { AppShell } from '@education/ui';
 import { layout } from '@/design/tokens';
 import { ModePlayScene } from '@/features/game/mode-play-scene';
-import { GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
 
-const VALID_MODES: GameMode[] = ['find', 'build', 'compare', 'estimate', 'pour', 'line'];
+const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
 
 export function generateStaticParams() {
   return VALID_MODES.map((mode) => ({ mode }));

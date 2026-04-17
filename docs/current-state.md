@@ -40,7 +40,9 @@ Notes:
 - built on the shared Expo stack
 - now uses shared app shell, header, card, celebration, action-button, and feature-card primitives
 - now uses the shared progress footer for mode/session progress summaries
-- includes six game modes, including a number-line placement mode with difficulty-based scaffolding
+- includes five live game modes, including a number-line placement mode with difficulty-based scaffolding
+- the compare-fractions mode is temporarily removed from the active lineup
+- mode colors were rebalanced to fit the smaller five-mode set more cleanly
 - `Find the Fraction` now routes through a Practice vs 1-Minute Challenge chooser modeled after Time Tutor
 - the `Find the Fraction` chooser now mirrors Time Tutor's card layout, keeps the practice card stat-free, and opens challenge difficulty selection through a transparent modal launcher route
 - `Find the Fraction` challenge flow now follows the Time Tutor reward standard:
@@ -83,10 +85,16 @@ Status:
 
 Notes:
 - Next.js App Router
-- homepage is now aligned to the BrightBench suite brand line:
-  - Small apps. Big learning moments.
-- product suite section keeps the outlined app-card visual language
-- Time Tutor is presented as the only live app with a direct App Store CTA
+- homepage is now a BrightBench brand hub instead of a catch-all ranking page
+- Time Tutor now has a dedicated authority page at `/products/time-tutor`
+- marketing now includes supporting intent pages for:
+  - `/learn/analog-clock-practice`
+  - `/learn/elapsed-time-practice`
+- Time Tutor discovery flow is now intentionally structured:
+  - homepage → app page
+  - app page → related learning pages
+  - learning pages → main app page
+- placeholder product pages remain lightweight roadmap markers and should not be treated as finished SEO landing pages
 - Grammar Guide is no longer presented in the marketing lineup
 - local production build already succeeds
 - Vercel linking/config is still pending

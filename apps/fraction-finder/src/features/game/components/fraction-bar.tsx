@@ -26,21 +26,32 @@ export function FractionBar({
   const activeSegments =
     selectedSegments ?? Array.from({ length: numerator }, (_, index) => index);
 
-  if (connected && !interactive) {
+  if (connected) {
     return (
       <View style={styles.connectedRail}>
         {Array.from({ length: denominator }, (_, index) => {
           const filled = activeSegments.includes(index);
-
-          return (
+          const segment = (
             <View
-              key={index}
               style={[
                 styles.connectedSegment,
                 filled ? { backgroundColor: tint } : styles.connectedSegmentEmpty,
                 index > 0 ? styles.connectedDivider : null,
               ]}
             />
+          );
+
+          if (!interactive) {
+            return <View key={index} style={styles.connectedStaticWrap}>{segment}</View>;
+          }
+
+          return (
+            <Pressable
+              key={index}
+              onPress={() => onToggleSegment?.(index)}
+              style={styles.connectedPressable}>
+              {segment}
+            </Pressable>
           );
         })}
       </View>
@@ -85,7 +96,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   connectedRail: {
-    width: '100%',
     flexDirection: 'row',
     alignItems: 'stretch',
     backgroundColor: '#FFFFFF',
@@ -93,6 +103,13 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     borderWidth: 1.5,
     overflow: 'hidden',
+    width: '100%',
+  },
+  connectedPressable: {
+    flex: 1,
+  },
+  connectedStaticWrap: {
+    flex: 1,
   },
   connectedSegment: {
     flex: 1,

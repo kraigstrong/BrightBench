@@ -1,5 +1,6 @@
 export type RepresentationType = 'bar' | 'container' | 'meter' | 'circle' | 'line';
 export type GameMode = 'find' | 'build' | 'compare' | 'estimate' | 'pour' | 'line';
+export const ACTIVE_GAME_MODES = ['find', 'build', 'estimate', 'pour', 'line'] as const satisfies readonly GameMode[];
 export type SessionType = 'practice' | 'challenge';
 export type BenchmarkCategory = 'benchmark' | 'common' | 'stretch';
 export type ScoreBand = 'exact' | 'close' | 'almost' | 'far';

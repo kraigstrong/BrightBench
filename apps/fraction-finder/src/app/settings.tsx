@@ -15,7 +15,7 @@ import {
 } from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
 import { SettingsToggleRow } from '@/features/game/mode-play-scene';
-import { GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
 import {
   modeProgressSummary,
   overallAccuracy,
@@ -26,7 +26,7 @@ import {
 
 export default function SettingsScreen() {
   const { hydrated, progress, settings, updateSettings } = useAppState();
-  const modes: GameMode[] = ['find', 'build', 'estimate', 'line', 'pour', 'compare'];
+  const modes: GameMode[] = [...ACTIVE_GAME_MODES];
   const challengeProgress = progress.challengeProgress.find;
 
   return (

@@ -7,10 +7,10 @@ import { AppShell, HeaderBar, HeaderIconButton, SettingsCogIcon } from '@educati
 import { ModeCard } from '@/components/ui/mode-card';
 import { layout } from '@/design/tokens';
 import { MODE_META } from '@/features/game/mode-meta';
-import { GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
 
 export default function ModesScreen() {
-  const modes: GameMode[] = ['find', 'build', 'estimate', 'line', 'pour', 'compare'];
+  const modes: GameMode[] = [...ACTIVE_GAME_MODES];
 
   return (
     <AppShell maxWidth={layout.maxContentWidth}>

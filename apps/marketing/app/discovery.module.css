@@ -1,0 +1,256 @@
+.page {
+  display: grid;
+  gap: 2rem;
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 1.25rem 0 4.5rem;
+}
+
+.backLink {
+  color: #667789;
+  font-size: 0.97rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.backLink:hover {
+  color: #12355b;
+}
+
+.hero {
+  background:
+    radial-gradient(circle at top left, rgba(233, 122, 95, 0.12), transparent 38%),
+    linear-gradient(180deg, rgba(255, 249, 242, 0.95), #ffffff);
+  border: 1px solid #decdb9;
+  border-radius: 2rem;
+  box-shadow: 0 18px 36px rgba(18, 53, 91, 0.08);
+  display: grid;
+  gap: 1.4rem;
+  padding: 2rem;
+}
+
+.eyebrow {
+  color: #e97a5f;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  font-size: clamp(2.6rem, 5vw, 4.2rem);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+  margin: 0;
+  max-width: 13ch;
+}
+
+.lead {
+  color: #12355b;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 45rem;
+}
+
+.intro {
+  display: grid;
+  gap: 1rem;
+}
+
+.intro p,
+.sectionBody p,
+.faqAnswer,
+.note,
+.relatedDescription,
+.secondaryNote {
+  color: #5b6c7d;
+  font-size: 1rem;
+  line-height: 1.75;
+  margin: 0;
+}
+
+.proofPoints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.proofPoint {
+  background: rgba(18, 53, 91, 0.06);
+  border: 1px solid rgba(18, 53, 91, 0.08);
+  border-radius: 999px;
+  color: #12355b;
+  font-size: 0.87rem;
+  font-weight: 700;
+  padding: 0.55rem 0.85rem;
+}
+
+.ctaRow {
+  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.96rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 1.2rem;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+  width: fit-content;
+}
+
+.primaryButton {
+  background: #12355b;
+  color: #ffffff;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  box-shadow: 0 14px 28px rgba(18, 53, 91, 0.12);
+  transform: translateY(-1px);
+}
+
+.primaryButton:hover {
+  background: #0f2d4d;
+}
+
+.secondaryButton {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d7c4b0;
+  color: #12355b;
+}
+
+.secondaryButton:hover {
+  background: #fff7ef;
+}
+
+.secondaryNote {
+  max-width: 26rem;
+}
+
+.section {
+  display: grid;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  font-size: clamp(1.7rem, 2.4vw, 2.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.sectionBody {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.cardGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.modeGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card,
+.faqCard,
+.relatedCard {
+  background: rgba(255, 249, 242, 0.78);
+  border: 1px solid #decdb9;
+  border-radius: 1.45rem;
+  box-shadow: 0 12px 28px rgba(18, 53, 91, 0.06);
+  padding: 1.2rem;
+}
+
+.cardTitle,
+.faqQuestion,
+.relatedTitle {
+  color: #12355b;
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 0.55rem;
+}
+
+.cardBody {
+  color: #5b6c7d;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.list {
+  color: #5b6c7d;
+  display: grid;
+  gap: 0.75rem;
+  line-height: 1.7;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.faqGrid,
+.relatedGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.relatedLink {
+  color: #12355b;
+  display: inline-flex;
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+}
+
+.relatedLink:hover {
+  color: #0f2d4d;
+}
+
+.placeholderPanel {
+  background: rgba(255, 249, 242, 0.78);
+  border: 1px solid #decdb9;
+  border-radius: 1.6rem;
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .cardGrid,
+  .modeGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: 1.5rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .hero {
+    border-radius: 1.6rem;
+    padding: 1.4rem;
+  }
+
+  .heroTitle {
+    max-width: none;
+  }
+}

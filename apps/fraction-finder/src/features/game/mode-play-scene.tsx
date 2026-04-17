@@ -292,15 +292,19 @@ function BuildPlay({
 
   return (
     <View style={styles.modeBody}>
-      <Text style={styles.helperText}>Fill {target.numerator} out of {target.denominator} equal parts.</Text>
+      <Text style={styles.helperText}>
+        Tap the same kind of sections you see in Find the Fraction to shade {target.numerator}{' '}
+        out of {target.denominator} equal parts.
+      </Text>
       <View style={styles.visualStage}>
         <FractionBar
+          connected
           numerator={target.numerator}
           denominator={target.denominator}
           interactive
           selectedSegments={segments}
           onToggleSegment={toggle}
-          tint={fractionPalette.mint}
+          tint={fractionPalette.accent}
         />
       </View>
       <ChoiceButton

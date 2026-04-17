@@ -1,10 +1,10 @@
 export const fractionPalette = {
-  accent: '#2E8B8B',
+  accent: '#2F8F88',
   accentDeep: '#12355B',
-  mint: '#DDF4E7',
-  peach: '#FBE0C8',
-  plum: '#7B6DAA',
-  sky: '#CFE8F7',
+  mint: '#E8F6EF',
+  peach: '#FFE9DA',
+  plum: '#E8E0F6',
+  sky: '#E6F1FB',
 } as const;
 
 export const layout = {
