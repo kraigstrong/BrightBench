@@ -5,29 +5,15 @@ import { StyleSheet, Text, View } from 'react-native';
 import { goBackOrReplace } from '@education/app-config';
 import { palette, spacing } from '@education/design';
 import { typography } from '@education/design/native';
-import { ActionButton, AppShell, Card, HeaderBar, ProgressFooter } from '@education/ui';
-import { ModeProgressSummary } from '@/components/ui/mode-progress-summary';
-import { StatCard } from '@/components/ui/stat-card';
-import { fractionPalette, layout } from '@/design/tokens';
-import {
-  CHALLENGE_DIFFICULTIES,
-  CHALLENGE_DIFFICULTY_LABELS,
-} from '@/features/game/challenge-stars';
-import { MODE_META } from '@/features/game/mode-meta';
+import { ActionButton, AppShell, Card, HeaderBar } from '@education/ui';
+import { layout } from '@/design/tokens';
 import { SettingsToggleRow } from '@/features/game/mode-play-scene';
-import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
 import {
-  modeProgressSummary,
-  overallAccuracy,
-  sessionProgressSummary,
-  totalRoundsPlayed,
   useAppState,
 } from '@/state/app-state';
 
 export default function SettingsScreen() {
   const { hydrated, progress, settings, updateSettings } = useAppState();
-  const modes: GameMode[] = [...ACTIVE_GAME_MODES];
-  const challengeProgress = progress.challengeProgress.find;
 
   return (
     <AppShell maxWidth={layout.maxContentWidth}>
@@ -91,48 +77,6 @@ export default function SettingsScreen() {
         </View>
       </Card>
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.eyebrow}>Progress</Text>
-        <Text style={styles.sectionDescription}>
-          See how each mode is growing without leaving settings.
-        </Text>
-        <View style={styles.statsRow}>
-          <StatCard label="Rounds played" value={String(totalRoundsPlayed(progress))} />
-          <StatCard
-            label="Total accuracy"
-            value={`${overallAccuracy(progress)}%`}
-            accent={fractionPalette.mint}
-          />
-        </View>
-        <View style={styles.progressList}>
-          {modes.map((mode) => (
-            <Card key={mode} style={styles.progressCard}>
-              <Text style={styles.progressTitle}>{MODE_META[mode].title}</Text>
-              {mode === 'find' ? (
-                <View style={styles.sessionList}>
-                  <Card style={styles.sessionCard}>
-                    <Text style={styles.sessionTitle}>Practice</Text>
-                    <ModeProgressSummary summary={sessionProgressSummary(progress, mode, 'practice')} />
-                  </Card>
-                  <Card style={styles.sessionCard}>
-                    <Text style={styles.sessionTitle}>1-Minute Challenge</Text>
-                    <ProgressFooter
-                      items={CHALLENGE_DIFFICULTIES.map((difficulty) => ({
-                        key: difficulty,
-                        label: CHALLENGE_DIFFICULTY_LABELS[difficulty],
-                        stars: challengeProgress.bestStars[difficulty],
-                      }))}
-                    />
-                  </Card>
-                </View>
-              ) : (
-                <ModeProgressSummary summary={modeProgressSummary(progress, mode)} />
-              )}
-            </Card>
-          ))}
-        </View>
-      </Card>
-
       <Text style={styles.footerNote}>
         {hydrated ? 'Settings save automatically on this device.' : 'Loading saved settings...'}
       </Text>
@@ -161,35 +105,6 @@ const styles = StyleSheet.create({
   },
   preferenceButtons: {
     gap: spacing.sm,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  progressList: {
-    gap: spacing.sm,
-  },
-  progressCard: {
-    gap: spacing.sm,
-  },
-  sessionList: {
-    gap: spacing.sm,
-  },
-  sessionCard: {
-    gap: spacing.sm,
-  },
-  progressTitle: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  sessionTitle: {
-    color: palette.ink,
-    fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    fontWeight: '700',
   },
   footerNote: {
     color: palette.inkMuted,

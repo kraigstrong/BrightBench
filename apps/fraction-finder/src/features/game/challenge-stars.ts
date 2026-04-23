@@ -1,10 +1,12 @@
 import {
   ChallengeBestStars,
+  ChallengeModeKey,
   ChallengeModeProgress,
   ChallengeProgressSnapshot,
   DifficultyLevel,
   StarCount,
 } from '@/features/game/types';
+import { ACTIVE_GAME_MODES } from '@/features/game/types';
 
 export const CHALLENGE_DIFFICULTIES: DifficultyLevel[] = ['easy', 'medium', 'hard'];
 
@@ -52,15 +54,16 @@ export function createEmptyChallengeModeProgress(): ChallengeModeProgress {
 }
 
 export function createDefaultChallengeProgress(): ChallengeProgressSnapshot {
-  return {
-    find: createEmptyChallengeModeProgress(),
-  };
+  return ACTIVE_GAME_MODES.reduce((acc, mode) => {
+    acc[mode] = createEmptyChallengeModeProgress();
+    return acc;
+  }, {} as ChallengeProgressSnapshot);
 }
 
 export function normalizeChallengeProgress(
   value?: Partial<
     Record<
-      keyof ChallengeProgressSnapshot,
+      ChallengeModeKey,
       {
         bestStars?: Partial<ChallengeBestStars>;
         lastSelectedDifficulty?: DifficultyLevel;
@@ -69,17 +72,19 @@ export function normalizeChallengeProgress(
   > | null
 ): ChallengeProgressSnapshot {
   const normalized = createDefaultChallengeProgress();
-  const storedProgress = value?.find;
-  const storedStars = storedProgress?.bestStars ?? {};
+  for (const mode of ACTIVE_GAME_MODES) {
+    const storedProgress = value?.[mode];
+    const storedStars = storedProgress?.bestStars ?? {};
 
-  normalized.find = {
-    bestStars: {
-      easy: clampStarCount(storedStars.easy ?? 0),
-      medium: clampStarCount(storedStars.medium ?? 0),
-      hard: clampStarCount(storedStars.hard ?? 0),
-    },
-    lastSelectedDifficulty: storedProgress?.lastSelectedDifficulty,
-  };
+    normalized[mode] = {
+      bestStars: {
+        easy: clampStarCount(storedStars.easy ?? 0),
+        medium: clampStarCount(storedStars.medium ?? 0),
+        hard: clampStarCount(storedStars.hard ?? 0),
+      },
+      lastSelectedDifficulty: storedProgress?.lastSelectedDifficulty,
+    };
+  }
 
   return normalized;
 }

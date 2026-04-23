@@ -9,6 +9,7 @@ import {
 import {
   ACTIVE_GAME_MODES,
   ChallengeBestStars,
+  ChallengeModeKey,
   DifficultyLevel,
   FindSessionStats,
   GameMode,
@@ -51,11 +52,11 @@ type Action =
   | { type: 'record-round'; payload: RecentRoundResult }
   | {
       type: 'set-challenge-best-stars';
-      payload: { difficultyLevel: DifficultyLevel; mode: 'find'; stars: StarCount };
+      payload: { difficultyLevel: DifficultyLevel; mode: ChallengeModeKey; stars: StarCount };
     }
   | {
       type: 'set-last-selected-challenge-difficulty';
-      payload: { difficultyLevel: DifficultyLevel; mode: 'find' };
+      payload: { difficultyLevel: DifficultyLevel; mode: ChallengeModeKey };
     }
   | { type: 'update-settings'; payload: Partial<SettingsSnapshot> }
   | { type: 'clear-last-result' };
@@ -63,12 +64,12 @@ type Action =
 type AppContextValue = AppState & {
   recordRound: (result: RecentRoundResult) => void;
   setChallengeBestStars: (
-    mode: 'find',
+    mode: ChallengeModeKey,
     difficultyLevel: DifficultyLevel,
     stars: StarCount
   ) => void;
   setLastSelectedChallengeDifficulty: (
-    mode: 'find',
+    mode: ChallengeModeKey,
     difficultyLevel: DifficultyLevel
   ) => void;
   updateSettings: (settings: Partial<SettingsSnapshot>) => void;

@@ -21,10 +21,10 @@ import {
   isChallengeModeMastered,
 } from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
-import { GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
-const VALID_MODES: GameMode[] = ['find'];
+const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
 
 export function generateStaticParams() {
   return VALID_MODES.map((mode) => ({ mode }));
@@ -40,7 +40,7 @@ export default function ModeDetailScreen() {
   }
 
   const meta = MODE_META[mode];
-  const challengeProgress = progress.challengeProgress.find;
+  const challengeProgress = progress.challengeProgress[mode];
   const challengeFooterItems: ProgressFooterItem[] = CHALLENGE_DIFFICULTIES.map(
     (difficulty) => ({
       key: difficulty,

@@ -93,9 +93,9 @@ export type ChallengeModeProgress = {
   lastSelectedDifficulty?: DifficultyLevel;
 };
 
-export type ChallengeProgressSnapshot = {
-  find: ChallengeModeProgress;
-};
+export type ChallengeModeKey = (typeof ACTIVE_GAME_MODES)[number];
+
+export type ChallengeProgressSnapshot = Record<ChallengeModeKey, ChallengeModeProgress>;
 
 export type FindSessionStats = {
   practice: ModeStat;

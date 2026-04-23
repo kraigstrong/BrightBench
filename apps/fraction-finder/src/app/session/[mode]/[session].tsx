@@ -7,12 +7,12 @@ import {
   CHALLENGE_DIFFICULTIES,
   getDefaultChallengeDifficulty,
 } from '@/features/game/challenge-stars';
-import { FindChallengeScene } from '@/features/game/find-challenge-scene';
+import { ChallengeScene } from '@/features/game/challenge-scene';
 import { ModePlayScene } from '@/features/game/mode-play-scene';
-import { DifficultyLevel, GameMode, SessionType } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, DifficultyLevel, GameMode, SessionType } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
-const VALID_MODES: GameMode[] = ['find'];
+const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
 const VALID_SESSIONS: SessionType[] = ['practice', 'challenge'];
 
 export function generateStaticParams() {
@@ -41,7 +41,7 @@ export default function SessionScreen() {
   }
 
   const challengeDifficulty =
-    requestedDifficulty ?? getDefaultChallengeDifficulty(progress.challengeProgress.find);
+    requestedDifficulty ?? getDefaultChallengeDifficulty(progress.challengeProgress[mode]);
 
   return (
     <>
@@ -54,7 +54,7 @@ export default function SessionScreen() {
         {session === 'practice' ? (
           <ModePlayScene mode={mode} sessionType="practice" />
         ) : (
-          <FindChallengeScene difficultyLevel={challengeDifficulty} />
+          <ChallengeScene mode={mode} difficultyLevel={challengeDifficulty} />
         )}
       </AppShell>
     </>

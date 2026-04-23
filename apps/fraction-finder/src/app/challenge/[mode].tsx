@@ -9,10 +9,10 @@ import {
   CHALLENGE_DIFFICULTY_META,
 } from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
-import { DifficultyLevel, GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, DifficultyLevel, GameMode } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
-const VALID_MODES: GameMode[] = ['find'];
+const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
 
 export function generateStaticParams() {
   return VALID_MODES.map((mode) => ({ mode }));
@@ -28,10 +28,10 @@ export default function ChallengeLaunchScreen() {
   }
 
   const meta = MODE_META[mode];
-  const challengeProgress = progress.challengeProgress.find;
+  const challengeProgress = progress.challengeProgress[mode];
 
   function launchDifficulty(difficultyLevel: DifficultyLevel) {
-    setLastSelectedChallengeDifficulty('find', difficultyLevel);
+    setLastSelectedChallengeDifficulty(mode, difficultyLevel);
     router.replace(`/session/${mode}/challenge?difficulty=${difficultyLevel}`);
   }
 

@@ -61,6 +61,10 @@ describe('app screens', () => {
             },
             lastSelectedDifficulty: 'easy' as const,
           },
+          build: { bestStars: { easy: 0 as const, medium: 0 as const, hard: 0 as const } },
+          estimate: { bestStars: { easy: 0 as const, medium: 0 as const, hard: 0 as const } },
+          pour: { bestStars: { easy: 0 as const, medium: 0 as const, hard: 0 as const } },
+          line: { bestStars: { easy: 0 as const, medium: 0 as const, hard: 0 as const } },
         },
         recentResults: [],
       },
@@ -164,13 +168,6 @@ describe('app screens', () => {
 
     expect(screen.getByText('Settings')).toBeTruthy();
     expect(screen.getByText('Difficulty')).toBeTruthy();
-    expect(screen.getByText('Progress')).toBeTruthy();
-    expect(screen.getByText('Rounds played')).toBeTruthy();
-    expect(screen.getByText('16')).toBeTruthy();
-    expect(screen.getByText('Total accuracy')).toBeTruthy();
-    expect(screen.getByText('69%')).toBeTruthy();
-    expect(screen.getAllByText('Practice').length).toBeGreaterThan(0);
-    expect(screen.getByText('1-Minute Challenge')).toBeTruthy();
     expect(screen.getByText('Settings save automatically on this device.')).toBeTruthy();
     expect(screen.queryByText('Compare Fractions')).toBeNull();
   });
