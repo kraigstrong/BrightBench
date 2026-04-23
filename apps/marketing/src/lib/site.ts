@@ -10,13 +10,19 @@ const timeTutorAppStoreUrl =
   'https://apps.apple.com/app/time-tutor-clock-practice/id6761587276';
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN?.replace(/\/$/, '');
 
+/** Public marketing domain when deployed to Vercel production without env override. */
+const defaultProductionMarketingOrigin = 'https://brightbench.app';
+
 /**
- * Canonical origin for sitemap, robots, and absolute URLs when env is unset
- * (e.g. local dev or Vercel preview with VERCEL_URL).
+ * Canonical origin for sitemap, robots, and absolute URLs when env is unset.
+ * Production uses the public domain (not *.vercel.app). Previews use VERCEL_URL.
  */
 export function getPublicSiteOrigin(): string {
   if (siteOrigin) {
     return siteOrigin;
+  }
+  if (process.env.VERCEL_ENV === 'production') {
+    return defaultProductionMarketingOrigin;
   }
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
