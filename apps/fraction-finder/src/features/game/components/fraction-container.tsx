@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import Svg, { ClipPath, Defs, Ellipse, Line, Rect } from 'react-native-svg';
+import Svg, { ClipPath, Defs, Ellipse, Line, Path, Rect } from 'react-native-svg';
 
 import { palette } from '@education/design';
 import { fractionPalette } from '@/design/tokens';
@@ -29,53 +29,41 @@ export function FractionContainer({
   const bodyBottom = height - 20;
   const bodyHeight = bodyBottom - bodyTop;
   const fillTop = bodyBottom - bodyHeight * safeFill;
-  const innerLeft = glassLeft + strokeWidth;
-  const innerWidth = glassWidth - strokeWidth * 2;
-  const innerBottomY = bodyBottom - 1;
-  const innerBottomRadiusY = rimHeight / 2 - 1;
+  // Strokes are centered on the outline; the "inner" edge is half a stroke in.
+  // Using a full stroke inset here leaves a visible gap at the bottom.
+  const innerInset = strokeWidth / 2;
+  const innerLeft = glassLeft + innerInset;
+  const innerWidth = glassWidth - innerInset * 2;
+  const innerBottomRadiusY = rimHeight / 2 - innerInset;
+  const innerRight = innerLeft + innerWidth;
+  const hasFill = safeFill > 0;
+  const glassInteriorPath = [
+    `M ${innerLeft} ${bodyTop}`,
+    `L ${innerRight} ${bodyTop}`,
+    `L ${innerRight} ${bodyBottom}`,
+    `A ${innerWidth / 2} ${innerBottomRadiusY} 0 0 1 ${innerLeft} ${bodyBottom}`,
+    'Z',
+  ].join(' ');
+  const waterBodyPath = [
+    `M ${innerLeft} ${fillTop}`,
+    `L ${innerRight} ${fillTop}`,
+    `L ${innerRight} ${bodyBottom}`,
+    `A ${innerWidth / 2} ${innerBottomRadiusY} 0 0 1 ${innerLeft} ${bodyBottom}`,
+    `L ${innerLeft} ${fillTop}`,
+    'Z',
+  ].join(' ');
 
   return (
     <View style={{ width, height }}>
       <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         <Defs>
           <ClipPath id="glass-body">
-            <Rect x={innerLeft} y={bodyTop} width={innerWidth} height={bodyHeight} />
-            <Ellipse
-              cx={width / 2}
-              cy={innerBottomY}
-              rx={innerWidth / 2}
-              ry={innerBottomRadiusY}
-            />
+            <Path d={glassInteriorPath} />
           </ClipPath>
         </Defs>
 
-        <Rect
-          x={innerLeft}
-          y={fillTop}
-          width={innerWidth}
-          height={bodyBottom + rimHeight - fillTop}
-          fill={fillColor}
-          clipPath="url(#glass-body)"
-        />
-        <Ellipse
-          cx={width / 2}
-          cy={innerBottomY}
-          rx={innerWidth / 2}
-          ry={innerBottomRadiusY}
-          fill={fillColor}
-          opacity={0.9}
-          clipPath="url(#glass-body)"
-        />
-        {safeFill > 0 ? (
-          <Ellipse
-            cx={width / 2}
-            cy={fillTop}
-            rx={innerWidth / 2}
-            ry={rimHeight / 2 - 2}
-            fill={fillColor}
-            opacity={0.95}
-            clipPath="url(#glass-body)"
-          />
+        {hasFill ? (
+          <Path d={waterBodyPath} fill={fillColor} opacity={0.95} clipPath="url(#glass-body)" />
         ) : null}
 
         <Rect
