@@ -6,6 +6,7 @@ import { layout } from '@/design/tokens';
 import {
   CHALLENGE_DIFFICULTIES,
   getDefaultChallengeDifficulty,
+  getDefaultPracticeDifficulty,
 } from '@/features/game/challenge-stars';
 import { ChallengeScene } from '@/features/game/challenge-scene';
 import { ModePlayScene } from '@/features/game/mode-play-scene';
@@ -42,6 +43,8 @@ export default function SessionScreen() {
 
   const challengeDifficulty =
     requestedDifficulty ?? getDefaultChallengeDifficulty(progress.challengeProgress[mode]);
+  const practiceDifficulty =
+    requestedDifficulty ?? getDefaultPracticeDifficulty(progress.challengeProgress[mode]);
 
   return (
     <>
@@ -52,7 +55,7 @@ export default function SessionScreen() {
       />
       <AppShell maxWidth={layout.maxContentWidth} scroll={session !== 'challenge'}>
         {session === 'practice' ? (
-          <ModePlayScene mode={mode} sessionType="practice" />
+          <ModePlayScene mode={mode} sessionType="practice" difficultyLevel={practiceDifficulty} />
         ) : (
           <ChallengeScene mode={mode} difficultyLevel={challengeDifficulty} />
         )}

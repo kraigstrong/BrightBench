@@ -35,6 +35,7 @@ type ProgressSnapshotInput = {
       {
         bestStars?: Partial<ChallengeBestStars>;
         lastSelectedDifficulty?: DifficultyLevel;
+        lastSelectedPracticeDifficulty?: DifficultyLevel;
       }
     >
   >;
@@ -58,6 +59,10 @@ type Action =
       type: 'set-last-selected-challenge-difficulty';
       payload: { difficultyLevel: DifficultyLevel; mode: ChallengeModeKey };
     }
+  | {
+      type: 'set-last-selected-practice-difficulty';
+      payload: { difficultyLevel: DifficultyLevel; mode: ChallengeModeKey };
+    }
   | { type: 'update-settings'; payload: Partial<SettingsSnapshot> }
   | { type: 'clear-last-result' };
 
@@ -69,6 +74,10 @@ type AppContextValue = AppState & {
     stars: StarCount
   ) => void;
   setLastSelectedChallengeDifficulty: (
+    mode: ChallengeModeKey,
+    difficultyLevel: DifficultyLevel
+  ) => void;
+  setLastSelectedPracticeDifficulty: (
     mode: ChallengeModeKey,
     difficultyLevel: DifficultyLevel
   ) => void;
@@ -115,7 +124,6 @@ export const defaultProgress: ProgressSnapshot = {
 export const defaultSettings: SettingsSnapshot = {
   soundEnabled: false,
   reducedMotion: false,
-  difficultyLevel: 'easy',
 };
 
 const initialState: AppState = {
@@ -158,9 +166,14 @@ export function normalizeProgressSnapshot(
 export function normalizeSettingsSnapshot(
   settings?: Partial<SettingsSnapshot> | null
 ): SettingsSnapshot {
+  if (!settings) {
+    return { ...defaultSettings };
+  }
+
   return {
     ...defaultSettings,
-    ...settings,
+    soundEnabled: settings.soundEnabled ?? defaultSettings.soundEnabled,
+    reducedMotion: settings.reducedMotion ?? defaultSettings.reducedMotion,
   };
 }
 
@@ -299,6 +312,20 @@ function reducer(state: AppState, action: Action): AppState {
           },
         },
       };
+    case 'set-last-selected-practice-difficulty':
+      return {
+        ...state,
+        progress: {
+          ...state.progress,
+          challengeProgress: {
+            ...state.progress.challengeProgress,
+            [action.payload.mode]: {
+              ...state.progress.challengeProgress[action.payload.mode],
+              lastSelectedPracticeDifficulty: action.payload.difficultyLevel,
+            },
+          },
+        },
+      };
     case 'update-settings':
       return {
         ...state,
@@ -368,6 +395,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setLastSelectedChallengeDifficulty: (mode, difficultyLevel) =>
       dispatch({
         type: 'set-last-selected-challenge-difficulty',
+        payload: { difficultyLevel, mode },
+      }),
+    setLastSelectedPracticeDifficulty: (mode, difficultyLevel) =>
+      dispatch({
+        type: 'set-last-selected-practice-difficulty',
         payload: { difficultyLevel, mode },
       }),
     updateSettings: (settings) => dispatch({ type: 'update-settings', payload: settings }),

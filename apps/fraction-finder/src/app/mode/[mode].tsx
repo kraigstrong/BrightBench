@@ -70,7 +70,7 @@ export default function ModeDetailScreen() {
         <CompactFeatureCard
           accentColor={meta.accent}
           description="Go at your own pace with instant feedback on each answer."
-          onPress={() => router.push(`/session/${mode}/practice`)}
+          onPress={() => router.push(`/practice/${mode}`)}
           title="Practice"
         />
         <CompactFeatureCard

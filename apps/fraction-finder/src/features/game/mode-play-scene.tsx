@@ -29,6 +29,7 @@ import {
   AnyRound,
   BuildRound,
   CompareRound,
+  DifficultyLevel,
   EstimateRound,
   FindRound,
   GameMode,
@@ -42,6 +43,7 @@ import { useAppState } from '@/state/app-state';
 type ModePlaySceneProps = {
   mode: GameMode;
   sessionType?: SessionType;
+  difficultyLevel: DifficultyLevel;
 };
 
 function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) {
@@ -87,9 +89,8 @@ function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) 
   }
 }
 
-export function ModePlayScene({ mode, sessionType }: ModePlaySceneProps) {
-  const { settings, recordRound } = useAppState();
-  const difficultyLevel = settings.difficultyLevel;
+export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySceneProps) {
+  const { recordRound } = useAppState();
   const [round, setRound] = useState<AnyRound>(() => generateRound(mode, { difficultyLevel }));
   const [feedback, setFeedback] = useState<RoundEvaluation | null>(null);
   const [isCelebrating, setIsCelebrating] = useState(false);

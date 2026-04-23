@@ -11,7 +11,8 @@ export type TieredChallengeLauncherTier = {
   key: string;
   maxStars?: number;
   meta: string;
-  stars: number;
+  /** Omitted when `showTierStars` is false. */
+  stars?: number;
   title: string;
 };
 
@@ -21,6 +22,8 @@ export type TieredChallengeLauncherProps = {
   eyebrow: string;
   onCancel: () => void;
   onSelect: (key: string) => void;
+  /** When false, hides per-tier star groups and scores (e.g. practice difficulty pick). */
+  showTierStars?: boolean;
   tiers: TieredChallengeLauncherTier[];
   title: string;
 };
@@ -31,6 +34,7 @@ export function TieredChallengeLauncher({
   eyebrow,
   onCancel,
   onSelect,
+  showTierStars = true,
   tiers,
   title,
 }: TieredChallengeLauncherProps) {
@@ -55,18 +59,24 @@ export function TieredChallengeLauncher({
                 key={tier.key}
                 accessibilityRole="button"
                 onPress={() => onSelect(tier.key)}
-                style={styles.optionButton}
+                style={[styles.optionButton, !showTierStars && styles.optionButtonNoStars]}
                 testID={`challenge-tier-${tier.key}`}>
                 <View style={styles.optionCopy}>
                   <Text style={styles.optionTitle}>{tier.title}</Text>
                   <Text style={styles.optionMeta}>{tier.meta}</Text>
                 </View>
-                <View style={styles.optionProgress}>
-                  <RewardStarGroup maxStars={tier.maxStars} starSize={18} stars={tier.stars} />
-                  <Text style={styles.optionProgressText}>
-                    {tier.stars} / {tier.maxStars ?? 3}
-                  </Text>
-                </View>
+                {showTierStars ? (
+                  <View style={styles.optionProgress}>
+                    <RewardStarGroup
+                      maxStars={tier.maxStars}
+                      starSize={18}
+                      stars={tier.stars ?? 0}
+                    />
+                    <Text style={styles.optionProgressText}>
+                      {tier.stars ?? 0} / {tier.maxStars ?? 3}
+                    </Text>
+                  </View>
+                ) : null}
               </Pressable>
             ))}
           </View>
@@ -142,6 +152,10 @@ const styles = StyleSheet.create({
     minHeight: 76,
     paddingHorizontal: 18,
     paddingVertical: 16,
+  },
+  optionButtonNoStars: {
+    justifyContent: 'flex-start',
+    minHeight: 72,
   },
   optionCopy: {
     flex: 1,

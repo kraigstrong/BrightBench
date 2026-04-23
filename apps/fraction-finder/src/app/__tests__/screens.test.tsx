@@ -5,6 +5,7 @@ import ChallengeLaunchScreen from '@/app/challenge/[mode]';
 import HomeScreen from '@/app/index';
 import ModeDetailScreen from '@/app/mode/[mode]';
 import ModesScreen from '@/app/modes';
+import PracticeLaunchScreen from '@/app/practice/[mode]';
 import SettingsScreen from '@/app/settings';
 import { useAppState } from '@/state/app-state';
 
@@ -71,7 +72,6 @@ describe('app screens', () => {
       settings: {
         soundEnabled: false,
         reducedMotion: false,
-        difficultyLevel: 'easy' as const,
       },
       lastResult: {
         mode: 'find' as const,
@@ -84,6 +84,7 @@ describe('app screens', () => {
       recordRound: jest.fn(),
       setChallengeBestStars: jest.fn(),
       setLastSelectedChallengeDifficulty: jest.fn(),
+      setLastSelectedPracticeDifficulty: jest.fn(),
       updateSettings: jest.fn(),
       clearLastResult: jest.fn(),
     };
@@ -142,6 +143,14 @@ describe('app screens', () => {
     expect(routerMock.push).toHaveBeenCalledWith('/challenge/find');
   });
 
+  it('opens the practice launch route from the practice card', () => {
+    render(<ModeDetailScreen />);
+
+    fireEvent.press(screen.getByText('Practice'));
+
+    expect(routerMock.push).toHaveBeenCalledWith('/practice/find');
+  });
+
   it('renders the challenge launcher screen and routes to the chosen difficulty', () => {
     const setLastSelectedChallengeDifficulty = jest.fn();
     useAppStateMock.mockReturnValue({
@@ -163,11 +172,29 @@ describe('app screens', () => {
     expect(routerMock.replace).toHaveBeenCalledWith('/session/find/challenge?difficulty=medium');
   });
 
+  it('renders the practice launcher screen and routes to the chosen difficulty', () => {
+    const setLastSelectedPracticeDifficulty = jest.fn();
+    useAppStateMock.mockReturnValue({
+      ...buildAppState(),
+      lastResult: null,
+      setLastSelectedPracticeDifficulty,
+    });
+
+    render(<PracticeLaunchScreen />);
+
+    expect(screen.getByText('Choose your difficulty')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('challenge-tier-hard'));
+
+    expect(setLastSelectedPracticeDifficulty).toHaveBeenCalledWith('find', 'hard');
+    expect(routerMock.replace).toHaveBeenCalledWith('/session/find/practice?difficulty=hard');
+  });
+
   it('renders the settings screen with shared selectable controls', () => {
     render(<SettingsScreen />);
 
     expect(screen.getByText('Settings')).toBeTruthy();
-    expect(screen.getByText('Difficulty')).toBeTruthy();
+    expect(screen.getByText('Experience')).toBeTruthy();
     expect(screen.getByText('Settings save automatically on this device.')).toBeTruthy();
     expect(screen.queryByText('Compare Fractions')).toBeNull();
   });

@@ -67,6 +67,7 @@ export function normalizeChallengeProgress(
       {
         bestStars?: Partial<ChallengeBestStars>;
         lastSelectedDifficulty?: DifficultyLevel;
+        lastSelectedPracticeDifficulty?: DifficultyLevel;
       }
     >
   > | null
@@ -83,10 +84,15 @@ export function normalizeChallengeProgress(
         hard: clampStarCount(storedStars.hard ?? 0),
       },
       lastSelectedDifficulty: storedProgress?.lastSelectedDifficulty,
+      lastSelectedPracticeDifficulty: storedProgress?.lastSelectedPracticeDifficulty,
     };
   }
 
   return normalized;
+}
+
+export function getDefaultPracticeDifficulty(progress: ChallengeModeProgress): DifficultyLevel {
+  return progress.lastSelectedPracticeDifficulty ?? 'easy';
 }
 
 export function calculateChallengeStars(

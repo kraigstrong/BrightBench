@@ -9,17 +9,17 @@ import {
 } from '@/state/app-state';
 
 describe('app state normalization', () => {
-  it('fills in missing difficulty for older settings snapshots', () => {
+  it('drops legacy difficulty from older settings snapshots', () => {
     expect(
       normalizeSettingsSnapshot({
         soundEnabled: true,
         reducedMotion: false,
-      })
+        difficultyLevel: 'hard',
+      } as any)
     ).toEqual({
       ...defaultSettings,
       soundEnabled: true,
       reducedMotion: false,
-      difficultyLevel: 'easy',
     });
   });
 

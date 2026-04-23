@@ -91,6 +91,7 @@ export type ChallengeBestStars = Record<DifficultyLevel, StarCount>;
 export type ChallengeModeProgress = {
   bestStars: ChallengeBestStars;
   lastSelectedDifficulty?: DifficultyLevel;
+  lastSelectedPracticeDifficulty?: DifficultyLevel;
 };
 
 export type ChallengeModeKey = (typeof ACTIVE_GAME_MODES)[number];
@@ -124,7 +125,6 @@ export type ProgressSnapshot = {
 export type SettingsSnapshot = {
   soundEnabled: boolean;
   reducedMotion: boolean;
-  difficultyLevel: DifficultyLevel;
 };
 
 export type AppSnapshot = {

@@ -13,7 +13,7 @@ import {
 } from '@/state/app-state';
 
 export default function SettingsScreen() {
-  const { hydrated, progress, settings, updateSettings } = useAppState();
+  const { hydrated, settings, updateSettings } = useAppState();
 
   return (
     <AppShell maxWidth={layout.maxContentWidth}>
@@ -47,36 +47,6 @@ export default function SettingsScreen() {
         />
       </Card>
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.eyebrow}>Difficulty</Text>
-        <Text style={styles.sectionDescription}>
-          Adjust how challenging each new round feels.
-        </Text>
-        <View style={styles.preferenceButtons}>
-          <ActionButton
-            description="Friendly first steps with simpler fractions."
-            label="Easy"
-            variant="selectable"
-            selected={settings.difficultyLevel === 'easy'}
-            onPress={() => updateSettings({ difficultyLevel: 'easy' })}
-          />
-          <ActionButton
-            description="A balanced mix for regular practice."
-            label="Medium"
-            variant="selectable"
-            selected={settings.difficultyLevel === 'medium'}
-            onPress={() => updateSettings({ difficultyLevel: 'medium' })}
-          />
-          <ActionButton
-            description="Harder comparisons and less obvious targets."
-            label="Hard"
-            variant="selectable"
-            selected={settings.difficultyLevel === 'hard'}
-            onPress={() => updateSettings({ difficultyLevel: 'hard' })}
-          />
-        </View>
-      </Card>
-
       <Text style={styles.footerNote}>
         {hydrated ? 'Settings save automatically on this device.' : 'Loading saved settings...'}
       </Text>
@@ -102,9 +72,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginTop: -6,
-  },
-  preferenceButtons: {
-    gap: spacing.sm,
   },
   footerNote: {
     color: palette.inkMuted,
