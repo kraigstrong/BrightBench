@@ -15,7 +15,7 @@ export function generateEstimateRound(options: GenerateRoundOptions): EstimateRo
     mode: 'estimate',
     prompt: 'About how full is it?',
     targetFractionId: answer.id,
-    representation: sample(['container', 'meter']),
+    representation: 'bar',
     difficultyLevel: options.difficultyLevel,
     actualValue,
     options: shuffle([answer.id, ...distractors]),

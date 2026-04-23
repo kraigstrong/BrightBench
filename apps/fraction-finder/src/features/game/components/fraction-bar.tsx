@@ -6,6 +6,8 @@ import { fractionPalette } from '@/design/tokens';
 
 type FractionBarProps = {
   connected?: boolean;
+  /** When `connected`, draw one solid fill vs empty (Find/Build use per-segment dividers). */
+  showSegmentDividers?: boolean;
   numerator: number;
   denominator: number;
   interactive?: boolean;
@@ -16,6 +18,7 @@ type FractionBarProps = {
 
 export function FractionBar({
   connected = false,
+  showSegmentDividers = true,
   numerator,
   denominator,
   interactive,
@@ -25,6 +28,20 @@ export function FractionBar({
 }: FractionBarProps) {
   const activeSegments =
     selectedSegments ?? Array.from({ length: numerator }, (_, index) => index);
+
+  if (connected && !showSegmentDividers) {
+    const filled = Math.min(denominator, Math.max(0, numerator));
+    const empty = denominator - filled;
+
+    return (
+      <View style={styles.connectedRail}>
+        {filled > 0 ? <View style={[styles.connectedSolid, { flex: filled, backgroundColor: tint }]} /> : null}
+        {empty > 0 ? (
+          <View style={[styles.connectedSolid, { flex: empty, backgroundColor: '#FFFFFF' }]} />
+        ) : null}
+      </View>
+    );
+  }
 
   if (connected) {
     return (
@@ -117,6 +134,9 @@ const styles = StyleSheet.create({
   },
   connectedSegmentEmpty: {
     backgroundColor: '#FFFFFF',
+  },
+  connectedSolid: {
+    minHeight: 74,
   },
   connectedDivider: {
     borderLeftColor: palette.ring,

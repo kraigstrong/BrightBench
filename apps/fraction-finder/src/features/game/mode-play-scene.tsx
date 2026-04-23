@@ -316,6 +316,8 @@ function BuildPlay({
   );
 }
 
+const ESTIMATE_BAR_SLICES = 8;
+
 function EstimatePlay({
   round,
   onSubmit,
@@ -325,14 +327,22 @@ function EstimatePlay({
   onSubmit: (input: string) => void;
   disabled: boolean;
 }) {
+  const filledSlices = clamp(
+    Math.round(round.actualValue * ESTIMATE_BAR_SLICES),
+    0,
+    ESTIMATE_BAR_SLICES
+  );
+
   return (
     <View style={styles.modeBody}>
       <View style={styles.visualStage}>
-        {round.representation === 'container' ? (
-          <FractionContainer fillRatio={round.actualValue} fillColor={fractionPalette.water} />
-        ) : (
-          <FractionMeter fillRatio={round.actualValue} fillColor={fractionPalette.plum} />
-        )}
+        <FractionBar
+          connected
+          showSegmentDividers={false}
+          numerator={filledSlices}
+          denominator={ESTIMATE_BAR_SLICES}
+          tint={fractionPalette.accent}
+        />
       </View>
       <View style={styles.answerStage}>
         {round.options.map((optionId) => (
