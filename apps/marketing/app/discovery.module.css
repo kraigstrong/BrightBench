@@ -73,9 +73,16 @@
 }
 
 .proofPoints {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
+}
+
+.proofPointsAppStore {
+  display: inline-flex;
+  flex-shrink: 0;
+  line-height: 0;
 }
 
 .proofPoint {

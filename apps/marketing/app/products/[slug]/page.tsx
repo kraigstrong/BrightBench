@@ -159,6 +159,18 @@ export default async function ProductPageRoute({
     notFound();
   }
 
+  const showAppStoreBadgeInProofRow =
+    page.kind === 'app' &&
+    Boolean(
+      page.primaryCta.external &&
+        page.primaryCta.href?.includes('apps.apple.com'),
+    );
+  const primaryCtaInRow = !showAppStoreBadgeInProofRow;
+  const hasHeroCtaRow =
+    primaryCtaInRow ||
+    Boolean(page.secondaryCta?.href) ||
+    Boolean(page.secondaryCta?.note);
+
   return (
     <main className={styles.page}>
       <Link className={styles.backLink} href="/">
@@ -194,17 +206,29 @@ export default async function ProductPageRoute({
                 {item}
               </span>
             ))}
+            {showAppStoreBadgeInProofRow && page.primaryCta.href ? (
+              <span className={styles.proofPointsAppStore}>
+                <AppStoreBadgeLink
+                  href={page.primaryCta.href}
+                  label={page.primaryCta.label}
+                />
+              </span>
+            ) : null}
           </div>
         ) : null}
-        <div className={styles.ctaRow}>
-          {renderCta(page.primaryCta, styles.primaryButton)}
-          {page.secondaryCta?.href
-            ? renderCta(page.secondaryCta, styles.secondaryButton)
-            : null}
-          {page.secondaryCta?.note ? (
-            <p className={styles.secondaryNote}>{page.secondaryCta.note}</p>
-          ) : null}
-        </div>
+        {hasHeroCtaRow ? (
+          <div className={styles.ctaRow}>
+            {primaryCtaInRow
+              ? renderCta(page.primaryCta, styles.primaryButton)
+              : null}
+            {page.secondaryCta?.href
+              ? renderCta(page.secondaryCta, styles.secondaryButton)
+              : null}
+            {page.secondaryCta?.note ? (
+              <p className={styles.secondaryNote}>{page.secondaryCta.note}</p>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       {page.kind === 'app' && page.discoverabilityCallout ? (
