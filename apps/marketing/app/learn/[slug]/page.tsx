@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { AppStoreBadgeLink } from '@/components/app-store-badge-link';
 import {
   getLearnPageBySlug,
   learnPages,
@@ -40,6 +41,10 @@ function renderCta(cta: PageCta, className: string) {
   }
 
   if (cta.external) {
+    if (cta.href.includes('apps.apple.com')) {
+      return <AppStoreBadgeLink href={cta.href} label={cta.label} />;
+    }
+
     return (
       <a
         className={className}
@@ -115,8 +120,8 @@ export default async function LearnPageRoute({
 
   return (
     <main className={styles.page}>
-      <Link className={styles.backLink} href="/products/time-tutor">
-        Back to Time Tutor
+      <Link className={styles.backLink} href="/learn">
+        Back to guides
       </Link>
 
       <section className={styles.hero}>

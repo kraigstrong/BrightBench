@@ -43,6 +43,8 @@
   - `/support`
   - `/privacy`
   - `/products/[slug]`
+  - `/learn/[slug]`
+  - `/robots.txt`, `/sitemap.xml`
 - Local build is validated
 - Vercel project linking is still pending
 

@@ -39,11 +39,11 @@
 }
 
 .heroTitle {
-  font-size: clamp(2.6rem, 5vw, 4.2rem);
+  font-size: clamp(2.15rem, 4.1vw, 3.45rem);
   letter-spacing: -0.05em;
-  line-height: 0.98;
+  line-height: 1.02;
   margin: 0;
-  max-width: 13ch;
+  max-width: 22ch;
 }
 
 .lead {
@@ -139,6 +139,21 @@
 
 .secondaryNote {
   max-width: 26rem;
+}
+
+.inlineTextCta {
+  color: #12355b;
+  font-size: 1.02rem;
+  font-weight: 800;
+  margin: 0.35rem 0 0;
+  max-width: 52rem;
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+  width: fit-content;
+}
+
+.inlineTextCta:hover {
+  color: #0f2d4d;
 }
 
 .section {

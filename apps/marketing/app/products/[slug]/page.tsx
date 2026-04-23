@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { AppStoreBadgeLink } from '@/components/app-store-badge-link';
 import {
   getProductPageBySlug,
   productPages,
@@ -47,6 +48,10 @@ function renderCta(cta: PageCta, className: string) {
   }
 
   if (cta.external) {
+    if (cta.href.includes('apps.apple.com')) {
+      return <AppStoreBadgeLink href={cta.href} label={cta.label} />;
+    }
+
     return (
       <a
         className={className}
@@ -104,7 +109,7 @@ function TimeTutorJsonLd() {
             educationalRole: 'student',
           },
           description:
-            'A telling time game for kids with analog clock practice, digital matching, and elapsed time support.',
+            'Time telling games for kids: analog clock practice, set the clock, read the clock, and elapsed time — focused and calm on iOS.',
           name: 'Time Tutor',
           offers: {
             '@type': 'Offer',
@@ -170,6 +175,18 @@ export default async function ProductPageRoute({
             </p>
           ))}
         </div>
+        {page.kind === 'app' &&
+        page.slug === 'time-tutor' &&
+        page.primaryCta.external &&
+        page.primaryCta.href?.includes('apps.apple.com') ? (
+          <a
+            className={styles.inlineTextCta}
+            href={siteMeta.timeTutorAppStoreUrl}
+            rel="noreferrer"
+            target="_blank">
+            {page.primaryCta.label}
+          </a>
+        ) : null}
         {'proofPoints' in page ? (
           <div className={styles.proofPoints}>
             {page.proofPoints.map((item) => (
@@ -189,6 +206,17 @@ export default async function ProductPageRoute({
           ) : null}
         </div>
       </section>
+
+      {page.kind === 'app' && page.discoverabilityCallout ? (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{page.discoverabilityCallout.title}</h2>
+          <div className={styles.sectionBody}>
+            {page.discoverabilityCallout.body.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {page.kind === 'app' ? (
         <>

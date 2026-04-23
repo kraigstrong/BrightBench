@@ -123,6 +123,39 @@
   transform: translateY(-1px);
 }
 
+.heroCtaRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.secondaryOutlineButton {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d7c4b0;
+  border-radius: 999px;
+  color: #12355b;
+  display: inline-flex;
+  font-size: 0.96rem;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 1.2rem;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+  width: fit-content;
+}
+
+.secondaryOutlineButton:hover {
+  background: #fff7ef;
+  box-shadow: 0 14px 28px rgba(18, 53, 91, 0.1);
+  transform: translateY(-1px);
+}
+
 .heroArt {
   align-self: center;
   align-items: center;

@@ -41,6 +41,9 @@ export default function HomePage() {
           <a className={styles.navLink} href="#about">
             About
           </a>
+          <Link className={styles.navLink} href="/learn">
+            Learn
+          </Link>
           <Link className={styles.navLink} href="/support">
             Contact
           </Link>
@@ -65,9 +68,14 @@ export default function HomePage() {
             Brightbench is building a suite of simple, thoughtful apps that
             help kids understand tough concepts with clarity and confidence.
           </p>
-          <a className={styles.primaryButton} href="#product-suite">
-            Explore the apps
-          </a>
+          <div className={styles.heroCtaRow}>
+            <a className={styles.primaryButton} href="#product-suite">
+              Explore the apps
+            </a>
+            <Link className={styles.secondaryOutlineButton} href="/products/time-tutor">
+              Explore Time Tutor now
+            </Link>
+          </div>
         </div>
 
         <div className={styles.heroArt} aria-hidden="true">
@@ -158,7 +166,7 @@ export default function HomePage() {
         <div className={styles.roadmap}>
           <div className={styles.roadmapTop}>
             <div className={styles.roadmapIntro}>
-              <h2 className={styles.sectionTitle}>More focused apps are on the way</h2>
+              <h2 className={styles.sectionTitle}>More apps are on the way</h2>
               <p className={styles.sectionText}>
                 We’re actively building the next set of Brightbench apps around
                 other tricky elementary concepts, including fractions, early
@@ -242,6 +250,9 @@ export default function HomePage() {
           <a className={styles.navLink} href="#about">
             About
           </a>
+          <Link className={styles.navLink} href="/learn">
+            Learn
+          </Link>
           <Link className={styles.navLink} href="/support">
             Contact
           </Link>

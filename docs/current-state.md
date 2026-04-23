@@ -30,6 +30,10 @@ Current standard flow:
 3. `npm run lint -w marketing`
 4. `npm run build -w marketing`
 
+Notes:
+- includes `robots.txt`, `sitemap.xml`, and Time Tutor–focused learn routes for discovery (see `apps/marketing/README.md` for Search Console checklist)
+- set `NEXT_PUBLIC_SITE_ORIGIN` in production so canonical URLs and social previews resolve correctly
+
 ## App Status
 
 ### Fraction Finder

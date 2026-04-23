@@ -10,6 +10,20 @@ const timeTutorAppStoreUrl =
   'https://apps.apple.com/app/time-tutor-clock-practice/id6761587276';
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN?.replace(/\/$/, '');
 
+/**
+ * Canonical origin for sitemap, robots, and absolute URLs when env is unset
+ * (e.g. local dev or Vercel preview with VERCEL_URL).
+ */
+export function getPublicSiteOrigin(): string {
+  if (siteOrigin) {
+    return siteOrigin;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+}
+
 export type PageCta = {
   external?: boolean;
   href?: string;
@@ -64,6 +78,10 @@ type BaseDiscoveryPage = {
 export type ProductPage =
   | (BaseDiscoveryPage & {
       audience: string;
+      discoverabilityCallout?: {
+        body: string[];
+        title: string;
+      };
       heroEyebrow: string;
       intro: string[];
       kind: 'app';
@@ -159,7 +177,7 @@ export const productPages: ProductPage[] = [
       },
       {
         answer:
-          'The main experience is the iOS app. A lighter web version can support practice, but the full challenge flow lives in the App Store app.',
+          'Time Tutor is an iOS app. Download it from the App Store for the full experience.',
         question: 'Is it a web game or an app?',
       },
       {
@@ -167,12 +185,17 @@ export const productPages: ProductPage[] = [
           'It works well for both. Families can use it for low-pressure home practice, and teachers can use it as a focused supplement for clock and time lessons.',
         question: 'Is it good for home or classroom use?',
       },
+      {
+        answer:
+          'Yes. Time Tutor is built around real clock skills: analog, digital, clock setting, clock reading, and elapsed time.',
+        question: 'Is Time Tutor a good telling time game for kids?',
+      },
     ],
-    h1: 'A telling time game that helps kids read clocks with confidence',
+    h1: 'Help your kid learn to tell time — without the struggle.',
     heroEyebrow: 'Time Tutor',
     intro: [
-      'Time Tutor is a focused telling time game for kids who need more than a worksheet or a cluttered browser game. It helps students read clocks, connect analog and digital time, and build confidence with elapsed time through calm, visual practice.',
-      'Instead of burying the learning inside ads, distractions, or random mini-games, Time Tutor keeps the experience clear. Kids practice one skill at a time and get steady repetition that actually supports understanding.',
+      'Time Tutor is a simple, self-guided clock practice app for grades 1–3 — kids move at their own pace with clear feedback and no busywork.',
+      'Kids learn by doing: read analog clocks, set the hands to match a target time, match analog to digital, and practice elapsed time with clear visual problems.',
     ],
     kind: 'app',
     learningItems: [
@@ -183,81 +206,96 @@ export const productPages: ProductPage[] = [
       'Build confidence through repeatable practice and timed challenge play.',
     ],
     metaDescription:
-      'Time Tutor is a telling time game for kids in grades 1-3 with analog clock practice, digital matching, elapsed time work, and a calm learning-focused design.',
+      'Time Tutor is a telling time game for kids (grades 1–3): analog + digital clock practice, set the clock, read the clock, and elapsed time — calm, clear, and visual on iOS.',
     modeItems: [
       {
-        body: 'Explore analog and digital time together so kids can see how the two representations connect before they are asked to answer.',
+        body: 'See analog and digital time side by side before answering, so the connection becomes obvious.',
         title: 'Explore Time',
       },
       {
-        body: 'Kids drag the clock hands until the analog clock matches a target digital time, which strengthens clock-setting and hand placement skills.',
+        body: 'Drag the hands until the analog clock matches a target time, building placement and interval sense.',
         title: 'Set the Clock',
       },
       {
-        body: 'Kids read an analog clock and enter the matching time, building fluency instead of relying on memorized tricks.',
+        body: 'Read an analog clock and enter the matching time to build real fluency.',
         title: 'Read the Clock',
       },
       {
-        body: 'Students compare two times and figure out how much time has passed, which supports the tricky reasoning behind elapsed time.',
+        body: 'Compare times and reason about duration with visual clock-based problems.',
         title: 'Elapsed Time',
       },
     ],
-    pageTitle: 'Time Tutor | Telling Time Game and Clock Practice for Kids',
+    pageTitle:
+      'Time Tutor | Telling Time Game for Kids (Time Telling Games)',
     practiceItems: [
-      'Practice mode keeps the pace calm and lets kids focus on accuracy first.',
-      'Timed challenge mode adds repetition and motivation once the concept starts to stick.',
-      'Time settings can scale from easier intervals to more precise clock reading.',
-      'A lighter web practice experience exists, but the most complete challenge flow is in the App Store app.',
+      'Practice mode keeps the pace calm so kids can focus on accuracy first.',
+      'Challenge mode adds a timer once the concept starts to stick.',
+      'Adjust time settings from easier intervals to more precise clock reading.',
+      'Download the iOS app from the App Store for the full experience.',
     ],
     primaryCta: {
       external: true,
       href: timeTutorAppStoreUrl,
-      label: 'Download Time Tutor on the App Store',
+      label: 'Download today on the App Store',
     },
-    primaryTopic: 'telling time game',
+    primaryTopic: 'time telling games',
     proofPoints: [
-      'Grades 1-3',
-      'Analog and digital clocks',
-      'Elapsed time included',
-      'Built for home and classroom use',
+      'Grades 1–3',
+      'Analog + digital',
+      'Elapsed time',
+      'Home + classroom',
     ],
     relatedLinks: [
       {
         description:
-          'See the analog-specific learning page for kids who need clearer clock-reading practice.',
+          'What to look for in telling time practice, and how Time Tutor maps to it.',
+        href: '/learn/time-telling-games',
+        label: 'Time telling games for kids',
+      },
+      {
+        description:
+          'Analog foundations: reading, setting, and connecting analog to digital time.',
         href: '/learn/analog-clock-practice',
         label: 'Analog clock practice for kids',
       },
       {
         description:
-          'See the elapsed-time page for families or teachers focused on duration and time-interval reasoning.',
+          'When kids can read clocks more confidently, elapsed time gets easier to reason about.',
         href: '/learn/elapsed-time-practice',
         label: 'Elapsed time practice for kids',
       },
+      {
+        description:
+          'Why moving the hands builds placement skills and interval sense.',
+        href: '/learn/set-the-clock-game',
+        label: 'Set the clock practice for kids',
+      },
+      {
+        description:
+          'Build fluency reading an analog clock and typing the matching digital time.',
+        href: '/learn/read-the-clock-game',
+        label: 'Read the clock practice for kids',
+      },
     ],
-    secondaryCta: {
-      label: 'Web availability',
-      note: 'A lighter web version is available for practice, but the full challenge flow lives in the App Store app.',
-    },
     slug: 'time-tutor',
     status: 'Live on the App Store',
     trustItems: [
       {
-        body: 'The app is built around one concept at a time so kids can focus on understanding instead of bouncing between unrelated activities.',
-        title: 'Focused practice',
+        body: 'Designed around the clock itself so practice stays clear and repeatable.',
+        title: 'Calm and clear',
       },
       {
-        body: 'The visuals are calm, clean, and readable so the clock itself stays at the center of the learning.',
-        title: 'No junky distractions',
+        body: 'Kids interact with the hands and connect analog to digital in ways that build understanding.',
+        title: 'Visual and hands-on',
       },
       {
-        body: 'Time Tutor is designed to support actual skill-building in reading clocks and working with elapsed time, not just empty screen time.',
-        title: 'Built for real learning',
+        body: 'Includes analog reading, clock setting, and elapsed time so progress carries into real-world use.',
+        title: 'Real clock skills',
       },
     ],
     usageItems: [
-      'Use it at home when a child needs extra repetition without the noise of generic browser games.',
-      'Use it in classrooms as a focused station, intervention tool, or reinforcement activity during time units.',
+      'Use it at home for short, repeatable sessions when a child needs extra clock practice.',
+      'Use it in classrooms as a station, intervention tool, or reinforcement activity during time units.',
       'Use it for short, repeatable sessions that make clock reading feel less frustrating over time.',
     ],
   },
@@ -395,37 +433,46 @@ export const learnPages: LearnPage[] = [
         question: 'Is it useful for school and home?',
       },
     ],
-    h1: 'Analog clock practice that helps telling time click',
-    heroEyebrow: 'Learn',
+    h1: 'Analog clock practice for kids',
+    heroEyebrow: 'Guides',
     intro: [
-      'Analog clock practice works best when kids can see what the hands are doing, test their understanding, and connect the clock face to actual time language. That is very different from clicking through a noisy web game or memorizing a few shortcuts.',
-      'If a child knows the numbers on a clock but still freezes when it is time to read one, the answer is usually better analog clock practice, not more clutter.',
+      'Analog clock practice works best when kids can see what the hands are doing, try placements themselves, and connect the clock face to real time language.',
+      'Time Tutor supports self-guided practice with Explore Time, Set the Clock, and Read the Clock so kids build understanding step by step.',
     ],
     metaDescription:
-      'Analog clock practice for kids should be visual, calm, and clear. Learn what helps, then see how Time Tutor supports reading and setting analog clocks.',
+      'Analog clock practice for grades 1–3: what helps, and how Time Tutor supports it on the App Store.',
     pageTitle: 'Analog Clock Practice for Kids | Time Tutor',
     primaryCta: {
-      href: '/products/time-tutor',
-      label: 'See the Time Tutor telling time game',
+      external: true,
+      href: timeTutorAppStoreUrl,
+      label: 'Download Time Tutor on the App Store',
     },
     primaryTopic: 'analog clock practice',
     relatedLinks: [
       {
-        description:
-          'Go to the main Time Tutor page for the full app overview, audience, and download details.',
+        description: 'Modes, ages, and the App Store download.',
         href: '/products/time-tutor',
-        label: 'Time Tutor telling time game',
+        label: 'Time Tutor overview',
       },
       {
-        description:
-          'Move into elapsed-time-specific support once basic clock reading is more secure.',
+        description: 'A simple framing for families comparing telling time options.',
+        href: '/learn/time-telling-games',
+        label: 'Time telling games for kids',
+      },
+      {
+        description: 'When clock reading is steadier, elapsed time gets easier to reason about.',
         href: '/learn/elapsed-time-practice',
         label: 'Elapsed time practice for kids',
+      },
+      {
+        description: 'Practice placing hands to match a target time.',
+        href: '/learn/set-the-clock-game',
+        label: 'Set the clock practice for kids',
       },
     ],
     secondaryCta: {
       href: '/learn/elapsed-time-practice',
-      label: 'Explore elapsed time practice',
+      label: 'Next: elapsed time practice',
     },
     sections: [
       {
@@ -437,7 +484,7 @@ export const learnPages: LearnPage[] = [
           'Let them read clocks and set clocks instead of only choosing multiple-choice answers.',
           'Connect analog clocks to digital time so the meaning transfers.',
         ],
-        title: 'What strong analog clock practice looks like',
+        title: 'What good analog practice looks like',
       },
       {
         body: [
@@ -448,7 +495,7 @@ export const learnPages: LearnPage[] = [
           'Set the Clock asks kids to drag the hands until the clock matches a target time.',
           'Read the Clock asks kids to read the analog display and enter the matching time.',
         ],
-        title: 'How Time Tutor supports analog clock practice',
+        title: 'How Time Tutor helps',
       },
       {
         body: [
@@ -483,41 +530,45 @@ export const learnPages: LearnPage[] = [
       },
       {
         answer:
-          'Grades 1-3 is a strong fit overall, especially once a child already has some basic familiarity with reading clocks and is ready to reason about time intervals.',
+          'Grades 1–3 is a strong fit overall, especially once a child already has some basic familiarity with reading clocks and is ready to reason about time intervals.',
         question: 'What grade range fits elapsed time work?',
       },
     ],
-    h1: 'Elapsed time practice with clear visual clock-based problems',
-    heroEyebrow: 'Learn',
+    h1: 'Elapsed time practice for kids',
+    heroEyebrow: 'Guides',
     intro: [
       'Elapsed time is where many students first realize that telling time and reasoning about time are different skills. A child may be able to read a clock and still struggle to figure out how much time has passed.',
-      'Good elapsed time practice makes the start time, end time, and duration feel connected. It should be visual, clear, and broken into understandable steps rather than buried inside dense word problems.',
+      'Time Tutor includes a dedicated Elapsed Time mode with visual clock-based problems so kids can connect start time, end time, and duration step by step.',
     ],
     metaDescription:
-      'Elapsed time practice for kids should connect start time, end time, and duration clearly. Learn the skill need, then see how Time Tutor supports it.',
+      'Elapsed time practice for grades 1–3: what helps, and how Time Tutor supports it on the App Store.',
     pageTitle: 'Elapsed Time Practice for Kids | Time Tutor',
     primaryCta: {
-      href: '/products/time-tutor',
-      label: 'See the Time Tutor telling time game',
+      external: true,
+      href: timeTutorAppStoreUrl,
+      label: 'Download Time Tutor on the App Store',
     },
     primaryTopic: 'elapsed time practice',
     relatedLinks: [
       {
-        description:
-          'Go to the main Time Tutor page for the full app overview, learning goals, and download details.',
+        description: 'Modes, ages, and the App Store download.',
         href: '/products/time-tutor',
-        label: 'Time Tutor telling time game',
+        label: 'Time Tutor overview',
       },
       {
-        description:
-          'Build stronger clock-reading fluency before or alongside elapsed-time work.',
+        description: 'Build clock-reading fluency before or alongside elapsed time work.',
         href: '/learn/analog-clock-practice',
         label: 'Analog clock practice for kids',
+      },
+      {
+        description: 'A simple framing for families comparing telling time options.',
+        href: '/learn/time-telling-games',
+        label: 'Time telling games for kids',
       },
     ],
     secondaryCta: {
       href: '/learn/analog-clock-practice',
-      label: 'Explore analog clock practice',
+      label: 'Back to analog clock practice',
     },
     sections: [
       {
@@ -538,7 +589,7 @@ export const learnPages: LearnPage[] = [
         bullets: [
           'Visual clock prompts keep the time relationship visible.',
           'Focused practice helps kids connect start time, end time, and duration.',
-          'The same calm interface keeps attention on the math instead of the chrome around it.',
+          'The same calm interface keeps attention on the math instead of extra distractions.',
         ],
         title: 'How Time Tutor helps',
       },
@@ -551,10 +602,345 @@ export const learnPages: LearnPage[] = [
           'Use it for repeated short home sessions when elapsed time still feels slippery.',
           'Pair it with analog clock practice when students need both fluency and reasoning support.',
         ],
-        title: 'Where it fits',
+        title: 'When to use it',
       },
     ],
     slug: 'elapsed-time-practice',
+  },
+  {
+    faqItems: [
+      {
+        answer:
+          'Look for practice that keeps the clock readable, repeats the right interactions, and lets kids move at their own pace before adding timed challenge.',
+        question: 'What should parents look for in telling time apps?',
+      },
+      {
+        answer:
+          'Time Tutor is a telling time app for grades 1–3 with Explore Time, Set the Clock, Read the Clock, and Elapsed Time.',
+        question: 'What is Time Tutor?',
+      },
+      {
+        answer:
+          'Yes. Time Tutor is designed for grades 1–3 and supports analog and digital time, clock setting, clock reading, and elapsed time.',
+        question: 'Does Time Tutor work for classroom and home?',
+      },
+      {
+        answer:
+          'Use the App Store download on the Time Tutor page.',
+        question: 'Where do I download it?',
+      },
+    ],
+    h1: 'Time telling games for kids',
+    heroEyebrow: 'Guides',
+    intro: [
+      'Telling time is easier when practice is simple: a real clock face, clear feedback, and skills broken into steps kids can repeat.',
+      'Time Tutor is built for grades 1–3 with Explore Time, Set the Clock, Read the Clock, and Elapsed Time so kids can learn at their own pace.',
+    ],
+    metaDescription:
+      'Time telling games for kids (grades 1–3): what good practice looks like, and how Time Tutor supports it on the App Store.',
+    pageTitle: 'Time Telling Games for Kids | Time Tutor on the App Store',
+    primaryCta: {
+      external: true,
+      href: timeTutorAppStoreUrl,
+      label: 'Download Time Tutor on the App Store',
+    },
+    primaryTopic: 'time telling games',
+    relatedLinks: [
+      {
+        description: 'Modes, ages, and the App Store download.',
+        href: '/products/time-tutor',
+        label: 'Time Tutor overview',
+      },
+      {
+        description: 'Analog foundations: reading, setting, and connecting analog to digital time.',
+        href: '/learn/analog-clock-practice',
+        label: 'Analog clock practice for kids',
+      },
+      {
+        description: 'When clock reading is steadier, elapsed time gets easier to reason about.',
+        href: '/learn/elapsed-time-practice',
+        label: 'Elapsed time practice for kids',
+      },
+      {
+        description: 'Practice placing hands to match a target time.',
+        href: '/learn/set-the-clock-game',
+        label: 'Set the clock practice for kids',
+      },
+    ],
+    sections: [
+      {
+        body: [
+          'Good telling time practice still needs a real clock face, sensible pacing, and feedback that reinforces meaning.',
+        ],
+        bullets: [
+          'Analog and digital time should connect, not compete for attention.',
+          'Practice should include both reading a clock and setting a clock.',
+          'Elapsed time deserves its own lane once basics are in place.',
+        ],
+        title: 'What good practice looks like',
+      },
+      {
+        body: [
+          'Time Tutor keeps the learning story obvious: explore clocks, set hands to match targets, read analog clocks fluently, and stretch into elapsed time when students are ready.',
+        ],
+        bullets: [
+          'Explore Time connects representations before quizzing.',
+          'Set the Clock strengthens hand placement and interval sense.',
+          'Read the Clock builds fluency entering digital time.',
+          'Elapsed Time supports duration reasoning with visual clocks.',
+        ],
+        title: 'How Time Tutor helps',
+      },
+    ],
+    slug: 'time-telling-games',
+  },
+  {
+    faqItems: [
+      {
+        answer:
+          'Setting the clock forces kids to think about where the hour and minute hands belong, not just recognize a pre-drawn answer. That builds placement skills and interval understanding.',
+        question: 'Why is set-the-clock practice useful?',
+      },
+      {
+        answer:
+          'Yes. Set the Clock mode asks learners to drag the hands until the analog clock matches a target digital time.',
+        question: 'Does Time Tutor include set-the-clock practice?',
+      },
+      {
+        answer:
+          'Pair Set the Clock with Read the Clock and Explore Time so kids connect setting, reading, and comparing analog and digital time.',
+        question: 'What should we practice next?',
+      },
+      {
+        answer:
+          'Download Time Tutor on the App Store for the full experience.',
+        question: 'Where can we get it?',
+      },
+    ],
+    h1: 'Set the clock practice for kids',
+    heroEyebrow: 'Guides',
+    intro: [
+      'Set-the-clock practice works best when kids move the hour and minute hands themselves until the analog face matches a target time.',
+      'Time Tutor includes Set the Clock mode alongside Explore Time and Read the Clock so learners build confidence from more than one angle.',
+    ],
+    metaDescription:
+      'Set-the-clock practice for kids: what helps, and how Time Tutor supports it on the App Store.',
+    pageTitle: 'Set the Clock Practice for Kids | Time Tutor',
+    primaryCta: {
+      external: true,
+      href: timeTutorAppStoreUrl,
+      label: 'Download Time Tutor on the App Store',
+    },
+    primaryTopic: 'set-the-clock practice',
+    relatedLinks: [
+      {
+        description: 'Modes, ages, and the App Store download.',
+        href: '/products/time-tutor',
+        label: 'Time Tutor overview',
+      },
+      {
+        description: 'When setting feels hard, analog foundations usually need reinforcement.',
+        href: '/learn/analog-clock-practice',
+        label: 'Analog clock practice for kids',
+      },
+      {
+        description: 'Pair setting with reading so understanding goes both ways.',
+        href: '/learn/read-the-clock-game',
+        label: 'Read the clock practice for kids',
+      },
+      {
+        description: 'A simple framing for families comparing telling time options.',
+        href: '/learn/time-telling-games',
+        label: 'Time telling games for kids',
+      },
+    ],
+    sections: [
+      {
+        body: [
+          'Look for interactions where both hands move realistically, minute intervals stay visible, and feedback explains what changed when a guess is wrong.',
+        ],
+        bullets: [
+          'Hands should move together the way a real clock behaves.',
+          'Targets should include digital time so translation stays explicit.',
+          'Sessions should stay short and repeatable instead of overstimulating.',
+        ],
+        title: 'What good set-the-clock practice looks like',
+      },
+      {
+        body: [
+          'Time Tutor centers the clock face and keeps controls tactile so learners focus on placement instead of chasing unrelated game goals.',
+        ],
+        bullets: [
+          'Set the Clock targets a digital time with draggable hands.',
+          'Explore Time previews analog and digital side by side.',
+          'Read the Clock reverses the skill by reading first, then typing time.',
+        ],
+        title: 'How Time Tutor helps',
+      },
+    ],
+    slug: 'set-the-clock-game',
+  },
+  {
+    faqItems: [
+      {
+        answer:
+          'Reading asks kids to interpret the position of both hands and translate that into time language or digital notation. It is the skill they need in classrooms and daily life.',
+        question: 'Why is read-the-clock practice different from setting?',
+      },
+      {
+        answer:
+          'Yes. Read the Clock mode shows an analog clock and asks students to enter the matching time.',
+        question: 'Does Time Tutor include read-the-clock practice?',
+      },
+      {
+        answer:
+          'Alternate Read the Clock with Set the Clock so kids encode and decode time in both directions.',
+        question: 'What pairs well with read-the-clock work?',
+      },
+      {
+        answer:
+          'Download Time Tutor on the App Store for the full experience.',
+        question: 'Where do we get it?',
+      },
+    ],
+    h1: 'Read the clock practice for kids',
+    heroEyebrow: 'Guides',
+    intro: [
+      'Read-the-clock practice works best when kids can focus on both hands, interval sense, and translating what they see into a digital time.',
+      'Time Tutor includes Read the Clock mode so students practice entering time after reading an analog display.',
+    ],
+    metaDescription:
+      'Read-the-clock practice for kids: what helps, and how Time Tutor supports it on the App Store.',
+    pageTitle: 'Read the Clock Practice for Kids | Time Tutor',
+    primaryCta: {
+      external: true,
+      href: timeTutorAppStoreUrl,
+      label: 'Download Time Tutor on the App Store',
+    },
+    primaryTopic: 'read-the-clock practice',
+    relatedLinks: [
+      {
+        description: 'Modes, ages, and the App Store download.',
+        href: '/products/time-tutor',
+        label: 'Time Tutor overview',
+      },
+      {
+        description: 'Strengthen the underlying analog foundations that reading depends on.',
+        href: '/learn/analog-clock-practice',
+        label: 'Analog clock practice for kids',
+      },
+      {
+        description: 'Alternate reading with setting so understanding goes both ways.',
+        href: '/learn/set-the-clock-game',
+        label: 'Set the clock practice for kids',
+      },
+      {
+        description: 'A simple framing for families comparing telling time options.',
+        href: '/learn/time-telling-games',
+        label: 'Time telling games for kids',
+      },
+    ],
+    sections: [
+      {
+        body: [
+          'Strong read-the-clock practice mixes interval sizes as kids grow, keeps numerals readable, and gives feedback that reinforces what each hand is doing.',
+        ],
+        bullets: [
+          'Include times where the hour hand is between numbers.',
+          'Practice both o’clock times and finer intervals as confidence grows.',
+          'Connect analog results to digital notation.',
+        ],
+        title: 'What good read-the-clock practice looks like',
+      },
+      {
+        body: [
+          'Time Tutor keeps the analog display central and asks learners to type the matching time, which mirrors how kids need to demonstrate understanding in school.',
+        ],
+        title: 'How Time Tutor helps',
+      },
+    ],
+    slug: 'read-the-clock-game',
+  },
+  {
+    faqItems: [
+      {
+        answer:
+          'Five-minute intervals are a common classroom milestone. They require kids to track skip counting by fives on the minute hand while still reading the hour correctly.',
+        question: 'Why do schools emphasize nearest 5 minutes?',
+      },
+      {
+        answer:
+          'Time Tutor supports scaling time settings so practice can start at friendlier intervals and move toward finer precision as kids are ready.',
+        question: 'Can Time Tutor practice nearest 5 minutes?',
+      },
+      {
+        answer:
+          'Pair interval work with Set the Clock and Read the Clock so kids see how hand placement lines up with five-minute jumps.',
+        question: 'What activities help besides drilling?',
+      },
+      {
+        answer:
+          'Download on the App Store for the full experience.',
+        question: 'Where can families try it?',
+      },
+    ],
+    h1: 'Tell time to the nearest 5 minutes',
+    heroEyebrow: 'Guides',
+    intro: [
+      'Telling time to the nearest five minutes is a common classroom milestone. Kids need clear minute marks, repeated exposure, and feedback that reinforces skip counting by fives.',
+      'Time Tutor lets you keep practice focused on the clock while gradually increasing precision as kids are ready.',
+    ],
+    metaDescription:
+      'Tell time to the nearest 5 minutes: what helps, and how Time Tutor supports it on the App Store.',
+    pageTitle: 'Tell Time to the Nearest 5 Minutes | Time Tutor',
+    primaryCta: {
+      external: true,
+      href: timeTutorAppStoreUrl,
+      label: 'Download Time Tutor on the App Store',
+    },
+    primaryTopic: 'tell time to the nearest 5 minutes',
+    relatedLinks: [
+      {
+        description: 'Modes, ages, and the App Store download.',
+        href: '/products/time-tutor',
+        label: 'Time Tutor overview',
+      },
+      {
+        description: 'Hand placement practice supports accurate five-minute reading.',
+        href: '/learn/set-the-clock-game',
+        label: 'Set the clock practice for kids',
+      },
+      {
+        description: 'Reading fluency pairs naturally with typed answers.',
+        href: '/learn/read-the-clock-game',
+        label: 'Read the clock practice for kids',
+      },
+      {
+        description: 'A simple framing for families comparing telling time options.',
+        href: '/learn/time-telling-games',
+        label: 'Time telling games for kids',
+      },
+    ],
+    sections: [
+      {
+        body: [
+          'Kids should see how each five-minute step changes the minute hand, how the hour hand creeps between numbers, and how digital notation lines up with the analog face.',
+        ],
+        bullets: [
+          'Use clocks with clear minute tick marks.',
+          'Alternate reading and setting at the same interval level.',
+          'Celebrate small wins before jumping to minute-level precision.',
+        ],
+        title: 'What good five-minute practice looks like',
+      },
+      {
+        body: [
+          'Time Tutor keeps the interface calm so learners can focus on interval reasoning instead of unrelated game mechanics.',
+        ],
+        title: 'How Time Tutor helps',
+      },
+    ],
+    slug: 'telling-time-to-the-nearest-5-minutes',
   },
 ];
 

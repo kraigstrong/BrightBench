@@ -2,11 +2,11 @@ import type { Metadata } from 'next';
 import { palette, spacing } from '@education/design';
 
 import './globals.css';
-import { siteMeta } from '@/lib/site';
+import { getPublicSiteOrigin, siteMeta } from '@/lib/site';
 
 export const metadata: Metadata = {
   description: siteMeta.description,
-  metadataBase: siteMeta.origin ? new URL(siteMeta.origin) : undefined,
+  metadataBase: new URL(getPublicSiteOrigin()),
   openGraph: {
     description: siteMeta.description,
     siteName: siteMeta.title,
