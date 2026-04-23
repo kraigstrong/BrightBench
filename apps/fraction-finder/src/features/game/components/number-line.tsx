@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { GestureResponderEvent, LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 
 import { palette, radii, spacing } from '@education/design';
@@ -73,6 +73,8 @@ export function NumberLine({
   const TICK_WIDTH = 2;
   const LINE_Y = 22;
   const [lineWidth, setLineWidth] = useState(1);
+  const [linePageX, setLinePageX] = useState(0);
+  const lineRef = useRef<View>(null);
 
   function ratioToX(ratio: number) {
     return clamp(ratio, 0, 1) * lineWidth;
@@ -82,15 +84,15 @@ export function NumberLine({
     return ratioToX(value / lineMax);
   }
 
-  function updateFromLocation(locationX: number) {
-    // `locationX` is relative to the padded touch surface; subtract the padding to get line space.
-    const localX = locationX - MARKER_RADIUS;
+  function updateFromEvent(event: GestureResponderEvent) {
+    // Use absolute coordinates so drag stays stable even if the responder target changes.
+    const localX = event.nativeEvent.pageX - linePageX;
     const ratio = clamp(localX / lineWidth, 0, 1);
     onChange(ratio * lineMax);
   }
 
   function handleTouch(event: GestureResponderEvent) {
-    updateFromLocation(event.nativeEvent.locationX);
+    updateFromEvent(event);
   }
 
   function handleLayout(_event: LayoutChangeEvent) {
@@ -101,14 +103,23 @@ export function NumberLine({
     <View style={styles.wrapper}>
       <View
         onLayout={handleLayout}
-        onMoveShouldSetResponder={() => !disabled}
-        onStartShouldSetResponder={() => !disabled}
-        onResponderGrant={handleTouch}
-        onResponderMove={handleTouch}
         style={[styles.surface, disabled ? styles.surfaceDisabled : null]}>
         <View style={[styles.touchSurface, { paddingHorizontal: MARKER_RADIUS }]}>
           <View
-            onLayout={(event) => setLineWidth(Math.max(event.nativeEvent.layout.width, 1))}
+            ref={lineRef}
+            onLayout={(event) => {
+              setLineWidth(Math.max(event.nativeEvent.layout.width, 1));
+              requestAnimationFrame(() => {
+                lineRef.current?.measureInWindow((x) => setLinePageX(x));
+              });
+            }}
+            onMoveShouldSetResponder={() => !disabled}
+            onStartShouldSetResponder={() => !disabled}
+            onMoveShouldSetResponderCapture={() => !disabled}
+            onStartShouldSetResponderCapture={() => !disabled}
+            onResponderGrant={handleTouch}
+            onResponderMove={handleTouch}
+            onResponderTerminationRequest={() => false}
             style={styles.lineRegion}>
             <View style={styles.track} />
 
