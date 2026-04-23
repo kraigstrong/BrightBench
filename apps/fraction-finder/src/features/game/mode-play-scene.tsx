@@ -308,7 +308,7 @@ function BuildPlay({
         />
       </View>
       <ChoiceButton
-        label={segments.length ? 'Check my fraction' : 'Tap parts to shade'}
+        label="Submit"
         onPress={() => onSubmit(segments.length)}
         disabled={disabled || segments.length === 0}
       />
@@ -395,7 +395,7 @@ function PourPlay({
           <FractionContainer fillRatio={fill} fillColor={fractionPalette.water} />
         </View>
       </View>
-      <ChoiceButton label="This feels right" onPress={() => onSubmit(fill)} disabled={disabled} />
+      <ChoiceButton label="Submit" onPress={() => onSubmit(fill)} disabled={disabled} />
     </View>
   );
 }
@@ -471,7 +471,7 @@ function LinePlay({
         targetValue={target.value}
         disabled={disabled}
       />
-      <ChoiceButton label="Check my spot" onPress={() => onSubmit(markerValue)} disabled={disabled} />
+      <ChoiceButton label="Submit" onPress={() => onSubmit(markerValue)} disabled={disabled} />
     </View>
   );
 }
