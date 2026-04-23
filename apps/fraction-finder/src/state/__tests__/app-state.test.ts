@@ -14,13 +14,11 @@ describe('app state normalization', () => {
       normalizeSettingsSnapshot({
         soundEnabled: true,
         reducedMotion: false,
-        preferredRepresentation: 'bar',
       })
     ).toEqual({
       ...defaultSettings,
       soundEnabled: true,
       reducedMotion: false,
-      preferredRepresentation: 'bar',
       difficultyLevel: 'easy',
     });
   });

@@ -115,7 +115,6 @@ export const defaultSettings: SettingsSnapshot = {
   soundEnabled: false,
   reducedMotion: false,
   difficultyLevel: 'easy',
-  preferredRepresentation: 'mixed',
 };
 
 const initialState: AppState = {

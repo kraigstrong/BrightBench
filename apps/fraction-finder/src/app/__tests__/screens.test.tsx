@@ -68,7 +68,6 @@ describe('app screens', () => {
         soundEnabled: false,
         reducedMotion: false,
         difficultyLevel: 'easy' as const,
-        preferredRepresentation: 'mixed' as const,
       },
       lastResult: {
         mode: 'find' as const,
@@ -165,7 +164,6 @@ describe('app screens', () => {
 
     expect(screen.getByText('Settings')).toBeTruthy();
     expect(screen.getByText('Difficulty')).toBeTruthy();
-    expect(screen.getByText('Preferred visuals')).toBeTruthy();
     expect(screen.getByText('Progress')).toBeTruthy();
     expect(screen.getByText('Rounds played')).toBeTruthy();
     expect(screen.getByText('16')).toBeTruthy();

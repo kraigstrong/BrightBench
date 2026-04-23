@@ -125,7 +125,6 @@ export type SettingsSnapshot = {
   soundEnabled: boolean;
   reducedMotion: boolean;
   difficultyLevel: DifficultyLevel;
-  preferredRepresentation: 'mixed' | 'bar' | 'container';
 };
 
 export type AppSnapshot = {

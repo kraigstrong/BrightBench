@@ -92,36 +92,6 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.eyebrow}>Preferred visuals</Text>
-        <Text style={styles.sectionDescription}>
-          Pick which fraction picture style shows up most often.
-        </Text>
-        <View style={styles.preferenceButtons}>
-          <ActionButton
-            description="Mix bars and containers together."
-            label="Mixed"
-            variant="selectable"
-            selected={settings.preferredRepresentation === 'mixed'}
-            onPress={() => updateSettings({ preferredRepresentation: 'mixed' })}
-          />
-          <ActionButton
-            description="Lean on bar models when possible."
-            label="Bars"
-            variant="selectable"
-            selected={settings.preferredRepresentation === 'bar'}
-            onPress={() => updateSettings({ preferredRepresentation: 'bar' })}
-          />
-          <ActionButton
-            description="Favor containers and fill levels."
-            label="Containers"
-            variant="selectable"
-            selected={settings.preferredRepresentation === 'container'}
-            onPress={() => updateSettings({ preferredRepresentation: 'container' })}
-          />
-        </View>
-      </Card>
-
-      <Card style={styles.sectionCard}>
         <Text style={styles.eyebrow}>Progress</Text>
         <Text style={styles.sectionDescription}>
           See how each mode is growing without leaving settings.

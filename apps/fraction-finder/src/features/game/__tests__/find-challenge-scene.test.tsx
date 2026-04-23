@@ -64,7 +64,6 @@ describe('FindChallengeScene', () => {
         soundEnabled: false,
         reducedMotion: false,
         difficultyLevel: 'easy',
-        preferredRepresentation: 'mixed',
       },
       lastResult: null,
       recordRound,
