@@ -1,64 +1,458 @@
 [
-  { "key": "name:a", "text": "A" },
-  { "key": "name:b", "text": "B" },
-  { "key": "name:c", "text": "C" },
-  { "key": "name:d", "text": "D" },
-  { "key": "name:e", "text": "E" },
-  { "key": "name:f", "text": "F" },
-  { "key": "name:g", "text": "G" },
-  { "key": "name:h", "text": "H" },
-  { "key": "name:i", "text": "I" },
-  { "key": "name:j", "text": "J" },
-  { "key": "name:k", "text": "K" },
-  { "key": "name:l", "text": "L" },
-  { "key": "name:m", "text": "M" },
-  { "key": "name:n", "text": "N" },
-  { "key": "name:o", "text": "O" },
-  { "key": "name:p", "text": "P" },
-  { "key": "name:q", "text": "Q" },
-  { "key": "name:r", "text": "R" },
-  { "key": "name:s", "text": "S" },
-  { "key": "name:t", "text": "T" },
-  { "key": "name:u", "text": "U" },
-  { "key": "name:v", "text": "V" },
-  { "key": "name:w", "text": "W" },
-  { "key": "name:x", "text": "X" },
-  { "key": "name:y", "text": "Y" },
-  { "key": "name:z", "text": "Z" },
-  { "key": "sound:a", "text": "ah" },
-  { "key": "sound:b", "text": "buh" },
-  { "key": "sound:c", "text": "kuh" },
-  { "key": "sound:d", "text": "duh" },
-  { "key": "sound:e", "text": "eh" },
-  { "key": "sound:f", "text": "fff" },
-  { "key": "sound:g", "text": "guh" },
-  { "key": "sound:h", "text": "huh" },
-  { "key": "sound:i", "text": "ih" },
-  { "key": "sound:j", "text": "juh" },
-  { "key": "sound:k", "text": "kuh" },
-  { "key": "sound:l", "text": "lll" },
-  { "key": "sound:m", "text": "mmm" },
-  { "key": "sound:n", "text": "nnn" },
-  { "key": "sound:o", "text": "ah" },
-  { "key": "sound:p", "text": "puh" },
-  { "key": "sound:q", "text": "kwuh" },
-  { "key": "sound:r", "text": "rrr" },
-  { "key": "sound:s", "text": "sss" },
-  { "key": "sound:t", "text": "tuh" },
-  { "key": "sound:u", "text": "uh" },
-  { "key": "sound:v", "text": "vvv" },
-  { "key": "sound:w", "text": "wuh" },
-  { "key": "sound:x", "text": "ks" },
-  { "key": "sound:y", "text": "yuh" },
-  { "key": "sound:z", "text": "zzz" },
-  { "key": "digraph:sh", "text": "shhh" },
-  { "key": "digraph:ch", "text": "ch" },
-  { "key": "digraph:th", "text": "th" },
-  { "key": "digraph:wh", "text": "wh" },
-  { "key": "digraph:ph", "text": "fff" },
-  { "key": "digraph:ck", "text": "kuh" },
-  { "key": "digraph:ng", "text": "ng" },
-  { "key": "ui:correct", "text": "Nice work!" },
-  { "key": "ui:try-again", "text": "Try again." },
-  { "key": "ui:go", "text": "Go!" }
+  {
+    "key": "name:a",
+    "text": "A"
+  },
+  {
+    "key": "name:b",
+    "text": "B"
+  },
+  {
+    "key": "name:c",
+    "text": "C"
+  },
+  {
+    "key": "name:d",
+    "text": "D"
+  },
+  {
+    "key": "name:e",
+    "text": "E"
+  },
+  {
+    "key": "name:f",
+    "text": "F"
+  },
+  {
+    "key": "name:g",
+    "text": "G"
+  },
+  {
+    "key": "name:h",
+    "text": "H"
+  },
+  {
+    "key": "name:i",
+    "text": "I"
+  },
+  {
+    "key": "name:j",
+    "text": "J"
+  },
+  {
+    "key": "name:k",
+    "text": "K"
+  },
+  {
+    "key": "name:l",
+    "text": "L"
+  },
+  {
+    "key": "name:m",
+    "text": "M"
+  },
+  {
+    "key": "name:n",
+    "text": "N"
+  },
+  {
+    "key": "name:o",
+    "text": "O"
+  },
+  {
+    "key": "name:p",
+    "text": "P"
+  },
+  {
+    "key": "name:q",
+    "text": "Q"
+  },
+  {
+    "key": "name:r",
+    "text": "R"
+  },
+  {
+    "key": "name:s",
+    "text": "S"
+  },
+  {
+    "key": "name:t",
+    "text": "T"
+  },
+  {
+    "key": "name:u",
+    "text": "U"
+  },
+  {
+    "key": "name:v",
+    "text": "V"
+  },
+  {
+    "key": "name:w",
+    "text": "W"
+  },
+  {
+    "key": "name:x",
+    "text": "X"
+  },
+  {
+    "key": "name:y",
+    "text": "Y"
+  },
+  {
+    "key": "name:z",
+    "text": "Z"
+  },
+  {
+    "key": "sound:a",
+    "text": "ah"
+  },
+  {
+    "key": "sound:b",
+    "text": "buh"
+  },
+  {
+    "key": "sound:c",
+    "text": "kuh"
+  },
+  {
+    "key": "sound:d",
+    "text": "duh"
+  },
+  {
+    "key": "sound:e",
+    "text": "eh"
+  },
+  {
+    "key": "sound:f",
+    "text": "fff"
+  },
+  {
+    "key": "sound:g",
+    "text": "guh"
+  },
+  {
+    "key": "sound:h",
+    "text": "huh"
+  },
+  {
+    "key": "sound:i",
+    "text": "ih"
+  },
+  {
+    "key": "sound:j",
+    "text": "juh"
+  },
+  {
+    "key": "sound:k",
+    "text": "kuh"
+  },
+  {
+    "key": "sound:l",
+    "text": "lll"
+  },
+  {
+    "key": "sound:m",
+    "text": "mmm"
+  },
+  {
+    "key": "sound:n",
+    "text": "nnn"
+  },
+  {
+    "key": "sound:o",
+    "text": "ah"
+  },
+  {
+    "key": "sound:p",
+    "text": "puh"
+  },
+  {
+    "key": "sound:q",
+    "text": "kwuh"
+  },
+  {
+    "key": "sound:r",
+    "text": "rrr"
+  },
+  {
+    "key": "sound:s",
+    "text": "sss"
+  },
+  {
+    "key": "sound:t",
+    "text": "tuh"
+  },
+  {
+    "key": "sound:u",
+    "text": "uh"
+  },
+  {
+    "key": "sound:v",
+    "text": "vvv"
+  },
+  {
+    "key": "sound:w",
+    "text": "wuh"
+  },
+  {
+    "key": "sound:x",
+    "text": "ks"
+  },
+  {
+    "key": "sound:y",
+    "text": "yuh"
+  },
+  {
+    "key": "sound:z",
+    "text": "zzz"
+  },
+  {
+    "key": "digraph:sh",
+    "text": "shhh"
+  },
+  {
+    "key": "digraph:ch",
+    "text": "ch"
+  },
+  {
+    "key": "digraph:th",
+    "text": "th"
+  },
+  {
+    "key": "digraph:wh",
+    "text": "wh"
+  },
+  {
+    "key": "digraph:ph",
+    "text": "fff"
+  },
+  {
+    "key": "digraph:ck",
+    "text": "kuh"
+  },
+  {
+    "key": "digraph:ng",
+    "text": "ng"
+  },
+  {
+    "key": "ui:correct",
+    "text": "Nice work!"
+  },
+  {
+    "key": "ui:try-again",
+    "text": "Try again."
+  },
+  {
+    "key": "ui:go",
+    "text": "Go!"
+  },
+  {
+    "key": "match:lower:a",
+    "text": "lowercase a"
+  },
+  {
+    "key": "match:upper:a",
+    "text": "uppercase A"
+  },
+  {
+    "key": "match:lower:b",
+    "text": "lowercase b"
+  },
+  {
+    "key": "match:upper:b",
+    "text": "uppercase B"
+  },
+  {
+    "key": "match:lower:c",
+    "text": "lowercase c"
+  },
+  {
+    "key": "match:upper:c",
+    "text": "uppercase C"
+  },
+  {
+    "key": "match:lower:d",
+    "text": "lowercase d"
+  },
+  {
+    "key": "match:upper:d",
+    "text": "uppercase D"
+  },
+  {
+    "key": "match:lower:e",
+    "text": "lowercase e"
+  },
+  {
+    "key": "match:upper:e",
+    "text": "uppercase E"
+  },
+  {
+    "key": "match:lower:f",
+    "text": "lowercase f"
+  },
+  {
+    "key": "match:upper:f",
+    "text": "uppercase F"
+  },
+  {
+    "key": "match:lower:g",
+    "text": "lowercase g"
+  },
+  {
+    "key": "match:upper:g",
+    "text": "uppercase G"
+  },
+  {
+    "key": "match:lower:h",
+    "text": "lowercase h"
+  },
+  {
+    "key": "match:upper:h",
+    "text": "uppercase H"
+  },
+  {
+    "key": "match:lower:i",
+    "text": "lowercase i"
+  },
+  {
+    "key": "match:upper:i",
+    "text": "uppercase I"
+  },
+  {
+    "key": "match:lower:j",
+    "text": "lowercase j"
+  },
+  {
+    "key": "match:upper:j",
+    "text": "uppercase J"
+  },
+  {
+    "key": "match:lower:k",
+    "text": "lowercase k"
+  },
+  {
+    "key": "match:upper:k",
+    "text": "uppercase K"
+  },
+  {
+    "key": "match:lower:l",
+    "text": "lowercase l"
+  },
+  {
+    "key": "match:upper:l",
+    "text": "uppercase L"
+  },
+  {
+    "key": "match:lower:m",
+    "text": "lowercase m"
+  },
+  {
+    "key": "match:upper:m",
+    "text": "uppercase M"
+  },
+  {
+    "key": "match:lower:n",
+    "text": "lowercase n"
+  },
+  {
+    "key": "match:upper:n",
+    "text": "uppercase N"
+  },
+  {
+    "key": "match:lower:o",
+    "text": "lowercase o"
+  },
+  {
+    "key": "match:upper:o",
+    "text": "uppercase O"
+  },
+  {
+    "key": "match:lower:p",
+    "text": "lowercase p"
+  },
+  {
+    "key": "match:upper:p",
+    "text": "uppercase P"
+  },
+  {
+    "key": "match:lower:q",
+    "text": "lowercase q"
+  },
+  {
+    "key": "match:upper:q",
+    "text": "uppercase Q"
+  },
+  {
+    "key": "match:lower:r",
+    "text": "lowercase r"
+  },
+  {
+    "key": "match:upper:r",
+    "text": "uppercase R"
+  },
+  {
+    "key": "match:lower:s",
+    "text": "lowercase s"
+  },
+  {
+    "key": "match:upper:s",
+    "text": "uppercase S"
+  },
+  {
+    "key": "match:lower:t",
+    "text": "lowercase t"
+  },
+  {
+    "key": "match:upper:t",
+    "text": "uppercase T"
+  },
+  {
+    "key": "match:lower:u",
+    "text": "lowercase u"
+  },
+  {
+    "key": "match:upper:u",
+    "text": "uppercase U"
+  },
+  {
+    "key": "match:lower:v",
+    "text": "lowercase v"
+  },
+  {
+    "key": "match:upper:v",
+    "text": "uppercase V"
+  },
+  {
+    "key": "match:lower:w",
+    "text": "lowercase w"
+  },
+  {
+    "key": "match:upper:w",
+    "text": "uppercase W"
+  },
+  {
+    "key": "match:lower:x",
+    "text": "lowercase x"
+  },
+  {
+    "key": "match:upper:x",
+    "text": "uppercase X"
+  },
+  {
+    "key": "match:lower:y",
+    "text": "lowercase y"
+  },
+  {
+    "key": "match:upper:y",
+    "text": "uppercase Y"
+  },
+  {
+    "key": "match:lower:z",
+    "text": "lowercase z"
+  },
+  {
+    "key": "match:upper:z",
+    "text": "uppercase Z"
+  }
 ]

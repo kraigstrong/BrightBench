@@ -8,7 +8,13 @@ export type ScoreBand = 'exact' | 'close' | 'almost' | 'far';
 export type StarCount = 0 | 1 | 2 | 3;
 
 export type LetterCase = 'lower' | 'upper' | 'mixed';
-export type AudioKey = `name:${string}` | `sound:${string}` | `digraph:${string}` | `ui:${string}`;
+export type AudioKey =
+  | `name:${string}`
+  | `sound:${string}`
+  | `digraph:${string}`
+  | `ui:${string}`
+  | `match:lower:${string}`
+  | `match:upper:${string}`;
 
 export type LetterOption = {
   id: string;
@@ -33,6 +39,7 @@ export type RoundBase = {
 
 export type LetterMatchRound = RoundBase & {
   mode: 'match';
+  instructionAudioKey: AudioKey;
   target: LetterOption;
   options: LetterOption[];
 };

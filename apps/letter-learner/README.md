@@ -21,6 +21,9 @@ letter cases, and letter sounds.
 Static audio lives in `assets/audio` and is bundled through
 `src/features/game/audio/manifest.ts`.
 
+Letter Match uses `assets/audio/match/lower/*.mp3` and `assets/audio/match/upper/*.mp3`
+for spoken clues like “lowercase m”.
+
 Regenerate audio with:
 
 ```sh

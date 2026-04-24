@@ -48,7 +48,7 @@ function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) 
     case 'match':
       return {
         title: 'Not quite yet',
-        body: 'Read the clue again and try the matching letter.',
+        body: 'Listen to the clue again, then tap the matching letter.',
         detail: feedback.detailLabel,
       };
     case 'case':
@@ -113,6 +113,10 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
   useEffect(() => {
     if (mode === 'sound') {
       playAudioKey((round as SoundMatchRound).audioKey, settings.soundEnabled);
+    }
+
+    if (mode === 'match') {
+      playAudioKey((round as LetterMatchRound).instructionAudioKey, settings.soundEnabled);
     }
   }, [mode, round, settings.soundEnabled]);
 
@@ -186,6 +190,7 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
             accent={meta.accent}
             onSubmit={(answerValue) => submit(answerValue)}
             round={round as LetterMatchRound}
+            soundEnabled={settings.soundEnabled}
           />
         );
       case 'case':

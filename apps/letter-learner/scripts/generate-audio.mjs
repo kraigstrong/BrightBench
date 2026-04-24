@@ -34,6 +34,16 @@ const MAX_ATTEMPTS = 4;
 const RETRY_DELAY_MS = 1500;
 
 function destinationForKey(key) {
+  if (key.startsWith('match:')) {
+    const [, tier, letter] = key.split(':');
+
+    if (!tier || !letter) {
+      throw new Error(`Invalid audio key: ${key}`);
+    }
+
+    return path.join(audioRoot, 'match', tier, `${letter}.mp3`);
+  }
+
   const [group, id] = key.split(':');
   const folder = groupFolders[group];
 

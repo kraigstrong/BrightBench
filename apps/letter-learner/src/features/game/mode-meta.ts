@@ -15,8 +15,8 @@ export const MODE_META: Record<
   match: {
     title: 'Letter Match',
     shortTitle: 'Match',
-    description: 'Match letter names like lowercase m to the letter m.',
-    promptHint: 'Read the clue, then tap the matching letter.',
+    description: 'Listen for a clue like lowercase m, then tap the matching letter.',
+    promptHint: 'Use Play clue as many times as you need, then tap the letter.',
     accent: letterPalette.coral,
     surface: letterPalette.peach,
   },

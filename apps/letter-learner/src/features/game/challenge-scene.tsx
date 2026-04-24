@@ -134,8 +134,16 @@ export function ChallengeScene({
   }, [runStatus]);
 
   useEffect(() => {
-    if (mode === 'sound' && runStatus === 'running') {
+    if (runStatus !== 'running') {
+      return;
+    }
+
+    if (mode === 'sound') {
       playAudioKey((round as SoundMatchRound).audioKey, settings.soundEnabled);
+    }
+
+    if (mode === 'match') {
+      playAudioKey((round as LetterMatchRound).instructionAudioKey, settings.soundEnabled);
     }
   }, [mode, round, runStatus, settings.soundEnabled]);
 
@@ -337,6 +345,7 @@ export function ChallengeScene({
             disabled={disabled}
             onSubmit={(answerValue) => submit(answerValue)}
             round={round as LetterMatchRound}
+            soundEnabled={settings.soundEnabled}
           />
         );
       case 'case':

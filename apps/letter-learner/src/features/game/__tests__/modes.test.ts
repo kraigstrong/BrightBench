@@ -12,6 +12,8 @@ describe('letter learner modes', () => {
     const round = generateRound('match', { difficultyLevel: 'easy' }) as LetterMatchRound;
 
     expect(round.options).toHaveLength(4);
+    expect(round.prompt).toBe('Find');
+    expect(round.instructionAudioKey.startsWith('match:lower:')).toBe(true);
     expect(evaluateRound('match', round, round.target.value).isCorrect).toBe(true);
     expect(evaluateRound('match', round, '__missing__').isCorrect).toBe(false);
   });
