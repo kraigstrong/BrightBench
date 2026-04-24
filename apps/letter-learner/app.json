@@ -10,7 +10,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.kraig.letterlearner"
+      "bundleIdentifier": "com.kraig.letterlearner",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Letter Learner uses audio permissions for letter sound activities."
+      }
     },
     "android": {
       "adaptiveIcon": {
