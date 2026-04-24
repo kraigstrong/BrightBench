@@ -9,6 +9,7 @@ What is already true:
 - shared design and UI packages exist
 - Fraction Finder is running in the monorepo
 - Time Tutor is running in the monorepo
+- Letter Learner is running in the monorepo
 - the marketing site scaffold is running and builds successfully
 
 ## Validated Workflows
@@ -63,6 +64,29 @@ Recent validation:
 - `npm run typecheck -w fraction-finder`
 - `npm run lint -w fraction-finder`
 - `npm test -w fraction-finder -- --runInBand`
+
+### Letter Learner
+Status:
+- new monorepo Expo app
+
+Notes:
+- built on the shared Expo stack
+- uses the shared app shell, header, card, feature-card, tiered challenge launcher, timer, countdown, and results primitives
+- includes four live modes:
+  - Letter Match
+  - Case Pair
+  - Tap the Letter
+  - Sound Match
+- each mode supports practice and a 1-minute challenge with Easy/Medium/Hard star progress
+- Sound Match uses static audio assets generated with `node-edge-tts`
+- Hard Sound Match includes digraphs and accepts multiple valid letters for ambiguous sounds
+- gameplay and curriculum logic remain app-local
+
+Recent validation:
+- `npm run generate-audio -w letter-learner`
+- `npm run typecheck -w letter-learner`
+- `npm run lint -w letter-learner`
+- `npm test -w letter-learner -- --runInBand`
 
 ### Time Tutor
 Status:

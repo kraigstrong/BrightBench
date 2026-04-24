@@ -10,6 +10,7 @@ around the concepts that are hardest to teach and hardest to make click.
 
 ## Current Apps
 - Fraction Finder
+- Letter Learner
 - Time Tutor
 - Marketing site
 
@@ -43,6 +44,9 @@ around the concepts that are hardest to teach and hardest to make click.
 - Time Tutor iOS:
   - `npm run dev -w time-tutor`
   - `npm run ios -w time-tutor`
+- Letter Learner iOS:
+  - `npm run dev -w letter-learner`
+  - `npm run ios -w letter-learner`
 - Marketing site:
   - `npm run dev -w marketing`
 
@@ -63,6 +67,13 @@ around the concepts that are hardest to teach and hardest to make click.
   - Challenge cards now show persisted Easy/Medium/Hard star progression with crown mastery state
   - Challenge launch now uses a dedicated difficulty popup before the timed run, followed by a separate in-screen Start step, a countdown bar, and a skippable animated end-of-run reveal
   - Uses the original standalone app as read-only visual reference material, but no longer maintains a separate migration-notes file
+- `apps/letter-learner`
+  - Expo app for matching letters, cases, and sounds
+  - Uses shared BrightBench UI primitives and the standard 1-minute challenge reward flow
+  - Includes Letter Match, Case Pair, Tap the Letter, and Sound Match modes
+  - Includes static audio generated with `node-edge-tts`
+  - Current local checks pass:
+    `npm run typecheck -w letter-learner`, `npm run lint -w letter-learner`, `npm test -w letter-learner -- --runInBand`
 - `apps/marketing`
   - Next.js App Router site is working
   - Homepage now acts as the BrightBench brand hub
