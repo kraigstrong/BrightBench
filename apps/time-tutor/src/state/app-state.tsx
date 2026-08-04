@@ -51,7 +51,9 @@ type AppStateValue = {
     difficulty: ChallengeDifficulty
   ) => void;
   setPracticeInterval: (value: PracticeInterval) => void;
+  setSoundEffectsEnabled: (value: boolean) => void;
   setTimeFormat: (value: TimeFormat) => void;
+  soundEffectsEnabled: boolean;
   timeFormat: TimeFormat;
 };
 
@@ -61,12 +63,14 @@ type AppStateProviderProps = {
   children: React.ReactNode;
   initialChallengeProgress?: Partial<ChallengeProgressSnapshot>;
   initialPracticeInterval?: PracticeInterval;
+  initialSoundEffectsEnabled?: boolean;
   initialTimeFormat?: TimeFormat;
   skipHydration?: boolean;
 };
 
 export const defaultSettings: SettingsSnapshot = {
   practiceInterval: '5-minute',
+  soundEffectsEnabled: true,
   timeFormat: '12-hour',
 };
 
@@ -104,12 +108,16 @@ export function AppStateProvider({
   children,
   initialChallengeProgress,
   initialPracticeInterval = '5-minute',
+  initialSoundEffectsEnabled = defaultSettings.soundEffectsEnabled,
   initialTimeFormat = '12-hour',
   skipHydration = false,
 }: AppStateProviderProps) {
   const [practiceInterval, setPracticeInterval] =
     useState<PracticeInterval>(initialPracticeInterval);
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(initialTimeFormat);
+  const [soundEffectsEnabled, setSoundEffectsEnabled] = useState<boolean>(
+    initialSoundEffectsEnabled,
+  );
   const [challengeProgress, setChallengeProgress] = useState<ChallengeProgressSnapshot>(
     normalizeChallengeProgress(initialChallengeProgress),
   );
@@ -135,6 +143,7 @@ export function AppStateProvider({
 
         setPracticeInterval(snapshot.settings.practiceInterval);
         setTimeFormat(snapshot.settings.timeFormat);
+        setSoundEffectsEnabled(snapshot.settings.soundEffectsEnabled);
         setChallengeProgress(snapshot.challengeProgress);
       } finally {
         if (isMounted) {
@@ -159,12 +168,20 @@ export function AppStateProvider({
       challengeProgress,
       settings: {
         practiceInterval,
+        soundEffectsEnabled,
         timeFormat,
       },
     };
 
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot)).catch(() => {});
-  }, [challengeProgress, isHydrated, practiceInterval, skipHydration, timeFormat]);
+  }, [
+    challengeProgress,
+    isHydrated,
+    practiceInterval,
+    skipHydration,
+    soundEffectsEnabled,
+    timeFormat,
+  ]);
 
   const value = useMemo(
     () => ({
@@ -212,10 +229,12 @@ export function AppStateProvider({
         }));
       },
       setPracticeInterval,
+      setSoundEffectsEnabled,
       setTimeFormat,
+      soundEffectsEnabled,
       timeFormat,
     }),
-    [challengeProgress, isHydrated, practiceInterval, timeFormat],
+    [challengeProgress, isHydrated, practiceInterval, soundEffectsEnabled, timeFormat],
   );
 
   return (

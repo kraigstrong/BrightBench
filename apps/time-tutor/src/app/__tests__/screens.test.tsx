@@ -16,6 +16,7 @@ import ChallengeLaunchScreen from '@/app/challenge/[mode]';
 import ModeScreen from '@/app/mode/[mode]';
 import PrivacyScreen from '@/app/privacy';
 import PracticeLaunchScreen from '@/app/practice/[mode]';
+import ProgressScreen from '@/app/progress';
 import SessionScreen from '@/app/session/[mode]/[session]';
 import SettingsScreen from '@/app/settings';
 import SupportScreen from '@/app/support';
@@ -371,10 +372,12 @@ describe('time tutor screens', () => {
   it('renders the set clock practice screen', () => {
     render(
       <SafeAreaProvider>
-        <SetClockPracticeScreen
-          practiceInterval="5-minute"
-          timeFormat="12-hour"
-        />
+        <AppStateProvider skipHydration>
+          <SetClockPracticeScreen
+            practiceInterval="5-minute"
+            timeFormat="12-hour"
+          />
+        </AppStateProvider>
       </SafeAreaProvider>,
     );
 
@@ -387,10 +390,12 @@ describe('time tutor screens', () => {
   it('renders the read clock practice screen', () => {
     render(
       <SafeAreaProvider>
-        <ReadClockPracticeScreen
-          practiceInterval="5-minute"
-          timeFormat="12-hour"
-        />
+        <AppStateProvider skipHydration>
+          <ReadClockPracticeScreen
+            practiceInterval="5-minute"
+            timeFormat="12-hour"
+          />
+        </AppStateProvider>
       </SafeAreaProvider>,
     );
 
@@ -403,10 +408,12 @@ describe('time tutor screens', () => {
   it('renders the elapsed time practice screen', () => {
     render(
       <SafeAreaProvider>
-        <ElapsedTimePracticeScreen
-          practiceInterval="5-minute"
-          timeFormat="12-hour"
-        />
+        <AppStateProvider skipHydration>
+          <ElapsedTimePracticeScreen
+            practiceInterval="5-minute"
+            timeFormat="12-hour"
+          />
+        </AppStateProvider>
       </SafeAreaProvider>,
     );
 
@@ -497,5 +504,74 @@ describe('time tutor screens', () => {
     expect(screen.getByText('Read the Clock')).toBeTruthy();
     expect(screen.getByTestId('minute-increment-button')).toBeDisabled();
     expect(screen.getByTestId('minute-decrement-button')).toBeDisabled();
+  });
+
+  it('leads the home screen with Set the Clock and shows the progress link', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider
+          initialChallengeProgress={{
+            'digital-to-analog': { bestStars: { easy: 3, medium: 3, hard: 3 } },
+          }}
+          skipHydration>
+          <HomeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('1 of 3 modes mastered')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('progress-link'));
+    expect(router.push).toHaveBeenCalledWith('/progress');
+  });
+
+  it('renders the progress screen with zero stars', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider skipHydration>
+          <ProgressScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByText('Progress')).toBeTruthy();
+    expect(screen.getByTestId('progress-crown-count')).toHaveTextContent('0 / 3');
+    expect(screen.queryByLabelText('Mastered')).toBeNull();
+  });
+
+  it('renders the progress screen with partial mastery', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider
+          initialChallengeProgress={{
+            'digital-to-analog': { bestStars: { easy: 3, medium: 2, hard: 0 } },
+          }}
+          skipHydration>
+          <ProgressScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByTestId('progress-crown-count')).toHaveTextContent('0 / 3');
+    expect(screen.queryByLabelText('Mastered')).toBeNull();
+  });
+
+  it('renders the progress screen with full mastery across all modes', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider
+          initialChallengeProgress={{
+            'digital-to-analog': { bestStars: { easy: 3, medium: 3, hard: 3 } },
+            'analog-to-digital': { bestStars: { easy: 3, medium: 3, hard: 3 } },
+            'elapsed-time': { bestStars: { easy: 3, medium: 3, hard: 3 } },
+          }}
+          skipHydration>
+          <ProgressScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    expect(screen.getByTestId('progress-crown-count')).toHaveTextContent('3 / 3');
+    expect(screen.getAllByLabelText('Mastered')).toHaveLength(3);
   });
 });

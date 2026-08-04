@@ -6,6 +6,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -39,7 +40,13 @@ const timeFormatOptions: {
 ];
 
 export default function SettingsScreen() {
-  const { isHydrated, timeFormat, setTimeFormat } = useAppState();
+  const {
+    isHydrated,
+    setSoundEffectsEnabled,
+    setTimeFormat,
+    soundEffectsEnabled,
+    timeFormat,
+  } = useAppState();
   const timeFormat24Availability = getFeatureAvailability('time-format-24-hour');
   const [gateAnswer, setGateAnswer] = React.useState('');
   const [gateError, setGateError] = React.useState('');
@@ -115,6 +122,24 @@ export default function SettingsScreen() {
                 />
               );
             })}
+          </View>
+        </Card>
+
+        <Card style={styles.sectionCard}>
+          <Text style={styles.eyebrow}>Sound</Text>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleCopy}>
+              <Text style={styles.toggleLabel}>Sound effects</Text>
+              <Text style={styles.toggleDescription}>
+                Play a chime for correct and incorrect answers.
+              </Text>
+            </View>
+            <Switch
+              onValueChange={setSoundEffectsEnabled}
+              testID="sound-effects-toggle"
+              trackColor={{ false: palette.ring, true: palette.teal }}
+              value={soundEffectsEnabled}
+            />
           </View>
         </Card>
 
@@ -325,6 +350,28 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.1,
     textTransform: 'uppercase',
+  },
+  toggleRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 14,
+    justifyContent: 'space-between',
+  },
+  toggleCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  toggleLabel: {
+    color: palette.ink,
+    fontFamily: typography.displayFamily,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  toggleDescription: {
+    color: palette.inkMuted,
+    fontFamily: typography.bodyFamily,
+    fontSize: 15,
+    lineHeight: 22,
   },
   optionsColumn: {
     gap: 12,

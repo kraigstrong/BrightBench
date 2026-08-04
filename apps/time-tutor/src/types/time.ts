@@ -57,6 +57,7 @@ export type ChallengeProgressSnapshot = Record<PlayableMode, ChallengeModeProgre
 
 export type SettingsSnapshot = {
   practiceInterval: PracticeInterval;
+  soundEffectsEnabled: boolean;
   timeFormat: TimeFormat;
 };
 

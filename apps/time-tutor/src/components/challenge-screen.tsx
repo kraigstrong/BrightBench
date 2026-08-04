@@ -34,6 +34,7 @@ import {
 } from '@/config/challenge-thresholds';
 import { getDemoChallengeResultOverride } from '@/config/demo-video';
 import { palette, shadows, typography } from '@/design/theme';
+import { triggerAnswerFeedback } from '@/lib/answer-feedback';
 import {
   calculateChallengeAccuracy,
   calculateChallengeStars,
@@ -135,7 +136,7 @@ export function ChallengeScreen<TPrompt, TAnswer>({
   title,
 }: Props<TPrompt, TAnswer>) {
   const { width } = useWindowDimensions();
-  const { challengeProgress, setChallengeBestStars } = useAppState();
+  const { challengeProgress, setChallengeBestStars, soundEffectsEnabled } = useAppState();
   const progress = challengeProgress[progressMode];
   const currentInterval = getChallengeIntervalForDifficulty(difficulty);
   const thresholds = challengeThresholds[progressMode][difficulty];
@@ -366,6 +367,7 @@ export function ChallengeScreen<TPrompt, TAnswer>({
 
     const isCorrect = isAnswerCorrect(answer, prompt, timeFormat);
 
+    triggerAnswerFeedback(isCorrect, soundEffectsEnabled);
     setAttempts((current) => current + 1);
 
     if (isCorrect) {

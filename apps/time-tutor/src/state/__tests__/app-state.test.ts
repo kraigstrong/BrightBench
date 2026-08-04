@@ -24,6 +24,7 @@ describe('time tutor app state normalization', () => {
 
     expect(snapshot.settings).toEqual({
       practiceInterval: '1-minute',
+      soundEffectsEnabled: true,
       timeFormat: '24-hour',
     });
     expect(snapshot.challengeProgress['digital-to-analog'].bestStars.easy).toBe(0);

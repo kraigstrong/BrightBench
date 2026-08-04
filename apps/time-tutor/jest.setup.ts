@@ -12,6 +12,29 @@ jest.mock('expo-symbols', () => ({
   SymbolView: 'SymbolView',
 }));
 
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+  ImpactFeedbackStyle: {
+    Light: 'light',
+    Medium: 'medium',
+  },
+  NotificationFeedbackType: {
+    Success: 'success',
+    Warning: 'warning',
+  },
+}));
+
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    remove: jest.fn(),
+    seekTo: jest.fn(),
+  })),
+  setAudioModeAsync: jest.fn(() => Promise.resolve()),
+}));
+
 jest.mock('react-native-safe-area-context', () => {
   return {
     ...mockSafeAreaContext,
