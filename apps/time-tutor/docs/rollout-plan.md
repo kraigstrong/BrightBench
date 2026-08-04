@@ -6,7 +6,7 @@
 
 | Phase | State |
 |---|---|
-| 0 — Refactor + meta fix | Not started |
+| 0 — Refactor + meta fix | Ready for review (branch `time-tutor/phase-0-foundation-refactor`) |
 | 1 — Sound/haptics/progress/reorder | Not started |
 | 2 — Preview video | Not started |
 | 3 — SEO content | Not started |
