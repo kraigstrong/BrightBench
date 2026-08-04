@@ -1,228 +1,147 @@
-import { router } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { CelebrationOverlay, Card } from '@education/ui';
+import { CelebrationOverlay } from '@education/ui';
 
-import { AppShell } from '@/components/app-shell';
 import { AnalogClock } from '@/components/analog-clock';
-import { BackButton, HeaderBar } from '@/components/header-bar';
-import { HeaderSettingsButton } from '@/components/header-settings-button';
-import { palette, shadows, typography } from '@/design/theme';
+import {
+  PracticeScreen,
+  type AnswerUpdate,
+  type PracticeAnswerResult,
+  type PracticeLayout,
+} from '@/components/practice-screen';
+import { palette, typography } from '@/design/theme';
 import {
   areTimesEqual,
-  createInitialAnswer,
+  createInitialAnswer as createAnalogAnswer,
   formatTimeValue,
   nextTimeValueForInterval,
   randomTimeValueForInterval,
 } from '@/lib/time';
-import type {
-  PracticeInterval,
-  SubmissionResult,
-  TimeFormat,
-  TimeValue,
-} from '@/types/time';
+import type { PracticeInterval, TimeFormat, TimeValue } from '@/types/time';
+
 
 type Props = {
   practiceInterval: PracticeInterval;
   timeFormat: TimeFormat;
 };
 
-type PracticeResult = SubmissionResult<TimeValue, TimeValue>;
+function createInitialPrompt(interval: PracticeInterval): TimeValue {
+  return randomTimeValueForInterval(interval);
+}
 
-export function SetClockPracticeScreen({
-  practiceInterval,
+function createNextPrompt(prompt: TimeValue, interval: PracticeInterval): TimeValue {
+  return nextTimeValueForInterval(prompt, interval);
+}
+
+function createInitialAnswer(prompt: TimeValue): TimeValue {
+  return createAnalogAnswer(prompt.meridiem);
+}
+
+function isAnswerCorrect(answer: TimeValue, prompt: TimeValue): boolean {
+  return areTimesEqual(answer, prompt, { includeMeridiem: false });
+}
+
+function renderPrompt({
+  prompt,
   timeFormat,
-}: Props) {
-  const { width } = useWindowDimensions();
-  const [promptTime, setPromptTime] = useState<TimeValue>(() =>
-    randomTimeValueForInterval(practiceInterval),
-  );
-  const [analogAnswer, setAnalogAnswer] = useState<TimeValue>(() =>
-    createInitialAnswer(promptTime.meridiem),
-  );
-  const [clockInteractionActive, setClockInteractionActive] = useState(false);
-  const [result, setResult] = useState<PracticeResult | null>(null);
-
-  const useMobileWebLayout = Platform.OS === 'web';
-  const isTablet = width >= 768 && !useMobileWebLayout;
-  const contentMaxWidth = Math.min(width - 24, isTablet ? 860 : 620);
-  const clockSize = Math.max(
-    Math.min(
-      contentMaxWidth * (isTablet ? 0.48 : 0.78),
-      isTablet ? 420 : 340,
-    ),
-    260,
-  );
-
-  useEffect(() => {
-    const nextPrompt = randomTimeValueForInterval(practiceInterval);
-    setPromptTime(nextPrompt);
-    setAnalogAnswer(createInitialAnswer(nextPrompt.meridiem));
-    setResult(null);
-  }, [practiceInterval]);
-
-  const goToNextPrompt = useCallback(() => {
-    const nextPrompt = nextTimeValueForInterval(promptTime, practiceInterval);
-
-    setPromptTime(nextPrompt);
-    setAnalogAnswer(createInitialAnswer(nextPrompt.meridiem));
-    setResult(null);
-  }, [practiceInterval, promptTime]);
-
-  useEffect(() => {
-    if (!result?.isCorrect) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      goToNextPrompt();
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [goToNextPrompt, result]);
-
-  function checkAnswer() {
-    const isCorrect = areTimesEqual(analogAnswer, promptTime, {
-      includeMeridiem: false,
-    });
-
-    setResult({
-      actual: analogAnswer,
-      expected: promptTime,
-      isCorrect,
-    });
-  }
-
+}: {
+  layout: PracticeLayout;
+  prompt: TimeValue;
+  timeFormat: TimeFormat;
+}) {
   return (
-    <AppShell maxWidth={contentMaxWidth} scrollEnabled={!clockInteractionActive}>
-      <HeaderBar
-        title="Set the Clock"
-        leftAction={<BackButton onPress={() => router.back()} />}
-        rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
+    <>
+      <Text style={styles.promptLabel}>Match this digital time</Text>
+      <View style={styles.promptStage}>
+        <Text style={styles.promptTime} testID="prompt-time">
+          {formatTimeValue(prompt, { includeMeridiem: false, timeFormat })}
+        </Text>
+      </View>
+    </>
+  );
+}
+
+function renderAnswer({
+  answer,
+  layout,
+  onAnswerChange,
+  onDismissResult,
+  onInteractionEnd,
+  onInteractionStart,
+  practiceInterval,
+  result,
+}: {
+  answer: TimeValue;
+  layout: PracticeLayout;
+  onAnswerChange: (value: AnswerUpdate<TimeValue>) => void;
+  onDismissResult: () => void;
+  onInteractionEnd: () => void;
+  onInteractionStart: () => void;
+  practiceInterval: PracticeInterval;
+  result: PracticeAnswerResult<TimeValue> | null;
+}) {
+  return (
+    <>
+      <AnalogClock
+        interactive
+        onChange={onAnswerChange}
+        onInteractionEnd={onInteractionEnd}
+        onInteractionStart={onInteractionStart}
+        practiceInterval={practiceInterval}
+        size={layout.clockSize}
+        time={answer}
       />
 
-      <View style={styles.practiceLayout}>
-        <View style={styles.practiceColumn}>
-          <View style={[styles.promptCard, styles.promptCardDigital]}>
-            <Text style={styles.promptLabel}>Match this digital time</Text>
-            <View style={styles.promptStage}>
-              <Text style={styles.promptTime} testID="prompt-time">
-                {formatTimeValue(promptTime, {
+      <CelebrationOverlay title="Nice work!" visible={Boolean(result?.isCorrect)} />
+
+      {result && !result.isCorrect ? (
+        <View style={styles.feedbackOverlay}>
+          <View style={styles.feedbackToast} testID="practice-wrong-answer-overlay">
+            <View style={styles.feedbackCopy}>
+              <Text style={styles.feedbackToastTitle}>Try again</Text>
+              <Text style={styles.feedbackToastText}>
+                {`You entered ${formatTimeValue(result.actual, {
                   includeMeridiem: false,
-                  timeFormat,
-                })}
+                })}`}
               </Text>
             </View>
-          </View>
-        </View>
-
-        <View style={styles.practiceColumn}>
-          <Card style={styles.answerCard}>
-            <Text style={styles.cardEyebrow}>Your answer</Text>
-            <View style={styles.answerOverlayWrap}>
-              <AnalogClock
-                interactive
-                onChange={(value) => {
-                  setResult(null);
-                  setAnalogAnswer(value);
-                }}
-                onInteractionEnd={() => setClockInteractionActive(false)}
-                onInteractionStart={() => setClockInteractionActive(true)}
-                practiceInterval={practiceInterval}
-                size={clockSize}
-                time={analogAnswer}
-              />
-
-              <CelebrationOverlay
-                title="Nice work!"
-                visible={Boolean(result?.isCorrect)}
-              />
-
-              {result && !result.isCorrect ? (
-                <View style={styles.feedbackOverlay}>
-                  <View
-                    style={styles.feedbackToast}
-                    testID="practice-wrong-answer-overlay">
-                    <View style={styles.feedbackCopy}>
-                      <Text style={styles.feedbackToastTitle}>Try again</Text>
-                      <Text style={styles.feedbackToastText}>
-                        {`You entered ${formatTimeValue(result.actual, {
-                          includeMeridiem: false,
-                          timeFormat,
-                        })}`}
-                      </Text>
-                    </View>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => setResult(null)}
-                      style={styles.feedbackDismissButton}
-                      testID="practice-dismiss-feedback-button">
-                      <Text style={styles.feedbackDismissText}>Dismiss</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              ) : null}
-            </View>
-          </Card>
-
-          <View style={styles.actionsRow}>
             <Pressable
               accessibilityRole="button"
-              disabled={Boolean(result?.isCorrect)}
-              onPress={checkAnswer}
-              style={[
-                styles.actionButton,
-                styles.primaryButton,
-                result?.isCorrect && styles.actionButtonDisabled,
-              ]}
-              testID="check-answer-button">
-              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                Check Answer
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              disabled={Boolean(result?.isCorrect)}
-              onPress={goToNextPrompt}
-              style={[
-                styles.actionButton,
-                styles.secondaryButton,
-                result?.isCorrect && styles.actionButtonDisabled,
-              ]}
-              testID="next-time-button">
-              <Text style={styles.actionButtonText}>
-                {result?.isCorrect ? 'Loading next time...' : 'Next Time'}
-              </Text>
+              onPress={onDismissResult}
+              style={styles.feedbackDismissButton}
+              testID="practice-dismiss-feedback-button">
+              <Text style={styles.feedbackDismissText}>Dismiss</Text>
             </Pressable>
           </View>
         </View>
-      </View>
-    </AppShell>
+      ) : null}
+    </>
+  );
+}
+
+export function SetClockPracticeScreen({ practiceInterval, timeFormat }: Props) {
+  return (
+    <PracticeScreen
+      checkAnswerTestId="check-answer-button"
+      cardEyebrowText="Your answer"
+      createInitialAnswer={createInitialAnswer}
+      createInitialPrompt={createInitialPrompt}
+      createNextPrompt={createNextPrompt}
+      isAnswerCorrect={isAnswerCorrect}
+      nextTimeTestId="next-time-button"
+      practiceInterval={practiceInterval}
+      promptCardStyle={styles.promptCard}
+      renderAnswer={renderAnswer}
+      renderPrompt={renderPrompt}
+      timeFormat={timeFormat}
+      title="Set the Clock"
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  practiceLayout: {
-    gap: 16,
-  },
-  practiceColumn: {
-    gap: 16,
-  },
   promptCard: {
-    backgroundColor: palette.ink,
-    borderRadius: 30,
-    padding: 22,
-    ...shadows.card,
-  },
-  promptCardDigital: {
     paddingHorizontal: 22,
     paddingVertical: 16,
   },
@@ -247,20 +166,6 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
     fontWeight: '700',
     textAlign: 'center',
-  },
-  answerCard: {
-    gap: 16,
-  },
-  cardEyebrow: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-  },
-  answerOverlayWrap: {
-    position: 'relative',
   },
   feedbackOverlay: {
     alignItems: 'center',
@@ -317,35 +222,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     lineHeight: 16,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    alignItems: 'center',
-    borderRadius: 999,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 56,
-    paddingHorizontal: 16,
-  },
-  primaryButton: {
-    backgroundColor: palette.coral,
-  },
-  secondaryButton: {
-    backgroundColor: palette.surfaceMuted,
-  },
-  actionButtonDisabled: {
-    opacity: 0.65,
-  },
-  actionButtonText: {
-    color: palette.ink,
-    fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  primaryButtonText: {
-    color: palette.white,
   },
 });

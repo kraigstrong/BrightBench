@@ -1,19 +1,18 @@
-import { router } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { CelebrationOverlay, Card } from '@education/ui';
+import { CelebrationOverlay } from '@education/ui';
 
-import { AppShell } from '@/components/app-shell';
 import { ElapsedDurationInput } from '@/components/elapsed-duration-input';
-import { BackButton, HeaderBar } from '@/components/header-bar';
-import { HeaderSettingsButton } from '@/components/header-settings-button';
-import { palette, shadows, typography } from '@/design/theme';
+import {
+  PracticeScreen,
+  type PracticeAnswerResult,
+  type PracticeLayout,
+} from '@/components/practice-screen';
+import { palette, typography } from '@/design/theme';
 import {
   createInitialElapsedDuration,
-  elapsedMinutesToDuration,
   formatTimeValue,
-  getElapsedMinutes,
   isElapsedDurationCorrect,
   nextElapsedTimePairForInterval,
   randomElapsedTimePairForInterval,
@@ -21,225 +20,170 @@ import {
 import type {
   ElapsedDurationValue,
   PracticeInterval,
-  SubmissionResult,
   TimeFormat,
   TimeValue,
 } from '@/types/time';
 
 type PromptPair = readonly [TimeValue, TimeValue];
-type ElapsedResult = SubmissionResult<ElapsedDurationValue, ElapsedDurationValue>;
 
 type Props = {
   practiceInterval: PracticeInterval;
   timeFormat: TimeFormat;
 };
 
-export function ElapsedTimePracticeScreen({
-  practiceInterval,
-  timeFormat,
-}: Props) {
-  const { width } = useWindowDimensions();
-  const useMobileWebLayout = Platform.OS === 'web';
-  const isTablet = width >= 768 && !useMobileWebLayout;
-  const contentMaxWidth = Math.min(width - 24, isTablet ? 860 : 620);
-  const useCompactInput = !isTablet;
-  const [promptPair, setPromptPair] = useState<PromptPair>(() =>
-    randomElapsedTimePairForInterval(practiceInterval),
-  );
-  const [answer, setAnswer] = useState<ElapsedDurationValue>(() =>
-    createInitialElapsedDuration(),
-  );
-  const [result, setResult] = useState<ElapsedResult | null>(null);
+function createInitialPrompt(interval: PracticeInterval): PromptPair {
+  return randomElapsedTimePairForInterval(interval);
+}
 
-  useEffect(() => {
-    setPromptPair(randomElapsedTimePairForInterval(practiceInterval));
-    setAnswer(createInitialElapsedDuration());
-    setResult(null);
-  }, [practiceInterval]);
+function createNextPrompt(prompt: PromptPair, interval: PracticeInterval): PromptPair {
+  return nextElapsedTimePairForInterval(prompt, interval);
+}
 
-  const goToNextPrompt = useCallback(() => {
-    setPromptPair((current) =>
-      nextElapsedTimePairForInterval(current, practiceInterval),
-    );
-    setAnswer(createInitialElapsedDuration());
-    setResult(null);
-  }, [practiceInterval]);
+function createInitialAnswer(): ElapsedDurationValue {
+  return createInitialElapsedDuration();
+}
 
-  useEffect(() => {
-    if (!result?.isCorrect) {
-      return;
-    }
+function isAnswerCorrect(
+  answer: ElapsedDurationValue,
+  prompt: PromptPair,
+): boolean {
+  return isElapsedDurationCorrect(answer, prompt[0], prompt[1]);
+}
 
-    const timer = setTimeout(() => {
-      goToNextPrompt();
-    }, 1500);
+function renderPromptTime(
+  value: TimeValue,
+  timeFormat: TimeFormat,
+  testID: string,
+) {
+  const formatted = formatTimeValue(value, {
+    includeMeridiem: timeFormat === '12-hour',
+    timeFormat,
+  });
 
-    return () => clearTimeout(timer);
-  }, [goToNextPrompt, result]);
-
-  function checkAnswer() {
-    const [startTime, endTime] = promptPair;
-    const isCorrect = isElapsedDurationCorrect(answer, startTime, endTime);
-    const expectedDuration = elapsedMinutesToDuration(
-      getElapsedMinutes(startTime, endTime),
-    );
-
-    setResult({
-      actual: answer,
-      expected: expectedDuration,
-      isCorrect,
-    });
-  }
-
-  function formatPromptTime(value: TimeValue): string {
-    return formatTimeValue(value, {
-      includeMeridiem: timeFormat === '12-hour',
-      timeFormat,
-    });
-  }
-
-  function renderPromptTime(value: TimeValue, testID: string) {
-    const formatted = formatPromptTime(value);
-
-    if (timeFormat === '12-hour') {
-      const [mainTime, meridiem] = formatted.split(' ');
-
-      return (
-        <View style={styles.promptTimeInlineRow} testID={testID}>
-          <Text
-            adjustsFontSizeToFit
-            minimumFontScale={0.72}
-            numberOfLines={1}
-            style={styles.promptTimeMain}>
-            {mainTime}
-          </Text>
-          <Text numberOfLines={1} style={styles.promptTimeSuffix}>
-            {meridiem}
-          </Text>
-        </View>
-      );
-    }
+  if (timeFormat === '12-hour') {
+    const [mainTime, meridiem] = formatted.split(' ');
 
     return (
-      <Text
-        adjustsFontSizeToFit
-        minimumFontScale={0.82}
-        numberOfLines={1}
-        style={styles.promptTimeValue}
-        testID={testID}>
-        {formatted}
-      </Text>
+      <View style={styles.promptTimeInlineRow} testID={testID}>
+        <Text
+          adjustsFontSizeToFit
+          minimumFontScale={0.72}
+          numberOfLines={1}
+          style={styles.promptTimeMain}>
+          {mainTime}
+        </Text>
+        <Text numberOfLines={1} style={styles.promptTimeSuffix}>
+          {meridiem}
+        </Text>
+      </View>
     );
   }
 
   return (
-    <AppShell maxWidth={contentMaxWidth}>
-      <HeaderBar
-        title="Elapsed Time"
-        leftAction={<BackButton onPress={() => router.back()} />}
-        rightAction={<HeaderSettingsButton onPress={() => router.push('/settings')} />}
-      />
+    <Text
+      adjustsFontSizeToFit
+      minimumFontScale={0.82}
+      numberOfLines={1}
+      style={styles.promptTimeValue}
+      testID={testID}>
+      {formatted}
+    </Text>
+  );
+}
 
-      <View style={styles.layout}>
-        <View style={styles.column}>
-          <View style={styles.promptCard}>
-            <Text style={styles.promptLabel}>How much time passes?</Text>
-            <View style={styles.promptTimesRow}>
-              <View style={styles.promptTimeCard}>
-                <Text style={styles.promptTimeEyebrow}>Start</Text>
-                {renderPromptTime(promptPair[0], 'elapsed-start-time')}
-              </View>
-              <View style={styles.connectorPill}>
-                <Text style={styles.connectorText}>to</Text>
-              </View>
-              <View style={styles.promptTimeCard}>
-                <Text style={styles.promptTimeEyebrow}>End</Text>
-                {renderPromptTime(promptPair[1], 'elapsed-end-time')}
-              </View>
-            </View>
-          </View>
+function renderPrompt({
+  prompt,
+  timeFormat,
+}: {
+  layout: PracticeLayout;
+  prompt: PromptPair;
+  timeFormat: TimeFormat;
+}) {
+  return (
+    <>
+      <Text style={styles.promptLabel}>How much time passes?</Text>
+      <View style={styles.promptTimesRow}>
+        <View style={styles.promptTimeCard}>
+          <Text style={styles.promptTimeEyebrow}>Start</Text>
+          {renderPromptTime(prompt[0], timeFormat, 'elapsed-start-time')}
         </View>
-
-        <View style={styles.column}>
-          <Card style={styles.answerCard}>
-            <Text style={styles.cardEyebrow}>Elapsed time</Text>
-            <View style={styles.answerOverlayWrap}>
-              <ElapsedDurationInput
-                compact={useCompactInput}
-                onChange={(value) => {
-                  setResult(null);
-                  setAnswer(value);
-                }}
-                practiceInterval={practiceInterval}
-                value={answer}
-              />
-
-              <CelebrationOverlay
-                title="Nice work!"
-                visible={Boolean(result?.isCorrect)}
-              />
-
-              {result && !result.isCorrect ? (
-                <View pointerEvents="none" style={styles.feedbackOverlay}>
-                  <View
-                    style={styles.feedbackToast}
-                    testID="elapsed-wrong-answer-overlay">
-                    <Text style={styles.feedbackToastTitle}>Try again</Text>
-                  </View>
-                </View>
-              ) : null}
-            </View>
-          </Card>
-
-          <View style={styles.actionsRow}>
-            <Pressable
-              accessibilityRole="button"
-              disabled={Boolean(result?.isCorrect)}
-              onPress={checkAnswer}
-              style={[
-                styles.actionButton,
-                styles.primaryButton,
-                result?.isCorrect && styles.actionButtonDisabled,
-              ]}
-              testID="elapsed-check-answer-button">
-              <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
-                Check Answer
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              disabled={Boolean(result?.isCorrect)}
-              onPress={goToNextPrompt}
-              style={[
-                styles.actionButton,
-                styles.secondaryButton,
-                result?.isCorrect && styles.actionButtonDisabled,
-              ]}
-              testID="elapsed-next-time-button">
-              <Text style={styles.actionButtonText}>
-                {result?.isCorrect ? 'Loading next time...' : 'Next Time'}
-              </Text>
-            </Pressable>
-          </View>
+        <View style={styles.connectorPill}>
+          <Text style={styles.connectorText}>to</Text>
+        </View>
+        <View style={styles.promptTimeCard}>
+          <Text style={styles.promptTimeEyebrow}>End</Text>
+          {renderPromptTime(prompt[1], timeFormat, 'elapsed-end-time')}
         </View>
       </View>
-    </AppShell>
+    </>
+  );
+}
+
+function renderAnswer({
+  answer,
+  layout,
+  onAnswerChange,
+  practiceInterval,
+  result,
+}: {
+  answer: ElapsedDurationValue;
+  layout: PracticeLayout;
+  onAnswerChange: (value: ElapsedDurationValue) => void;
+  onDismissResult: () => void;
+  onInteractionEnd: () => void;
+  onInteractionStart: () => void;
+  practiceInterval: PracticeInterval;
+  result: PracticeAnswerResult<ElapsedDurationValue> | null;
+  timeFormat: TimeFormat;
+}) {
+  return (
+    <>
+      <ElapsedDurationInput
+        compact={layout.useCompactAnswer}
+        onChange={onAnswerChange}
+        practiceInterval={practiceInterval}
+        value={answer}
+      />
+
+      <CelebrationOverlay title="Nice work!" visible={Boolean(result?.isCorrect)} />
+
+      {result && !result.isCorrect ? (
+        <View pointerEvents="none" style={styles.feedbackOverlay}>
+          <View style={styles.feedbackToast} testID="elapsed-wrong-answer-overlay">
+            <Text style={styles.feedbackToastTitle}>Try again</Text>
+          </View>
+        </View>
+      ) : null}
+    </>
+  );
+}
+
+export function ElapsedTimePracticeScreen({ practiceInterval, timeFormat }: Props) {
+  return (
+    <PracticeScreen
+      answerCardStyle={styles.answerCard}
+      cardEyebrowStyle={styles.cardEyebrow}
+      cardEyebrowText="Elapsed time"
+      checkAnswerTestId="elapsed-check-answer-button"
+      createInitialAnswer={createInitialAnswer}
+      createInitialPrompt={createInitialPrompt}
+      createNextPrompt={createNextPrompt}
+      isAnswerCorrect={isAnswerCorrect}
+      nextTimeTestId="elapsed-next-time-button"
+      practiceInterval={practiceInterval}
+      promptCardStyle={styles.promptCard}
+      renderAnswer={renderAnswer}
+      renderPrompt={renderPrompt}
+      timeFormat={timeFormat}
+      title="Elapsed Time"
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  layout: {
-    gap: 16,
-  },
-  column: {
-    gap: 16,
-  },
   promptCard: {
-    backgroundColor: palette.ink,
-    borderRadius: 30,
     gap: 18,
     padding: 22,
-    ...shadows.card,
   },
   promptLabel: {
     color: '#D8E5F0',
@@ -313,19 +257,9 @@ const styles = StyleSheet.create({
   },
   answerCard: {
     alignItems: 'center',
-    gap: 16,
   },
   cardEyebrow: {
     alignSelf: 'stretch',
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-  },
-  answerOverlayWrap: {
-    position: 'relative',
   },
   feedbackOverlay: {
     alignItems: 'center',
@@ -353,35 +287,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     textAlign: 'center',
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
-    alignItems: 'center',
-    borderRadius: 999,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 56,
-    paddingHorizontal: 16,
-  },
-  primaryButton: {
-    backgroundColor: palette.coral,
-  },
-  secondaryButton: {
-    backgroundColor: palette.surfaceMuted,
-  },
-  actionButtonDisabled: {
-    opacity: 0.65,
-  },
-  actionButtonText: {
-    color: palette.ink,
-    fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  primaryButtonText: {
-    color: palette.white,
   },
 });
