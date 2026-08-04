@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /session/
+Disallow: /mode/
+Disallow: /practice/
+Disallow: /challenge/
+
+Sitemap: https://timetutor.app/sitemap.xml
