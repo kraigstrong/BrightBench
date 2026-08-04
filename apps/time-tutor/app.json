@@ -2,12 +2,12 @@
   "expo": {
     "name": "TimeTutor",
     "slug": "time-tutor",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "scheme": "timetutor",
     "userInterfaceStyle": "light",
     "ios": {
-      "buildNumber": "5",
+      "buildNumber": "3",
       "supportsTablet": true,
       "bundleIdentifier": "com.timetutor.app"
     },
