@@ -1,5 +1,7 @@
 import {
   calculateChallengeStars,
+  countMasteredModes,
+  createDefaultChallengeProgress,
   createEmptyChallengeModeProgress,
   getDefaultChallengeDifficulty,
   getChallengeIntervalForDifficulty,
@@ -97,6 +99,25 @@ describe('challenge progression helpers', () => {
 
     expect(totalStarsForMode(progress)).toBe(9);
     expect(isChallengeModeMastered(progress)).toBe(true);
+  });
+
+  it('counts mastered modes across zero, partial, and full mastery states', () => {
+    const zeroStars = createDefaultChallengeProgress();
+
+    expect(countMasteredModes(zeroStars)).toBe(0);
+
+    const partial = createDefaultChallengeProgress();
+    partial['digital-to-analog'].bestStars = { easy: 3, medium: 3, hard: 3 };
+    partial['analog-to-digital'].bestStars = { easy: 3, medium: 2, hard: 0 };
+
+    expect(countMasteredModes(partial)).toBe(1);
+
+    const full = createDefaultChallengeProgress();
+    full['digital-to-analog'].bestStars = { easy: 3, medium: 3, hard: 3 };
+    full['analog-to-digital'].bestStars = { easy: 3, medium: 3, hard: 3 };
+    full['elapsed-time'].bestStars = { easy: 3, medium: 3, hard: 3 };
+
+    expect(countMasteredModes(full)).toBe(3);
   });
 
   it('defaults challenge difficulty based on progression', () => {
