@@ -61,6 +61,8 @@ This plan came out of a broader review of Time Tutor's codebase, website (timetu
 
 **Output gate (mid-phase, needs Kraig's hands):** after the first sound+haptics pass, stop and have Kraig try it on his own device before finalizing — this is the one step in the whole plan that specifically needs his hands, not just his eyes, since haptics can't be verified in Simulator. After that: same review-then-merge gate as Phase 0.
 
+**Follow-up (deferred, not blocking this phase):** Kraig dislikes the current Practice-mode "wrong answer" UX — the toast overlaid on the clock ("Try again" / "You entered X:XX" / Dismiss). He likes the haptics, and likes the feel of the Challenge-mode wrong-answer treatment (shake + flash, no blocking toast); the complaint is specifically about Practice mode's visual. Practice mode still needs to surface what the learner actually entered (that's the whole point of Practice vs. Challenge — untimed, see-your-mistake learning), so this isn't "remove the toast," it's "redesign how the entered value gets communicated." Worth looking at whether Challenge mode's non-blocking treatment (or something adjacent to it) can be adapted for Practice while still surfacing the entered time. Revisit after the rest of Phase 1 lands.
+
 ---
 
 ## Phase 2 — App Store re-release video
