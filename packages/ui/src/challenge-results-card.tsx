@@ -25,7 +25,8 @@ export type ChallengeResultsCardProps = {
   masteryTitle?: string;
   onBack: () => void;
   onPlayAgain: () => void;
-  onReanimate?: () => void;
+  onRevealComplete?: () => void;
+  onRevealStart?: () => void;
   primaryActionLabel?: string;
   score: number;
   scoreThresholdOne: number;
@@ -60,7 +61,8 @@ export function ChallengeResultsCard({
   masteryTitle = 'Crown Unlocked!',
   onBack,
   onPlayAgain,
-  onReanimate,
+  onRevealComplete,
+  onRevealStart,
   primaryActionLabel = 'Play Again',
   score,
   scoreThresholdOne,
@@ -139,7 +141,8 @@ export function ChallengeResultsCard({
   const finishReveal = useCallback(() => {
     setDisplayedStars(totalEarnedStars);
     setIsFullyRevealed(true);
-  }, [totalEarnedStars]);
+    onRevealComplete?.();
+  }, [onRevealComplete, totalEarnedStars]);
 
   const resetReveal = useCallback(() => {
     clearTimers();
@@ -181,6 +184,7 @@ export function ChallengeResultsCard({
 
   const startReveal = useCallback(() => {
     resetReveal();
+    onRevealStart?.();
 
     Animated.timing(cardScale, {
       duration: CARD_POP_DURATION_MS,
@@ -240,6 +244,7 @@ export function ChallengeResultsCard({
     accuracyProgress,
     cardScale,
     finishReveal,
+    onRevealStart,
     resetReveal,
     scoreNormalized,
     scoreProgress,
@@ -450,7 +455,6 @@ export function ChallengeResultsCard({
 
   function handleReanimate() {
     setRevealCycle((current) => current + 1);
-    onReanimate?.();
   }
 
   function handlePlayAgainPress() {

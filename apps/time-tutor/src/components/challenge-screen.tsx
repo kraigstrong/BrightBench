@@ -34,7 +34,12 @@ import {
 } from '@/config/challenge-thresholds';
 import { getDemoChallengeResultOverride } from '@/config/demo-video';
 import { palette, shadows, typography } from '@/design/theme';
-import { triggerAnswerFeedback, triggerRoundCompleteFeedback } from '@/lib/answer-feedback';
+import {
+  startSuspenseLoop,
+  stopSuspenseLoop,
+  triggerAnswerFeedback,
+  triggerRoundCompleteFeedback,
+} from '@/lib/answer-feedback';
 import {
   calculateChallengeAccuracy,
   calculateChallengeStars,
@@ -254,8 +259,9 @@ export function ChallengeScreen<TPrompt, TAnswer>({
       setChallengeBestStars(progressMode, difficulty, earnedStars);
     }
 
-    triggerRoundCompleteFeedback(earnedStars, soundEffectsEnabled);
-
+    // The haptic/sound for this fires from onRevealComplete once the
+    // ChallengeResultsOverlay's bar-fill animation actually finishes, not
+    // here — this effect only runs once the numbers are known.
     setResultSummary({
       accuracy,
       didUnlockMastery,
@@ -275,7 +281,6 @@ export function ChallengeScreen<TPrompt, TAnswer>({
     runStatus,
     score,
     setChallengeBestStars,
-    soundEffectsEnabled,
     thresholds,
   ]);
 
@@ -549,9 +554,11 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             didUnlockMastery={resultSummary.didUnlockMastery}
             onBack={() => router.back()}
             onPlayAgain={beginChallenge}
-            onReanimate={() =>
-              triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled)
-            }
+            onRevealComplete={() => {
+              stopSuspenseLoop();
+              triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled);
+            }}
+            onRevealStart={() => startSuspenseLoop(soundEffectsEnabled)}
             score={resultSummary.score}
             scoreThresholdOne={thresholds.scoreThresholdOne}
             scoreThresholdTwo={thresholds.scoreThresholdTwo}

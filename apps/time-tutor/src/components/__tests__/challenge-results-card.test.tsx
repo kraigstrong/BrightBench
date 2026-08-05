@@ -44,6 +44,76 @@ describe('ChallengeResultsCard', () => {
     expect(screen.getByTestId('challenge-play-again-button')).toBeTruthy();
   });
 
+  it('fires onRevealStart immediately and onRevealComplete only once the reveal finishes', () => {
+    const onRevealStart = jest.fn();
+    const onRevealComplete = jest.fn();
+
+    render(
+      <ChallengeResultsCard
+        accuracy={80}
+        accuracyThreshold={80}
+        didUnlockMastery={false}
+        onBack={jest.fn()}
+        onPlayAgain={jest.fn()}
+        onRevealComplete={onRevealComplete}
+        onRevealStart={onRevealStart}
+        score={8}
+        scoreThresholdOne={5}
+        scoreThresholdTwo={8}
+        subtitle="Medium challenge · 5 min"
+        title="Time's up!"
+      />,
+    );
+
+    expect(onRevealStart).toHaveBeenCalledTimes(1);
+    expect(onRevealComplete).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(onRevealComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('replays onRevealStart/onRevealComplete when Reanimate is pressed', () => {
+    const onRevealStart = jest.fn();
+    const onRevealComplete = jest.fn();
+
+    render(
+      <ChallengeResultsCard
+        accuracy={80}
+        accuracyThreshold={80}
+        didUnlockMastery={false}
+        onBack={jest.fn()}
+        onPlayAgain={jest.fn()}
+        onRevealComplete={onRevealComplete}
+        onRevealStart={onRevealStart}
+        score={8}
+        scoreThresholdOne={5}
+        scoreThresholdTwo={8}
+        subtitle="Medium challenge · 5 min"
+        title="Time's up!"
+      />,
+    );
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(onRevealStart).toHaveBeenCalledTimes(1);
+    expect(onRevealComplete).toHaveBeenCalledTimes(1);
+
+    fireEvent.press(screen.getByTestId('challenge-reanimate-button'));
+
+    expect(onRevealStart).toHaveBeenCalledTimes(2);
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(onRevealComplete).toHaveBeenCalledTimes(2);
+  });
+
   it('fast-forwards the reveal when play again is tapped early', () => {
     render(
       <ChallengeResultsCard

@@ -4,6 +4,7 @@ export const FEEDBACK_AUDIO_MANIFEST = {
   roundNone: require('../../assets/audio/ui/round-none.mp3'),
   roundPartial: require('../../assets/audio/ui/round-partial.mp3'),
   roundPerfect: require('../../assets/audio/ui/round-perfect.mp3'),
+  suspenseTick: require('../../assets/audio/ui/suspense-tick.mp3'),
 } as const;
 
 export type FeedbackAudioKey = keyof typeof FEEDBACK_AUDIO_MANIFEST;

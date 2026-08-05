@@ -6,7 +6,7 @@ import { FEEDBACK_AUDIO_MANIFEST, type FeedbackAudioKey } from '@/config/audio-m
 const players = new Map<FeedbackAudioKey, ReturnType<typeof createAudioPlayer>>();
 let audioModeConfigured = false;
 
-async function playFeedbackSound(key: FeedbackAudioKey) {
+async function getPlayer(key: FeedbackAudioKey) {
   if (!audioModeConfigured) {
     audioModeConfigured = true;
     await setAudioModeAsync({ playsInSilentMode: true }).catch(() => undefined);
@@ -18,6 +18,12 @@ async function playFeedbackSound(key: FeedbackAudioKey) {
     player = createAudioPlayer(FEEDBACK_AUDIO_MANIFEST[key]);
     players.set(key, player);
   }
+
+  return player;
+}
+
+async function playFeedbackSound(key: FeedbackAudioKey) {
+  const player = await getPlayer(key);
 
   // Rewind first so rapid-fire correct answers in Challenge mode restart the
   // chime instead of getting silently dropped mid-playback.
@@ -58,4 +64,32 @@ export function triggerRoundCompleteFeedback(
     earnedStars >= 3 ? 'roundPerfect' : earnedStars > 0 ? 'roundPartial' : 'roundNone';
 
   playFeedbackSound(soundKey).catch(() => undefined);
+}
+
+// Loops a short tick while the results-reveal bars are counting up, so the
+// silence during that ~3.5s animation feels like a buildup instead of a gap.
+export async function startSuspenseLoop(soundEffectsEnabled: boolean) {
+  if (!soundEffectsEnabled) {
+    return;
+  }
+
+  const player = await getPlayer('suspenseTick');
+
+  player.loop = true;
+  await player.seekTo(0).catch(() => undefined);
+  player.play();
+}
+
+export async function stopSuspenseLoop() {
+  // Don't lazily create a player here — if sound was off (or the loop was
+  // never started), there's nothing to stop.
+  const player = players.get('suspenseTick');
+
+  if (!player) {
+    return;
+  }
+
+  player.pause();
+  player.loop = false;
+  await player.seekTo(0).catch(() => undefined);
 }
