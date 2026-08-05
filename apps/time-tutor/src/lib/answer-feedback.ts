@@ -38,3 +38,12 @@ export function triggerAnswerFeedback(isCorrect: boolean, soundEffectsEnabled: b
 
   playFeedbackSound(isCorrect ? 'correct' : 'incorrect').catch(() => undefined);
 }
+
+export function triggerRoundCompleteFeedback(earnedStars: number) {
+  const type =
+    earnedStars > 0
+      ? Haptics.NotificationFeedbackType.Success
+      : Haptics.NotificationFeedbackType.Warning;
+
+  Haptics.notificationAsync(type).catch(() => undefined);
+}

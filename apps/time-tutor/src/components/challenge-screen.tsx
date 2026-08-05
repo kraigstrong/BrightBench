@@ -34,7 +34,7 @@ import {
 } from '@/config/challenge-thresholds';
 import { getDemoChallengeResultOverride } from '@/config/demo-video';
 import { palette, shadows, typography } from '@/design/theme';
-import { triggerAnswerFeedback } from '@/lib/answer-feedback';
+import { triggerAnswerFeedback, triggerRoundCompleteFeedback } from '@/lib/answer-feedback';
 import {
   calculateChallengeAccuracy,
   calculateChallengeStars,
@@ -251,6 +251,8 @@ export function ChallengeScreen<TPrompt, TAnswer>({
     if (isNewBest) {
       setChallengeBestStars(progressMode, difficulty, earnedStars);
     }
+
+    triggerRoundCompleteFeedback(earnedStars);
 
     setResultSummary({
       accuracy,
