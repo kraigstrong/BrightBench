@@ -48,6 +48,7 @@ import type {
   ChallengeDifficulty,
   PlayableMode,
   PracticeInterval,
+  StarCount,
   TimeFormat,
 } from '@/types/time';
 
@@ -106,6 +107,7 @@ type ChallengeResultSummary = {
   accuracy: number;
   didUnlockMastery: boolean;
   difficulty: ChallengeDifficulty;
+  earnedStars: StarCount;
   intervalLabel: string;
   isNewBest: boolean;
   score: number;
@@ -252,12 +254,13 @@ export function ChallengeScreen<TPrompt, TAnswer>({
       setChallengeBestStars(progressMode, difficulty, earnedStars);
     }
 
-    triggerRoundCompleteFeedback(earnedStars);
+    triggerRoundCompleteFeedback(earnedStars, soundEffectsEnabled);
 
     setResultSummary({
       accuracy,
       didUnlockMastery,
       difficulty,
+      earnedStars,
       intervalLabel: formatChallengeIntervalLabel(currentInterval),
       isNewBest,
       score: finalScore,
@@ -272,6 +275,7 @@ export function ChallengeScreen<TPrompt, TAnswer>({
     runStatus,
     score,
     setChallengeBestStars,
+    soundEffectsEnabled,
     thresholds,
   ]);
 
@@ -545,6 +549,9 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             didUnlockMastery={resultSummary.didUnlockMastery}
             onBack={() => router.back()}
             onPlayAgain={beginChallenge}
+            onReanimate={() =>
+              triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled)
+            }
             score={resultSummary.score}
             scoreThresholdOne={thresholds.scoreThresholdOne}
             scoreThresholdTwo={thresholds.scoreThresholdTwo}

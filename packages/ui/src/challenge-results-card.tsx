@@ -25,6 +25,7 @@ export type ChallengeResultsCardProps = {
   masteryTitle?: string;
   onBack: () => void;
   onPlayAgain: () => void;
+  onReanimate?: () => void;
   primaryActionLabel?: string;
   score: number;
   scoreThresholdOne: number;
@@ -59,6 +60,7 @@ export function ChallengeResultsCard({
   masteryTitle = 'Crown Unlocked!',
   onBack,
   onPlayAgain,
+  onReanimate,
   primaryActionLabel = 'Play Again',
   score,
   scoreThresholdOne,
@@ -448,6 +450,7 @@ export function ChallengeResultsCard({
 
   function handleReanimate() {
     setRevealCycle((current) => current + 1);
+    onReanimate?.();
   }
 
   function handlePlayAgainPress() {
