@@ -28,7 +28,13 @@ import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
 import { BuildPanel, EstimatePanel, LinePanel, PourPanel } from '@/features/game/mode-panels';
-import { AnyRound, DifficultyLevel, FindRound, GameMode, RoundEvaluation } from '@/features/game/types';
+import {
+  AnyRound,
+  ChallengeModeKey,
+  DifficultyLevel,
+  FindRound,
+  RoundEvaluation,
+} from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
 const CHALLENGE_DURATION_SECONDS = 60;
@@ -52,7 +58,7 @@ export function ChallengeScene({
   mode,
   difficultyLevel,
 }: {
-  mode: GameMode;
+  mode: ChallengeModeKey;
   difficultyLevel?: DifficultyLevel;
 }) {
   const { progress, recordRound, setChallengeBestStars } = useAppState();
@@ -450,4 +456,3 @@ const styles = StyleSheet.create({
     top: 0,
   },
 });
-

@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 
 import { goBackOrReplace } from '@education/app-config';
 import { palette, spacing } from '@education/design';
@@ -8,9 +8,7 @@ import { typography } from '@education/design/native';
 import { ActionButton, AppShell, Card, HeaderBar } from '@education/ui';
 import { layout } from '@/design/tokens';
 import { SettingsToggleRow } from '@/features/game/mode-play-scene';
-import {
-  useAppState,
-} from '@/state/app-state';
+import { useAppState } from '@/state/app-state';
 
 export default function SettingsScreen() {
   const { hydrated, settings, updateSettings } = useAppState();

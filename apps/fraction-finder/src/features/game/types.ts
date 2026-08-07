@@ -96,6 +96,10 @@ export type ChallengeModeProgress = {
 
 export type ChallengeModeKey = (typeof ACTIVE_GAME_MODES)[number];
 
+export function isChallengeModeKey(value: string | undefined): value is ChallengeModeKey {
+  return ACTIVE_GAME_MODES.some((mode) => mode === value);
+}
+
 export type ChallengeProgressSnapshot = Record<ChallengeModeKey, ChallengeModeProgress>;
 
 export type FindSessionStats = {

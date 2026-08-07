@@ -9,30 +9,33 @@ import {
   CHALLENGE_DIFFICULTY_META,
 } from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
-import { ACTIVE_GAME_MODES, DifficultyLevel, GameMode } from '@/features/game/types';
+import {
+  ACTIVE_GAME_MODES,
+  DifficultyLevel,
+  isChallengeModeKey,
+} from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
-const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
-
 export function generateStaticParams() {
-  return VALID_MODES.map((mode) => ({ mode }));
+  return ACTIVE_GAME_MODES.map((mode) => ({ mode }));
 }
 
 export default function ChallengeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
-  const mode = params.mode as GameMode | undefined;
+  const mode = params.mode;
   const { progress, setLastSelectedChallengeDifficulty } = useAppState();
 
-  if (!mode || !VALID_MODES.includes(mode)) {
+  if (!isChallengeModeKey(mode)) {
     return <Redirect href="/modes" />;
   }
 
-  const meta = MODE_META[mode];
-  const challengeProgress = progress.challengeProgress[mode];
+  const activeMode = mode;
+  const meta = MODE_META[activeMode];
+  const challengeProgress = progress.challengeProgress[activeMode];
 
   function launchDifficulty(difficultyLevel: DifficultyLevel) {
-    setLastSelectedChallengeDifficulty(mode, difficultyLevel);
-    router.replace(`/session/${mode}/challenge?difficulty=${difficultyLevel}`);
+    setLastSelectedChallengeDifficulty(activeMode, difficultyLevel);
+    router.replace(`/session/${activeMode}/challenge?difficulty=${difficultyLevel}`);
   }
 
   return (

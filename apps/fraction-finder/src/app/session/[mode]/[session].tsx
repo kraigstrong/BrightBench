@@ -10,14 +10,18 @@ import {
 } from '@/features/game/challenge-stars';
 import { ChallengeScene } from '@/features/game/challenge-scene';
 import { ModePlayScene } from '@/features/game/mode-play-scene';
-import { ACTIVE_GAME_MODES, DifficultyLevel, GameMode, SessionType } from '@/features/game/types';
+import {
+  ACTIVE_GAME_MODES,
+  DifficultyLevel,
+  isChallengeModeKey,
+  SessionType,
+} from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
-const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
 const VALID_SESSIONS: SessionType[] = ['practice', 'challenge'];
 
 export function generateStaticParams() {
-  return VALID_MODES.flatMap((mode) =>
+  return ACTIVE_GAME_MODES.flatMap((mode) =>
     VALID_SESSIONS.map((session) => ({ mode, session }))
   );
 }
@@ -28,7 +32,7 @@ export default function SessionScreen() {
     mode?: string;
     session?: string;
   }>();
-  const mode = params.mode as GameMode | undefined;
+  const mode = params.mode;
   const session = params.session as SessionType | undefined;
   const requestedDifficulty = CHALLENGE_DIFFICULTIES.includes(
     params.difficulty as DifficultyLevel
@@ -37,7 +41,7 @@ export default function SessionScreen() {
     : undefined;
   const { progress } = useAppState();
 
-  if (!mode || !session || !VALID_MODES.includes(mode) || !VALID_SESSIONS.includes(session)) {
+  if (!isChallengeModeKey(mode) || !session || !VALID_SESSIONS.includes(session)) {
     return <Redirect href="/modes" />;
   }
 
