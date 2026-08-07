@@ -123,13 +123,6 @@ Challenge-specific rule:
 - do not hardcode speculative future suite-wide domains
 - current product-specific defaults are acceptable as temporary fallbacks
 
-## Workflow Model
-- default workflow is CLI-first
-- Xcode is the native fallback/debugging tool
-- typical Expo flow:
-  1. `npm run dev -w <app>`
-  2. `npm run ios -w <app>`
-
 ## Architecture Guardrails
 - Do not modify `/Users/kraig/code/time-tutor`
 - Do not over-extract shared code too early

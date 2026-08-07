@@ -1,128 +1,180 @@
 # AGENTS.md
 
 ## Purpose
-This monorepo contains multiple educational apps that share one technical foundation and one design language.
 
-## Read In This Order
-1. This file
-2. `docs/repo-map.md`
-3. `docs/current-state.md`
-4. `docs/architecture.md`
-5. `docs/design-canon.md`
-6. `docs/app-template.md`
-7. `docs/release-playbook.md`
+BrightBench is a portfolio of independently deployable educational apps with a shared technical foundation and design language. This file is the compact baseline for every coding agent working in the repository.
 
-## Source Of Truth
-- Technical stack standard: Expo-managed React Native + Expo Router for app products
-- Visual/design standard: Time Tutor design language
-- Marketing site standard: Next.js App Router
-- Deployment standard:
-  - Expo apps deploy individually to the App Store via EAS
-  - Web properties deploy individually to Vercel
+## Start Here
+
+For routine work, read only:
+
+1. This file.
+2. `docs/current.md`.
+3. The target app's nested `AGENTS.md`, when one exists.
+4. Files directly involved in the change.
+
+Read additional documentation only when the routing section says it is relevant.
+
+## Repository Map
+
+- `apps/*`: independently deployable products and sites.
+- `packages/design`: platform-neutral palette, spacing, radii, typography tokens, and motion.
+- `packages/ui`: stable shared React Native primitives; no app-specific gameplay.
+- `packages/legal-pages`: configurable privacy, support, and help content.
+- `packages/app-config`: shared naming, routing, and release conventions.
+- `packages/typescript-config`: shared TypeScript configurations.
+- `packages/eslint-config`: shared ESLint configurations.
+- `docs/current.md`: active work, portfolio status, and outstanding human checks.
+- `docs/decisions`: durable decisions that meet the ADR threshold.
+- `.agents/skills`: canonical reusable workflows for agents.
+
+## Technical Standards
+
+- Product apps use Expo-managed React Native, Expo Router, and React Native Web.
+- The marketing site uses Next.js App Router.
+- Use npm workspaces and Turbo.
+- Apps remain independently deployable.
+- Time Tutor is the visual source of truth.
+- Fraction Finder is the tooling and Expo-workflow reference.
+- Share stable primitives; keep gameplay and curriculum logic app-local until reuse is proven.
+
+## Package Boundaries
+
+- Keep `@education/design` platform-neutral whenever possible.
+- Put React Native-only typography and shadow helpers in `@education/design/native`.
+- Keep `@education/ui` limited to stable primitives with multiple real consumers.
+- Do not move scoring, round generation, or curriculum rules into shared packages prematurely.
+- Keep product identity, assets, store metadata, bundle IDs, and deployment configuration app-local.
+- Shared-package changes must verify every affected consumer.
 
 ## Safety Rules
-- Do not modify `/Users/kraig/code/time-tutor`
-- Treat `/Users/kraig/code/time-tutor` as read-only reference material
-- Copy or adapt code only into this monorepo
 
-## Repo Layout
-- `apps/*`: product apps and sites
-- `packages/design`: tokens, palette, typography, spacing, motion
-- `packages/ui`: shared UI primitives and reusable visual components
-- `packages/legal-pages`: privacy, support, and help content plus shells
-- `packages/app-config`: shared app config helpers and conventions
-- `docs/repo-map.md`: current folder structure and what each area is for
-- `docs/current-state.md`: what is already built, validated, and intentionally different
-- `docs/architecture.md`: why the repo is shaped this way and how package boundaries work
-- `docs/design-canon.md`: visual source of truth
-- `docs/app-template.md`: new app structure and required scripts
-- `docs/release-playbook.md`: deploy and release instructions
+- Do not modify `/Users/kraig/code/time-tutor`; it is read-only reference material.
+- Do not copy generated native artifacts or machine-local configuration into templates.
+- Preserve unrelated work in a dirty worktree.
+- Do not reset, discard, or overwrite user changes without explicit approval.
+- Do not claim a check passed unless it ran successfully in the current workstream.
+- Keep domain-sensitive values environment-driven.
+- Do not hardcode a speculative portfolio-wide domain.
 
-## Current Reality
-- `apps/fraction-finder` is a working Expo app in the monorepo
-- `apps/time-tutor` is a working Expo app in the monorepo
-- `apps/marketing` is a working Next.js App Router site scaffold
-- `apps/grammar-guide`, `apps/letter-bingo`, and `apps/place-value` are still placeholders
+## Canonical Commands
 
-## Architectural Rules
-- Time Tutor wins when design and visual patterns conflict
-- Fraction Finder wins when tooling and stack decisions conflict
-- Share stable primitives, not premature abstractions
-- Keep gameplay logic app-local unless reuse is clearly proven
-- Apps must remain independently deployable
+Run the repository gate:
 
-## Developer Workflow
-- Use `npm` workspaces
-- Use Turbo for repo task orchestration
-- Run one app at a time during focused work
-- Preferred daily workflow: CLI-first
-- Default Expo workflow:
-  1. `npm run dev -w <app>`
-  2. `npm run ios -w <app>`
-- Use Xcode as the native fallback tool for:
-  - signing and capabilities
-  - simulator/device management
-  - native build debugging
-  - inspecting generated iOS project settings
-- Web validation should be available locally for each app
-- Next.js marketing workflow:
-  1. `npm run dev -w marketing`
-  2. `npm run build -w marketing`
+```sh
+npm run check
+```
 
-## Token Efficiency
-Before exploring code:
-1. Read this file
-2. Read `docs/repo-map.md`
-3. Read `docs/current-state.md`
-4. Read `docs/architecture.md`
-5. Read only the target app and directly related packages
-6. Avoid scanning the whole monorepo unless the task is architectural
+Verify only changed workspaces and their consumers:
 
-## Shared Design Guidance
-Prefer patterns derived from Time Tutor:
-- card feel
-- spacing density
-- header composition
-- celebration and confetti style
-- settings controls
-- result banners
-- calm, polished, child-friendly UI tone
+```sh
+npm run check:affected -- --base origin/main
+```
 
-## Package Boundary Rules
-- Keep `@education/design` platform-neutral whenever possible
-- Put React Native-specific typography and shadow helpers in `@education/design/native`
-- Keep `@education/ui` focused on stable shared primitives
-- Keep app-specific gameplay widgets inside the app until reuse is clearly proven
-- Do not copy machine-local or generated native artifacts into new app templates
+Verify one app:
 
-## When Adding A New App
-- Start from the app template
-- Use shared design and UI packages first
-- Keep app identity, content, and store metadata local to the app
+```sh
+npm run verify -w <app>
+```
 
-## When Updating Docs
-- Keep `README.md` and `docs/current-state.md` in sync
-- If an intentional design or behavior difference is introduced during a migration, document it near the app, not only in chat history
+Run the Time Tutor release preflight:
 
-## Documentation Maintenance Rule
-When implementing a larger change, future agents should update the relevant docs in the same workstream before considering the task complete.
+```sh
+npm run verify:release -w time-tutor
+```
 
-Examples:
-- architecture or package-boundary changes
-  - update `docs/architecture.md`
-  - update `docs/repo-map.md` if folder roles changed
-- app status, migration progress, or validated workflow changes
-  - update `docs/current-state.md`
-  - update `README.md` if the high-level status or quick-start guidance changed
-- design-source-of-truth or shared UI decisions
-  - update `docs/design-canon.md`
-- app scaffolding or workflow convention changes
-  - update `docs/app-template.md`
-  - update `README.md` if quick-start guidance changed
-- deployment, env var, naming, or release process changes
-  - update `docs/release-playbook.md`
-- intentional app-specific migration differences
-  - update `docs/current-state.md`
-  - add or update an app-local README only if the difference is long-lived and genuinely app-specific
+Focused Expo development:
 
-Do not leave major structural or workflow changes documented only in chat history.
+```sh
+npm run dev -w <app>
+npm run ios -w <app>
+npm run web -w <app>
+```
+
+## Verification By Risk
+
+Assign the smallest honest risk level before implementation.
+
+### Low Risk
+
+Examples: copy, isolated styling, documentation, or a simple leaf component.
+
+Required evidence:
+
+- Target workspace typecheck.
+- Target workspace lint with no warnings.
+- Focused tests when behavior is touched.
+
+### Medium Risk
+
+Examples: gameplay, persistence, navigation, shared UI, or multi-file product behavior.
+
+Required evidence:
+
+- `verify` for every affected workspace.
+- Full tests for the target app.
+- Simulator or web smoke check for the changed flow.
+- Consumer checks for shared-package changes.
+
+### High Risk
+
+Examples: native dependencies, permissions, privacy, analytics, release configuration, or shared-state migration.
+
+Required evidence:
+
+- Full repository CI-equivalent checks.
+- Independent review of the actual diff.
+- Physical-device or production validation where relevant.
+- Explicit record of remaining human release checks.
+
+Use `.agents/skills/verify-change` for the detailed workflow.
+
+## Human Approval Boundaries
+
+Ask before:
+
+- Changing pricing, subscriptions, or monetization.
+- Changing curriculum meaning, scoring thresholds, or reward rules.
+- Resetting, dropping, or incompatibly migrating persisted progress.
+- Adding analytics, tracking, advertising, accounts, or external data collection.
+- Changing child-privacy disclosures, legal copy, or App Store privacy answers.
+- Adding native permissions or capabilities.
+- Shipping, submitting, promoting, or rolling back a production release.
+- Making a product-feel decision that cannot be validated mechanically.
+
+Routine implementation inside an approved objective does not require repeated confirmation.
+
+## Review Priorities
+
+Review the actual branch diff, not only the implementation summary. Prioritize:
+
+1. Behavioral regressions.
+2. Persistence compatibility.
+3. Shared-package blast radius.
+4. Invalid route, mode, and state combinations.
+5. Accessibility and child privacy.
+6. Native and release metadata.
+7. Missing tests or false validation claims.
+
+Use an independent implementer/reviewer pairing when available. The reviewer receives the objective, repository guidance, and complete diff.
+
+## Documentation Routing
+
+- Active status or portfolio priority: update `docs/current.md`.
+- Package boundaries or system shape: read and update `docs/architecture.md`.
+- Shared visual decisions: read and update `docs/design-canon.md`.
+- Deployment or release process: read and update `docs/release-playbook.md`.
+- Long-lived, difficult-to-reverse decisions: add an ADR under `docs/decisions`.
+- App-specific invariants: update the app's nested `AGENTS.md` only when they genuinely differ.
+
+Do not create phase-completion reports, PRD traceability tables, or threat-model updates for ordinary UI and gameplay work. Git history and pull requests are the durable change record.
+
+## Completion
+
+Before handing off a change:
+
+- Inspect the complete diff.
+- Confirm no unrelated files are included.
+- Run the checks required by the assigned risk.
+- Record manual checks still needed.
+- Update only the documentation whose source of truth changed.
