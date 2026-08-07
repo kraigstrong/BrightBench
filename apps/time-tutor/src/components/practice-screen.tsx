@@ -18,6 +18,8 @@ import { AppShell } from '@/components/app-shell';
 import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { palette, shadows, typography } from '@/design/theme';
+import { triggerAnswerFeedback } from '@/lib/answer-feedback';
+import { useAppState } from '@/state/app-state';
 import type { PracticeInterval, TimeFormat } from '@/types/time';
 
 export type PracticeLayout = {
@@ -99,6 +101,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
   title,
 }: Props<TPrompt, TAnswer>) {
   const { width } = useWindowDimensions();
+  const { soundEffectsEnabled } = useAppState();
   const [prompt, setPrompt] = useState<TPrompt>(() =>
     createInitialPrompt(practiceInterval),
   );
@@ -159,6 +162,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
   function checkAnswer() {
     const isCorrect = isAnswerCorrect(answer, prompt, timeFormat);
 
+    triggerAnswerFeedback(isCorrect, soundEffectsEnabled);
     setResult({ actual: answer, isCorrect });
   }
 

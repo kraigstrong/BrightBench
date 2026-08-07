@@ -35,6 +35,12 @@ import {
 import { getDemoChallengeResultOverride } from '@/config/demo-video';
 import { palette, shadows, typography } from '@/design/theme';
 import {
+  startSuspenseLoop,
+  stopSuspenseLoop,
+  triggerAnswerFeedback,
+  triggerRoundCompleteFeedback,
+} from '@/lib/answer-feedback';
+import {
   calculateChallengeAccuracy,
   calculateChallengeStars,
   getChallengeIntervalForDifficulty,
@@ -47,6 +53,7 @@ import type {
   ChallengeDifficulty,
   PlayableMode,
   PracticeInterval,
+  StarCount,
   TimeFormat,
 } from '@/types/time';
 
@@ -105,6 +112,7 @@ type ChallengeResultSummary = {
   accuracy: number;
   didUnlockMastery: boolean;
   difficulty: ChallengeDifficulty;
+  earnedStars: StarCount;
   intervalLabel: string;
   isNewBest: boolean;
   score: number;
@@ -135,7 +143,7 @@ export function ChallengeScreen<TPrompt, TAnswer>({
   title,
 }: Props<TPrompt, TAnswer>) {
   const { width } = useWindowDimensions();
-  const { challengeProgress, setChallengeBestStars } = useAppState();
+  const { challengeProgress, setChallengeBestStars, soundEffectsEnabled } = useAppState();
   const progress = challengeProgress[progressMode];
   const currentInterval = getChallengeIntervalForDifficulty(difficulty);
   const thresholds = challengeThresholds[progressMode][difficulty];
@@ -251,10 +259,14 @@ export function ChallengeScreen<TPrompt, TAnswer>({
       setChallengeBestStars(progressMode, difficulty, earnedStars);
     }
 
+    // The haptic/sound for this fires from onRevealComplete once the
+    // ChallengeResultsOverlay's bar-fill animation actually finishes, not
+    // here — this effect only runs once the numbers are known.
     setResultSummary({
       accuracy,
       didUnlockMastery,
       difficulty,
+      earnedStars,
       intervalLabel: formatChallengeIntervalLabel(currentInterval),
       isNewBest,
       score: finalScore,
@@ -366,6 +378,7 @@ export function ChallengeScreen<TPrompt, TAnswer>({
 
     const isCorrect = isAnswerCorrect(answer, prompt, timeFormat);
 
+    triggerAnswerFeedback(isCorrect, soundEffectsEnabled);
     setAttempts((current) => current + 1);
 
     if (isCorrect) {
@@ -541,6 +554,11 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             didUnlockMastery={resultSummary.didUnlockMastery}
             onBack={() => router.back()}
             onPlayAgain={beginChallenge}
+            onRevealComplete={() => {
+              stopSuspenseLoop();
+              triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled);
+            }}
+            onRevealStart={() => startSuspenseLoop(soundEffectsEnabled)}
             score={resultSummary.score}
             scoreThresholdOne={thresholds.scoreThresholdOne}
             scoreThresholdTwo={thresholds.scoreThresholdTwo}

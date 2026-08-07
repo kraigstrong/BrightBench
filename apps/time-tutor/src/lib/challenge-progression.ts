@@ -24,7 +24,7 @@ type ChallengeThresholds = {
   scoreThresholdTwo: number;
 };
 
-const PLAYABLE_MODES: PlayableMode[] = [
+export const PLAYABLE_MODES: PlayableMode[] = [
   'digital-to-analog',
   'analog-to-digital',
   'elapsed-time',
@@ -130,6 +130,10 @@ export function totalStarsForMode(progress: ChallengeModeProgress): number {
 
 export function isChallengeModeMastered(progress: ChallengeModeProgress) {
   return totalStarsForMode(progress) === CHALLENGE_DIFFICULTIES.length * 3;
+}
+
+export function countMasteredModes(progress: ChallengeProgressSnapshot): number {
+  return PLAYABLE_MODES.filter((mode) => isChallengeModeMastered(progress[mode])).length;
 }
 
 export function shouldUpdateBestStars(previous: StarCount, next: StarCount) {
