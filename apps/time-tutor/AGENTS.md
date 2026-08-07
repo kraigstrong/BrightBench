@@ -33,7 +33,7 @@ Focused checks:
 
 ```sh
 npm run typecheck -w time-tutor
-npm run lint -w time-tutor -- --max-warnings=0
+npm run lint -w time-tutor
 npm test -w time-tutor -- --runInBand
 ```
 

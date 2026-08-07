@@ -10,9 +10,10 @@
     "ios": "expo run:ios --no-bundler",
     "ios:device": "expo run:ios --device --no-bundler",
     "web": "expo start --web",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "test": "jest",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint && npm test -- --runInBand",
     "web:export": "expo export --platform web",
     "generate-audio": "node ./scripts/generate-audio.mjs"
   },

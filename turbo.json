@@ -13,11 +13,13 @@
       "dependsOn": ["^lint"]
     },
     "test": {
-      "dependsOn": ["^test"],
-      "outputs": ["coverage/**"]
+      "dependsOn": ["^test"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]
+    },
+    "verify": {
+      "dependsOn": ["^verify"]
     },
     "format": {
       "cache": false

@@ -9,12 +9,15 @@
   "scripts": {
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build -w marketing",
+    "check:affected": "node ./scripts/check-affected.mjs",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "format": "turbo run format"
   },
   "devDependencies": {
+    "expo-modules-core": "55.0.25",
     "turbo": "^2.5.8"
   }
 }

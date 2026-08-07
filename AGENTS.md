@@ -102,7 +102,7 @@ Examples: copy, isolated styling, documentation, or a simple leaf component.
 Required evidence:
 
 - Target workspace typecheck.
-- Target workspace lint with no warnings.
+- Target workspace lint (warnings fail by default).
 - Focused tests when behavior is touched.
 
 ### Medium Risk

@@ -1,6 +1,7 @@
 {
   "extends": "@education/typescript-config/next-app",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "incremental": false,
     "paths": {

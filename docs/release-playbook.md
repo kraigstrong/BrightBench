@@ -1,5 +1,16 @@
 # Release Playbook
 
+## Pull Request Protection
+
+Before making CI required on `main`:
+
+1. Confirm the `CI / verify` job passes on a pull request.
+2. In GitHub branch protection for `main`, require a pull request and the `CI / verify` status check.
+3. Require the branch to be up to date before merging.
+4. Keep production deployment and App Store submission as explicit human actions.
+
+CI enforces typechecking, warning-free lint, tests, the marketing build, affected Expo web exports, and a production dependency audit. The audit currently blocks critical advisories; high-severity transitive Expo/Metro advisories remain visible in logs until upstream-compatible fixes are available.
+
 ## Web Deployment
 - Each app or site should have its own Vercel project
 - Expo app web builds should use static export
