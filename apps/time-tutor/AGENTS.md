@@ -54,7 +54,7 @@ Before release, a human must still confirm:
 
 ## References
 
-- `docs/rollout-plan.md`: current product follow-ups.
+- `docs/rollout-plan.md`: historical rollout context and explicitly marked backlog items.
 - Root `docs/design-canon.md`: suite visual source of truth.
 - Root `docs/release-playbook.md`: deployment and release process.
 - `/Users/kraig/code/time-tutor`: read-only historical visual reference.

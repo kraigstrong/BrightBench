@@ -51,6 +51,10 @@ if (!audioFiles.length) {
 if (!credits) {
   errors.push('Audio credits are empty.');
 }
+const uncreditedAudio = audioFiles.filter((file) => !credits.includes('`' + file + '`'));
+if (uncreditedAudio.length) {
+  errors.push('Audio credits do not name: ' + uncreditedAudio.join(', '));
+}
 
 if (errors.length) {
   console.error('Time Tutor release metadata failed:');

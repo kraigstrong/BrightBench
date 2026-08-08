@@ -58,6 +58,7 @@ const changedFiles = new Set([
   ...gitLines(['diff', '--name-only', base + '...HEAD']),
   ...gitLines(['diff', '--name-only']),
   ...gitLines(['diff', '--cached', '--name-only']),
+  ...gitLines(['ls-files', '--others', '--exclude-standard']),
 ]);
 
 const fullPortfolioSignals = [
