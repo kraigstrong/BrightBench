@@ -5,8 +5,8 @@
 - App: Portfolio infrastructure
 - Objective: Introduce a lightweight cross-agent framework and automated quality gates
 - Branch: `codex/agent-framework`
-- Status: implementation
-- Next action: finish risk-based verification, CI, reusable workflows, and release preflight
+- Status: review-ready
+- Next action: open the framework PR, confirm CI, then enable `main` branch protection
 - Blocked on: nothing
 
 ## Portfolio
@@ -26,3 +26,4 @@
 - Review the current Practice-mode wrong-answer feel before further product changes.
 - Confirm App Store privacy disclosures whenever permissions or data handling change.
 - Decide production domains and complete Vercel linking when the portfolio is ready.
+- Enable `main` branch protection only after the new CI job passes on a pull request.

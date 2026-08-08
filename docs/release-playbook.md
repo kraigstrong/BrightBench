@@ -9,7 +9,7 @@ Before making CI required on `main`:
 3. Require the branch to be up to date before merging.
 4. Keep production deployment and App Store submission as explicit human actions.
 
-CI enforces typechecking, warning-free lint, tests, the marketing build, affected Expo web exports, and a production dependency audit. The audit currently blocks critical advisories; high-severity transitive Expo/Metro advisories remain visible in logs until upstream-compatible fixes are available.
+CI enforces typechecking, warning-free lint, tests, the marketing build, affected Expo web exports, and a production dependency audit. The audit currently blocks critical advisories; high-severity transitive toolchain advisories remain visible in logs until upstream-compatible fixes are available.
 
 ## Web Deployment
 - Each app or site should have its own Vercel project
