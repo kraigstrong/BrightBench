@@ -6,6 +6,7 @@ import {
   Text,
   View,
   type GestureResponderEvent,
+  type ViewStyle,
 } from 'react-native';
 import Svg, { Circle, Line, Polygon, Text as SvgText } from 'react-native-svg';
 
@@ -63,19 +64,19 @@ export function AnalogClock({
   const [activeHand, setActiveHand] = useState<HandName | null>(null);
   const minuteInteractionEnabled = practiceInterval !== 'hours-only';
   const shellPadding = Platform.OS === 'web' ? 0 : 6;
-  const webClockInteractionStyle =
+  const webClockInteractionStyle: ViewStyle | undefined =
     Platform.OS === 'web'
       ? ({
           cursor: 'pointer',
           touchAction: 'none',
           userSelect: 'none',
-        } as const)
+        } as unknown as ViewStyle)
       : undefined;
-  const webSvgStyle =
+  const webSvgStyle: ViewStyle | undefined =
     Platform.OS === 'web'
       ? ({
           userSelect: 'none',
-        } as const)
+        } as unknown as ViewStyle)
       : undefined;
   const radius = size / 2;
   const hourLength = size * 0.2;

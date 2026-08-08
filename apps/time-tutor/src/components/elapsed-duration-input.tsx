@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { palette, typography } from '@/design/theme';
 import type { ElapsedDurationValue, PracticeInterval } from '@/types/time';
@@ -25,6 +33,17 @@ type ControlProps = {
   valueTestID: string;
 };
 
+type WebNoSelectStyle = TextStyle & ViewStyle;
+
+function getWebNoSelectStyle(): WebNoSelectStyle | undefined {
+  return Platform.OS === 'web'
+    ? ({
+        touchAction: 'manipulation',
+        userSelect: 'none',
+      } as unknown as WebNoSelectStyle)
+    : undefined;
+}
+
 export function ElapsedDurationInput({
   compact = false,
   disabled = false,
@@ -33,10 +52,7 @@ export function ElapsedDurationInput({
   value,
 }: Props) {
   const showMinuteControls = practiceInterval !== 'hours-only';
-  const webNoSelectStyle =
-    Platform.OS === 'web'
-      ? ({ touchAction: 'manipulation', userSelect: 'none' } as const)
-      : null;
+  const webNoSelectStyle = getWebNoSelectStyle();
   const latestValueRef = useRef(value);
 
   useEffect(() => {
@@ -141,10 +157,7 @@ function Control({
   value,
   valueTestID,
 }: ControlProps) {
-  const webNoSelectStyle =
-    Platform.OS === 'web'
-      ? ({ touchAction: 'manipulation', userSelect: 'none' } as const)
-      : null;
+  const webNoSelectStyle = getWebNoSelectStyle();
   const holdDelayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const repeatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggeredRef = useRef(false);
