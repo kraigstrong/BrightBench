@@ -25,7 +25,7 @@ Do not submit, publish, promote, tag, or roll back production without explicit h
 
 8. Run the full repository gate when shared packages or release infrastructure changed:
 
-       npm run check
+       npm run check:ci
 
 9. Record physical-device smoke results, including audio and haptics when relevant.
 10. Prepare release notes and the EAS/App Store handoff.

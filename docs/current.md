@@ -6,7 +6,7 @@
 - Objective: Introduce a lightweight cross-agent framework and automated quality gates
 - Branch: `codex/agent-framework`
 - Status: review-ready
-- Next action: open the framework PR, confirm CI, then enable `main` branch protection
+- Next action: address PR feedback, merge when ready, then enable `main` branch protection
 - Blocked on: nothing
 
 ## Portfolio
@@ -14,7 +14,7 @@
 | App | State | Next meaningful action |
 |---|---|---|
 | Time Tutor | Shipped, active | Refine Practice wrong-answer feedback after device review |
-| Fraction Finder | Development, checks green | Run an iOS and web gameplay smoke pass |
+| Fraction Finder | Development, automated PR gate passing | Run an iOS and web gameplay smoke pass |
 | Letter Learner | Development | Validate curriculum and audio behavior on a physical device |
 | Marketing | Deployable | Complete Vercel project linking and production environment setup |
 | Letter Bingo | Placeholder | Define the first playable learning loop |
@@ -26,4 +26,4 @@
 - Review the current Practice-mode wrong-answer feel before further product changes.
 - Confirm App Store privacy disclosures whenever permissions or data handling change.
 - Decide production domains and complete Vercel linking when the portfolio is ready.
-- Enable `main` branch protection only after the new CI job passes on a pull request.
+- Enable `main` branch protection after the framework PR is merged.

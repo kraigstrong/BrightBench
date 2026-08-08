@@ -27,13 +27,7 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Typecheck, lint, tests, and marketing build
-        run: npm run check
-
-      - name: Export affected Expo apps
+      - name: Run CI-equivalent verification
         env:
           BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
-        run: npm run check:affected -- --base "$BASE_REF" --exports
-
-      - name: Audit production dependencies
-        run: npm audit --omit=dev --audit-level=critical
+        run: npm run check:ci

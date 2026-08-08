@@ -10,6 +10,7 @@
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "check": "npm run typecheck && npm run lint && npm test && npm run build -w marketing",
+    "check:ci": "npm run check && npm run check:affected -- --exports && npm audit --omit=dev --audit-level=critical",
     "check:affected": "node ./scripts/check-affected.mjs",
     "lint": "turbo run lint",
     "test": "turbo run test",

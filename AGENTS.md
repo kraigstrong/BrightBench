@@ -59,10 +59,17 @@ Read additional documentation only when the routing section says it is relevant.
 
 ## Canonical Commands
 
-Run the repository gate:
+Run the standard repository quality gate:
 
 ```sh
 npm run check
+```
+
+Run the full CI-equivalent gate, including affected Expo exports and the
+production dependency audit:
+
+```sh
+npm run check:ci
 ```
 
 Verify only changed workspaces and their consumers:
@@ -122,7 +129,7 @@ Examples: native dependencies, permissions, privacy, analytics, release configur
 
 Required evidence:
 
-- Full repository CI-equivalent checks.
+- Full repository CI-equivalent checks via `npm run check:ci`.
 - Independent review of the actual diff.
 - Physical-device or production validation where relevant.
 - Explicit record of remaining human release checks.

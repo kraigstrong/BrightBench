@@ -34,6 +34,13 @@ Run the repository quality gate:
 npm run check
 ```
 
+Run the full CI-equivalent gate, including affected Expo exports and the
+production dependency audit:
+
+```sh
+npm run check:ci
+```
+
 Run one Expo app:
 
 ```sh
