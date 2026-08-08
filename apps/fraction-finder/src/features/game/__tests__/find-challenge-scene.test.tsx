@@ -2,6 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { FindChallengeScene } from '@/features/game/find-challenge-scene';
+import { createDefaultChallengeProgress } from '@/features/game/challenge-stars';
 import { evaluateFindRound, generateFindRound } from '@/features/game/modes/find';
 import { useAppState } from '@/state/app-state';
 
@@ -49,6 +50,7 @@ describe('FindChallengeScene', () => {
           },
         },
         challengeProgress: {
+          ...createDefaultChallengeProgress(),
           find: {
             bestStars: {
               easy: 0,
@@ -63,12 +65,12 @@ describe('FindChallengeScene', () => {
       settings: {
         soundEnabled: false,
         reducedMotion: false,
-        difficultyLevel: 'easy',
       },
       lastResult: null,
       recordRound,
       setChallengeBestStars,
       setLastSelectedChallengeDifficulty: jest.fn(),
+      setLastSelectedPracticeDifficulty: jest.fn(),
       updateSettings: jest.fn(),
       clearLastResult: jest.fn(),
     });

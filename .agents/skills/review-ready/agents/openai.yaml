@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Ready"
+  short_description: "Prepare a branch for concise review"
+  default_prompt: "Use $review-ready to inspect this BrightBench branch and prepare truthful PR evidence."

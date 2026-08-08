@@ -10,9 +10,11 @@
     "ios": "expo run:ios --no-bundler",
     "ios:device": "expo run:ios --device --no-bundler",
     "web": "expo start --web",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "test": "jest",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint && npm test -- --runInBand",
+    "verify:release": "npm run verify && npm run web:export && node ./scripts/verify-release.mjs",
     "web:export": "expo export --platform web && node ./scripts/postprocess-web-export.mjs"
   },
   "dependencies": {

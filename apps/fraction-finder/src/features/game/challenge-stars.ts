@@ -1,4 +1,5 @@
 import {
+  ACTIVE_GAME_MODES,
   ChallengeBestStars,
   ChallengeModeKey,
   ChallengeModeProgress,
@@ -6,7 +7,6 @@ import {
   DifficultyLevel,
   StarCount,
 } from '@/features/game/types';
-import { ACTIVE_GAME_MODES } from '@/features/game/types';
 
 export const CHALLENGE_DIFFICULTIES: DifficultyLevel[] = ['easy', 'medium', 'hard'];
 

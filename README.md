@@ -1,98 +1,78 @@
 # BrightBench
 
-BrightBench is the shared home for a suite of focused educational apps built
-around the concepts that are hardest to teach and hardest to make click.
+BrightBench is a portfolio of focused educational apps built on a shared technical foundation and a calm, child-friendly design language.
 
-## Product Strategy
-- Technical stack: Expo-managed React Native + Expo Router
-- Visual source of truth: Time Tutor
-- Marketing site: Next.js App Router
+## Portfolio
 
-## Current Apps
-- Fraction Finder
-- Letter Learner
-- Time Tutor
-- Marketing site
+- Time Tutor: shipped Expo app and visual source of truth.
+- Fraction Finder: active Expo app and tooling reference.
+- Letter Learner: active Expo app for letter names, cases, and sounds.
+- Marketing: deployable Next.js portfolio site.
+- Letter Bingo and Place Value: future products.
 
-## Planned Apps
-- Letter Bingo
-- Place Value
+Current priorities and outstanding human checks live in [`docs/current.md`](docs/current.md). Git history and pull requests are the durable record of completed work.
 
-## Core Goals
-- Monorepo for the BrightBench app suite
-- Shared design language and reusable UI
-- Independent App Store releases
-- Vercel-friendly web deployment
-- Strong iOS simulator hot-reload workflow
+## Stack
 
-## Important Safety Rule
-`/Users/kraig/code/time-tutor` is read-only during migration while it is in App Store review.
+- npm workspaces with Turbo orchestration.
+- Expo-managed React Native, Expo Router, and React Native Web for product apps.
+- Next.js App Router for marketing.
+- Shared tokens in `@education/design` and stable primitives in `@education/ui`.
+- Independent App Store and Vercel deployments per product.
 
-## Read First
-- `AGENTS.md`
-- `docs/repo-map.md`
-- `docs/current-state.md`
-- `docs/architecture.md`
-- `docs/design-canon.md`
-- `docs/app-template.md`
-- `docs/release-playbook.md`
+## Quick start
 
-## Quick Start
-- Fraction Finder iOS:
-  - `npm run dev -w fraction-finder`
-  - `npm run ios -w fraction-finder`
-- Time Tutor iOS:
-  - `npm run dev -w time-tutor`
-  - `npm run ios -w time-tutor`
-- Letter Learner iOS:
-  - `npm run dev -w letter-learner`
-  - `npm run ios -w letter-learner`
-- Marketing site:
-  - `npm run dev -w marketing`
+Install dependencies:
 
-## Current Status
-- `apps/fraction-finder`
-  - Healthy Expo app in the monorepo
-  - Uses shared app shell, header, card, celebration, and action primitives
-  - Includes five playable modes, including the number-line placement mode
-  - The compare-fractions mode is temporarily removed from the live mode lineup
-  - `Find the Fraction` now has a Time Tutor-style Practice vs 1-Minute Challenge split
-  - Progress now shows on mode cards and in settings instead of a dedicated progress screen
-  - Validated on iOS simulator, web dev, and static web export
-  - Current local checks pass:
-    `npm run typecheck -w fraction-finder`, `npm run lint -w fraction-finder`, `npm test -w fraction-finder -- --runInBand`
-- `apps/time-tutor`
-  - Healthy Expo app in the monorepo
-  - Core gameplay and settings are established in the monorepo
-  - Challenge cards now show persisted Easy/Medium/Hard star progression with crown mastery state
-  - Challenge launch now uses a dedicated difficulty popup before the timed run, followed by a separate in-screen Start step, a countdown bar, and a skippable animated end-of-run reveal
-  - Uses the original standalone app as read-only visual reference material, but no longer maintains a separate migration-notes file
-- `apps/letter-learner`
-  - Expo app for matching letters, cases, and sounds
-  - Uses shared BrightBench UI primitives and the standard 1-minute challenge reward flow
-  - Includes Letter Match, Case Pair, Tap the Letter, and Sound Match modes
-  - Includes static audio generated with `node-edge-tts`
-  - Current local checks pass:
-    `npm run typecheck -w letter-learner`, `npm run lint -w letter-learner`, `npm test -w letter-learner -- --runInBand`
-- `apps/marketing`
-  - Next.js App Router site is working
-  - Homepage now acts as the BrightBench brand hub
-  - Time Tutor now has a dedicated product page at `/products/time-tutor`
-  - Supporting learning-intent pages now live under `/learn/*` for analog clock practice and elapsed time practice
-  - Local build is validated
-  - Vercel project linking is still the main remaining deployment task
+```sh
+npm ci
+```
 
-## Start Here If You Are An Agent
-- Read `AGENTS.md`
-- Then read `docs/repo-map.md`
-- Then read `docs/current-state.md`
+Run the repository quality gate:
 
-## Workspace Tooling
-- Package manager: npm workspaces
-- Task runner: Turbo
+```sh
+npm run check
+```
 
-## Recommended Dev Workflow
-- Default: CLI-first
-- Start Metro: `npm run dev -w <app>`
-- Launch iOS: `npm run ios -w <app>`
-- Use Xcode when you need native debugging, simulator management, or signing changes
+Run the full CI-equivalent gate, including affected Expo exports and the
+production dependency audit:
+
+```sh
+npm run check:ci
+```
+
+Run one Expo app:
+
+```sh
+npm run dev -w time-tutor
+npm run ios -w time-tutor
+```
+
+Run the marketing site:
+
+```sh
+npm run dev -w marketing
+```
+
+## Agent workflow
+
+Start with:
+
+1. [`AGENTS.md`](AGENTS.md)
+2. [`docs/current.md`](docs/current.md)
+3. A target app's nested `AGENTS.md`, when present
+4. Files directly involved in the change
+
+Reusable workflows live in `.agents/skills`. Verification is risk-based so routine UI work stays lightweight while persistence, native, privacy, and release changes receive stronger review.
+
+## Documentation
+
+- [`docs/architecture.md`](docs/architecture.md): system shape and package boundaries.
+- [`docs/design-canon.md`](docs/design-canon.md): shared visual decisions.
+- [`docs/release-playbook.md`](docs/release-playbook.md): deployment and release process.
+- [`docs/app-template.md`](docs/app-template.md): scaffolding conventions for a new product.
+- [`docs/decisions`](docs/decisions): durable ADRs that meet the repository threshold.
+
+## Safety
+
+`/Users/kraig/code/time-tutor` is read-only reference material. Make all changes inside this monorepo.

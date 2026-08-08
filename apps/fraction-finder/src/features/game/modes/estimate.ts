@@ -9,7 +9,7 @@ function estimateDistractorsForAnswer({
   minGap,
 }: {
   answerId: string;
-  pool: Array<{ id: string; value: number }>;
+  pool: { id: string; value: number }[];
   count: number;
   minGap: number;
 }) {

@@ -21,21 +21,19 @@ import {
   isChallengeModeMastered,
 } from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
-import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES, isChallengeModeKey } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
-const VALID_MODES: GameMode[] = [...ACTIVE_GAME_MODES];
-
 export function generateStaticParams() {
-  return VALID_MODES.map((mode) => ({ mode }));
+  return ACTIVE_GAME_MODES.map((mode) => ({ mode }));
 }
 
 export default function ModeDetailScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
-  const mode = params.mode as GameMode | undefined;
+  const mode = params.mode;
   const { progress } = useAppState();
 
-  if (!mode || !VALID_MODES.includes(mode)) {
+  if (!isChallengeModeKey(mode)) {
     return <Redirect href="/modes" />;
   }
 

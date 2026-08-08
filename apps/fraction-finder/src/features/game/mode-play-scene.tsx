@@ -12,19 +12,15 @@ import {
   HeaderIconButton,
   SettingsCogIcon,
 } from '@education/ui';
-import { ChoiceButton } from '@/components/ui/choice-button';
 import { fractionPalette } from '@/design/tokens';
-import { FRACTION_BY_ID } from '@/features/game/fractions';
 import { FractionBar } from '@/features/game/components/fraction-bar';
-import { FractionContainer } from '@/features/game/components/fraction-container';
 import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { FractionMeter } from '@/features/game/components/fraction-meter';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { BuildPanel, EstimatePanel, LinePanel, PourPanel } from '@/features/game/mode-panels';
-import { NumberLine } from '@/features/game/components/number-line';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
-import { clamp, getFraction } from '@/features/game/math';
+import { getFraction } from '@/features/game/math';
 import {
   AnyRound,
   BuildRound,

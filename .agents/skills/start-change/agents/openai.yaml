@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start Change"
+  short_description: "Scope a risk-sized repository change"
+  default_prompt: "Use $start-change to scope this BrightBench change and produce a commit-sized plan."

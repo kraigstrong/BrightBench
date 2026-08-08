@@ -1,18 +1,18 @@
-# Time Tutor — Phased Rollout Plan
+# Time Tutor — Rollout Backlog
 
-> **For a fresh session picking this up:** read the "Status" section first to see what's already done, then jump to the next incomplete phase. Each phase lists an input gate (what to get from Kraig before starting), the work, how to validate it, and an output gate (what has to happen — usually Kraig's review — before moving on). Work on a dedicated branch per phase, commit incrementally, and stop for explicit review-and-merge approval before touching `main`. Don't skip a phase's output gate even if the code looks done — several gates require Kraig's hands (device testing, App Store Connect actions, account creation), not just his eyes.
+> This is historical product context and a backlog, not an autonomous phase queue. Follow `docs/current.md` and the user's current objective; do not start the next numbered item merely because an earlier item is complete. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
 
 ## Status
 
 | Phase | State |
 |---|---|
 | 0 — Refactor + meta fix | Done (merged [#1](https://github.com/kraigstrong/BrightBench/pull/1)) |
-| 1 — Sound/haptics/progress/reorder | Not started |
-| 2 — Preview video | Not started |
-| 3 — SEO content | Not started |
-| 4 — Analytics | Not started |
+| 1 — Sound/haptics/progress/reorder | Done (merged [#2](https://github.com/kraigstrong/BrightBench/pull/2)); device feel and Practice wrong-answer refinement remain |
+| 2 — Preview video | Backlog; not scheduled |
+| 3 — SEO content | Backlog; requires portfolio-content confirmation |
+| 4 — Analytics | Optional; not approved |
 
-*(Update this table as phases complete or move to in-progress.)*
+**Current next product action:** refine Practice-mode wrong-answer feedback after a physical-device review of the shipped Phase 1 audio and haptics.
 
 **Sequencing logic:** foundation/refactor first (so later phases build on clean code instead of duplicating work), then user-facing engagement features, then release assets, then content/SEO, and analytics last since it's the one irreversible-feeling decision (a new SDK + a privacy-label change) and benefits from being isolated rather than bundled with anything else.
 

@@ -1,0 +1,8 @@
+{
+  "extends": "@education/typescript-config/expo-app",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["jest"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

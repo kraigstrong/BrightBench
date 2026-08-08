@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { palette, radii, spacing } from '@education/design';
+import { palette, spacing } from '@education/design';
 import { typography } from '@education/design/native';
 import { ChoiceButton } from '@/components/ui/choice-button';
 import { fractionPalette } from '@/design/tokens';
@@ -214,4 +214,3 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
 });
-

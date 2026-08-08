@@ -8,11 +8,11 @@ import { ModeCard } from '@/components/ui/mode-card';
 import { layout } from '@/design/tokens';
 import { isChallengeModeMastered } from '@/features/game/challenge-stars';
 import { MODE_META } from '@/features/game/mode-meta';
-import { ACTIVE_GAME_MODES, GameMode } from '@/features/game/types';
+import { ACTIVE_GAME_MODES } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
 
 export default function ModesScreen() {
-  const modes: GameMode[] = [...ACTIVE_GAME_MODES];
+  const modes = ACTIVE_GAME_MODES;
   const { progress } = useAppState();
 
   return (
