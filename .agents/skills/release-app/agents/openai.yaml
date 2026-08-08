@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release App"
+  short_description: "Run an app release preflight"
+  default_prompt: "Use $release-app to run the BrightBench release preflight and identify remaining human gates."
