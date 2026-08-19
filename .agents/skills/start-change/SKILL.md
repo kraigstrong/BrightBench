@@ -8,13 +8,14 @@ description: Scope and start a BrightBench repository change with minimal contex
 ## Workflow
 
 1. Read root AGENTS.md, docs/current.md, and the target app's nested AGENTS.md when present.
-2. Inspect git status, the current branch, and any existing diff before editing.
-3. State the user-visible outcome in one sentence.
-4. Identify affected apps and shared packages. Include downstream consumers for shared-package work.
-5. Assign Low, Medium, or High risk using root AGENTS.md.
-6. Surface only decisions that cross a human-approval boundary. Discover repository facts instead of asking.
-7. Produce a plan of small, independently verifiable steps. Prefer one coherent outcome per commit.
-8. Continue implementation unless the user requested planning only.
+2. Inspect git status, the current branch, and any existing diff before editing. Create a work-item-scoped branch before implementing if currently on `main`.
+3. When the objective spans more than one outcome (a milestone, phase, or roadmap section), select the next bounded work item before scoping anything else.
+4. State the user-visible outcome of that work item in one sentence.
+5. Identify affected apps and shared packages. Include downstream consumers for shared-package work.
+6. Assign Low, Medium, or High risk using root AGENTS.md.
+7. Surface only decisions that cross a human-approval boundary. Discover repository facts instead of asking.
+8. Produce a plan of small, independently verifiable steps. Prefer one coherent outcome per commit.
+9. Continue implementation of that item unless the user requested planning only. Stop and return it for review once it is done; do not continue into another work item from the same objective without a new human turn.
 
 ## Planning Rules
 
@@ -24,6 +25,7 @@ description: Scope and start a BrightBench repository change with minimal contex
 - Include simulator, web, device, privacy, or release evidence only when the risk requires it.
 - Do not create phase reports, PRD traceability, or speculative ADRs.
 - Preserve existing user changes and separate unrelated work.
+- When the requested objective spans multiple outcomes, scope and implement only the next bounded work item; do not plan or implement the remaining items in the same pass.
 
 ## Output
 
