@@ -8,7 +8,7 @@ description: Scope and start a BrightBench repository change with minimal contex
 ## Workflow
 
 1. Read root AGENTS.md, docs/current.md, and the target app's nested AGENTS.md when present.
-2. Inspect git status, the current branch, and any existing diff before editing.
+2. Inspect git status, the current branch, and any existing diff before editing. Create a work-item-scoped branch before implementing if currently on `main`.
 3. State the user-visible outcome in one sentence.
 4. Identify affected apps and shared packages. Include downstream consumers for shared-package work.
 5. Assign Low, Medium, or High risk using root AGENTS.md.
