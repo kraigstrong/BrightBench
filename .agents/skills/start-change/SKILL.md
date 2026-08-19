@@ -15,7 +15,9 @@ description: Scope and start a BrightBench repository change with minimal contex
 6. Assign Low, Medium, or High risk using root AGENTS.md.
 7. Surface only decisions that cross a human-approval boundary. Discover repository facts instead of asking.
 8. Produce a plan of small, independently verifiable steps. Prefer one coherent outcome per commit.
-9. Continue implementation of that item unless the user requested planning only. Stop and return it for review once it is done; do not continue into another work item from the same objective without a new human turn.
+9. Unless the user requested planning only: for Medium or High risk, delegate implementation to a subagent on the branch already created in step 2, giving it the outcome, affected workspaces, risk level, the plan, and the relevant AGENTS.md guidance, and have it run the verification the assigned risk requires. For Low risk, implement directly.
+10. When implementation was delegated, critically review the subagent's complete diff before returning it to the user: check it against the plan, confirm no unrelated files, apply root AGENTS.md's Review Priorities, and verify its claimed checks actually ran rather than passing along an unconfirmed claim. If the review finds a problem, send it back to the subagent (or fix directly for something small), then re-review.
+11. Stop and return the item for review once it is done; do not continue into another work item from the same objective without a new human turn.
 
 ## Planning Rules
 
