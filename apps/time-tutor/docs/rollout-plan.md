@@ -1,6 +1,6 @@
 # Time Tutor — Rollout Backlog
 
-> This is historical product context and a backlog, not an autonomous phase queue. Follow `docs/current.md` and the user's current objective; do not start the next numbered item merely because an earlier item is complete. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
+> This is historical product context and a backlog, not an autonomous phase queue. Follow `docs/current.md` and the user's current objective; do not start the next numbered item merely because an earlier item is complete. A phase's "What to do" list is a set of candidate work items, not one PR — implement and land one at a time. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
 
 ## Status
 
@@ -92,10 +92,10 @@ Then revert the demo shortcut so it never ships live (confirm it's back to `fals
 
 **Input gate:** Kraig's decision on Fraction Finder/Grammar Guide timing — are they far enough along for real long-tail pages now, or should they stay placeholders? Confirm the product roster refresh either way.
 
-**What to do:**
-- Refresh the homepage roadmap and `productPages` data in `apps/marketing/src/lib/site.ts` to include Letter Learner and Grammar Guide (currently missing despite both existing as real apps in the monorepo).
-- Write 3 new Time Tutor long-tail `/learn` pages not covered by the existing 6 ("elapsed time word problems for kids," "when do kids learn to tell time," "AM vs PM explained for kids"), matching the existing structure (FAQ + JSON-LD + internal links).
-- If greenlit: long-tail pages for Fraction Finder and/or Grammar Guide in the same structure.
+**Candidate work items (implement and land one at a time, each its own PR):**
+1. Refresh the homepage roadmap and `productPages` data in `apps/marketing/src/lib/site.ts` to include Letter Learner and Grammar Guide (currently missing despite both existing as real apps in the monorepo).
+2. Write 3 new Time Tutor long-tail `/learn` pages not covered by the existing 6 ("elapsed time word problems for kids," "when do kids learn to tell time," "AM vs PM explained for kids"), matching the existing structure (FAQ + JSON-LD + internal links).
+3. If greenlit: long-tail pages for Fraction Finder and/or Grammar Guide in the same structure.
 
 **Validation:** this is content, not logic — the real gate is Kraig's copy review, not automated testing. Also run a typecheck/build pass and validate the JSON-LD structurally (schema-valid FAQPage markup) before handing anything over.
 
