@@ -9,12 +9,12 @@ description: Scope and start a BrightBench repository change with minimal contex
 
 1. Read root AGENTS.md, docs/current.md, and the target app's nested AGENTS.md when present.
 2. Inspect git status, the current branch, and any existing diff before editing. Create a work-item-scoped branch before implementing if currently on `main`.
-3. State the user-visible outcome in one sentence.
-4. Identify affected apps and shared packages. Include downstream consumers for shared-package work.
-5. Assign Low, Medium, or High risk using root AGENTS.md.
-6. Surface only decisions that cross a human-approval boundary. Discover repository facts instead of asking.
-7. Produce a plan of small, independently verifiable steps. Prefer one coherent outcome per commit.
-8. When the objective spans more than one outcome (a milestone, phase, or roadmap section), select and scope only the next bounded work item.
+3. When the objective spans more than one outcome (a milestone, phase, or roadmap section), select the next bounded work item before scoping anything else.
+4. State the user-visible outcome of that work item in one sentence.
+5. Identify affected apps and shared packages. Include downstream consumers for shared-package work.
+6. Assign Low, Medium, or High risk using root AGENTS.md.
+7. Surface only decisions that cross a human-approval boundary. Discover repository facts instead of asking.
+8. Produce a plan of small, independently verifiable steps. Prefer one coherent outcome per commit.
 9. Continue implementation of that item unless the user requested planning only. Stop and return it for review once it is done; do not continue into another work item from the same objective without a new human turn.
 
 ## Planning Rules
