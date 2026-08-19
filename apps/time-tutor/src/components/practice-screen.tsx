@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
-import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
+import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  Animated,
+  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -46,6 +48,8 @@ export type PracticeScreenConfig<TPrompt, TAnswer> = {
   createInitialAnswer: (prompt: TPrompt, timeFormat: TimeFormat) => TAnswer;
   createInitialPrompt: (interval: PracticeInterval) => TPrompt;
   createNextPrompt: (prompt: TPrompt, interval: PracticeInterval) => TPrompt;
+  // Renders the entered value in the transient wrong-answer label, e.g. "3:45".
+  formatAnswerForFeedback: (answer: TAnswer, timeFormat: TimeFormat) => string;
   isAnswerCorrect: (
     answer: TAnswer,
     prompt: TPrompt,
@@ -57,7 +61,6 @@ export type PracticeScreenConfig<TPrompt, TAnswer> = {
     answer: TAnswer;
     layout: PracticeLayout;
     onAnswerChange: (value: AnswerUpdate<TAnswer>) => void;
-    onDismissResult: () => void;
     onInteractionEnd: () => void;
     onInteractionStart: () => void;
     practiceInterval: PracticeInterval;
@@ -82,6 +85,15 @@ type Props<TPrompt, TAnswer> = PracticeScreenConfig<TPrompt, TAnswer> & {
 
 const AUTO_ADVANCE_DELAY_MS = 1500;
 
+// Mirrors Challenge mode's wrong-answer shake + flash so the feel is
+// consistent across modes.
+const WRONG_ANSWER_SHAKE_KEYFRAMES = [0, -8, 8, -6, 6, -3, 0] as const;
+const WRONG_ANSWER_SHAKE_DURATIONS = [0, 55, 50, 45, 40, 35, 30] as const;
+const WRONG_ANSWER_FLASH_OPACITY = 0.5;
+const WRONG_ANSWER_LABEL_FADE_IN_MS = 140;
+const WRONG_ANSWER_LABEL_VISIBLE_MS = 1500;
+const WRONG_ANSWER_LABEL_FADE_MS = 220;
+
 export function PracticeScreen<TPrompt, TAnswer>({
   answerCardStyle,
   cardEyebrowStyle,
@@ -90,6 +102,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
   createInitialAnswer,
   createInitialPrompt,
   createNextPrompt,
+  formatAnswerForFeedback,
   isAnswerCorrect,
   nextTimeTestId,
   practiceInterval,
@@ -112,6 +125,30 @@ export function PracticeScreen<TPrompt, TAnswer>({
   const [result, setResult] = useState<PracticeAnswerResult<TAnswer> | null>(
     null,
   );
+  const [showWrongAnswerFeedback, setShowWrongAnswerFeedback] = useState(false);
+  const wrongAnswerShake = useRef(new Animated.Value(0)).current;
+  const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
+  const wrongAnswerLabelOpacity = useRef(new Animated.Value(0)).current;
+  const wrongAnswerFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const clearWrongAnswerFeedback = useCallback(() => {
+    if (wrongAnswerFeedbackTimerRef.current) {
+      clearTimeout(wrongAnswerFeedbackTimerRef.current);
+      wrongAnswerFeedbackTimerRef.current = null;
+    }
+
+    wrongAnswerShake.stopAnimation();
+    wrongAnswerShake.setValue(0);
+    wrongAnswerFlashOpacity.stopAnimation();
+    wrongAnswerFlashOpacity.setValue(0);
+    wrongAnswerLabelOpacity.stopAnimation();
+    wrongAnswerLabelOpacity.setValue(0);
+    setShowWrongAnswerFeedback(false);
+  }, [wrongAnswerFlashOpacity, wrongAnswerLabelOpacity, wrongAnswerShake]);
+
+  useEffect(() => clearWrongAnswerFeedback, [clearWrongAnswerFeedback]);
 
   const useMobileWebLayout = Platform.OS === 'web';
   const isTablet = width >= 768 && !useMobileWebLayout;
@@ -134,6 +171,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
     setPrompt(nextPrompt);
     setAnswer(createInitialAnswer(nextPrompt, timeFormat));
     setResult(null);
+    clearWrongAnswerFeedback();
     // timeFormat is intentionally read via closure, not listed: whether it should
     // retrigger this reset is controlled by timeFormatResetKey above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,7 +183,15 @@ export function PracticeScreen<TPrompt, TAnswer>({
     setPrompt(nextPrompt);
     setAnswer(createInitialAnswer(nextPrompt, timeFormat));
     setResult(null);
-  }, [createInitialAnswer, createNextPrompt, practiceInterval, prompt, timeFormat]);
+    clearWrongAnswerFeedback();
+  }, [
+    clearWrongAnswerFeedback,
+    createInitialAnswer,
+    createNextPrompt,
+    practiceInterval,
+    prompt,
+    timeFormat,
+  ]);
 
   useEffect(() => {
     if (!result?.isCorrect) {
@@ -164,12 +210,66 @@ export function PracticeScreen<TPrompt, TAnswer>({
 
     triggerAnswerFeedback(isCorrect, soundEffectsEnabled);
     setResult({ actual: answer, isCorrect });
+    clearWrongAnswerFeedback();
+
+    if (isCorrect) {
+      return;
+    }
+
+    setShowWrongAnswerFeedback(true);
+
+    Animated.parallel([
+      Animated.sequence(
+        WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
+          Animated.timing(wrongAnswerShake, {
+            duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
+            easing: Easing.out(Easing.quad),
+            toValue: offset,
+            useNativeDriver: true,
+          }),
+        ),
+      ),
+      Animated.sequence([
+        Animated.timing(wrongAnswerFlashOpacity, {
+          duration: 80,
+          toValue: WRONG_ANSWER_FLASH_OPACITY,
+          useNativeDriver: true,
+        }),
+        Animated.timing(wrongAnswerFlashOpacity, {
+          duration: 220,
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.sequence([
+        Animated.timing(wrongAnswerLabelOpacity, {
+          duration: WRONG_ANSWER_LABEL_FADE_IN_MS,
+          toValue: 1,
+          useNativeDriver: true,
+        }),
+        Animated.timing(wrongAnswerLabelOpacity, {
+          delay: WRONG_ANSWER_LABEL_VISIBLE_MS,
+          duration: WRONG_ANSWER_LABEL_FADE_MS,
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    wrongAnswerFeedbackTimerRef.current = setTimeout(() => {
+      setShowWrongAnswerFeedback(false);
+      wrongAnswerFeedbackTimerRef.current = null;
+    }, WRONG_ANSWER_LABEL_FADE_IN_MS + WRONG_ANSWER_LABEL_VISIBLE_MS + WRONG_ANSWER_LABEL_FADE_MS);
   }
 
-  const handleAnswerChange = useCallback((value: AnswerUpdate<TAnswer>) => {
-    setResult(null);
-    setAnswer(value);
-  }, []);
+  const handleAnswerChange = useCallback(
+    (value: AnswerUpdate<TAnswer>) => {
+      setResult(null);
+      setAnswer(value);
+      clearWrongAnswerFeedback();
+    },
+    [clearWrongAnswerFeedback],
+  );
 
   return (
     <AppShell maxWidth={contentMaxWidth} scrollEnabled={!clockInteractionActive}>
@@ -191,19 +291,43 @@ export function PracticeScreen<TPrompt, TAnswer>({
             <Text style={[styles.cardEyebrow, cardEyebrowStyle]}>
               {cardEyebrowText}
             </Text>
-            <View style={styles.answerOverlayWrap}>
+            <Animated.View
+              style={[
+                styles.answerOverlayWrap,
+                { transform: [{ translateX: wrongAnswerShake }] },
+              ]}>
               {renderAnswer({
                 answer,
                 layout,
                 onAnswerChange: handleAnswerChange,
-                onDismissResult: () => setResult(null),
                 onInteractionEnd: () => setClockInteractionActive(false),
                 onInteractionStart: () => setClockInteractionActive(true),
                 practiceInterval,
                 result,
                 timeFormat,
               })}
-            </View>
+
+              {showWrongAnswerFeedback ? (
+                <Animated.View
+                  pointerEvents="none"
+                  style={[styles.wrongAnswerFlash, { opacity: wrongAnswerFlashOpacity }]}
+                />
+              ) : null}
+
+              {showWrongAnswerFeedback && result && !result.isCorrect ? (
+                <Animated.View
+                  pointerEvents="none"
+                  style={[styles.wrongAnswerLabelWrap, { opacity: wrongAnswerLabelOpacity }]}>
+                  <View style={styles.wrongAnswerLabelPill}>
+                    <Text
+                      style={styles.wrongAnswerLabelText}
+                      testID="practice-wrong-answer-label">
+                      {`You entered ${formatAnswerForFeedback(result.actual, timeFormat)}`}
+                    </Text>
+                  </View>
+                </Animated.View>
+              ) : null}
+            </Animated.View>
           </Card>
 
           <View style={styles.actionsRow}>
@@ -267,6 +391,32 @@ const styles = StyleSheet.create({
   },
   answerOverlayWrap: {
     position: 'relative',
+  },
+  wrongAnswerFlash: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(231, 76, 60, 0.22)',
+    borderRadius: 24,
+  },
+  wrongAnswerLabelWrap: {
+    alignItems: 'center',
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  wrongAnswerLabelPill: {
+    backgroundColor: '#FBEAEC',
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  wrongAnswerLabelText: {
+    color: palette.danger,
+    fontFamily: typography.bodyFamily,
+    fontSize: 14,
+    fontWeight: '700',
   },
   actionsRow: {
     flexDirection: 'row',
