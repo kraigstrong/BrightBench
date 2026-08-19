@@ -15,6 +15,14 @@ For routine work, read only:
 
 Read additional documentation only when the routing section says it is relevant.
 
+## Scope Of A Change
+
+A milestone, roadmap outcome, or historical "phase" may contain multiple work items. Treat the work item, not the milestone, as the unit of execution.
+
+When an objective spans more than one outcome, identify and state the next bounded work item, implement only that item, then stop and return it for review. Do not chain into the next item from the same objective without a new human turn, even when working autonomously.
+
+A work item produces one understandable outcome, can be verified independently, and is reasonable for a human to review as one pull request.
+
 ## Repository Map
 
 - `apps/*`: independently deployable products and sites.
@@ -163,11 +171,11 @@ Review the actual branch diff, not only the implementation summary. Prioritize:
 6. Native and release metadata.
 7. Missing tests or false validation claims.
 
-Use an independent implementer/reviewer pairing when available. The reviewer receives the objective, repository guidance, and complete diff.
+Independent review is required at High risk and valuable at your discretion for consequential Medium-risk changes (shared-package blast radius, persistence). Skip it for Low risk. When used, the reviewer receives the objective, repository guidance, and complete diff.
 
 ## Documentation Routing
 
-- Active status or portfolio priority: update `docs/current.md`.
+- Active status or portfolio priority: update `docs/current.md`. Keep each row's next action scoped to one bounded work item, not a phase or milestone.
 - Package boundaries or system shape: read and update `docs/architecture.md`.
 - Shared visual decisions: read and update `docs/design-canon.md`.
 - Deployment or release process: read and update `docs/release-playbook.md`.
