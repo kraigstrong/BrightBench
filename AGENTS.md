@@ -15,6 +15,14 @@ For routine work, read only:
 
 Read additional documentation only when the routing section says it is relevant.
 
+## Scope Of A Change
+
+A milestone, roadmap outcome, or historical "phase" may contain multiple work items. Treat the work item, not the milestone, as the unit of execution.
+
+When an objective spans more than one outcome, identify and state the next bounded work item, implement only that item, then stop and return it for review. Do not chain into the next item from the same objective without a new human turn, even when working autonomously.
+
+A work item produces one understandable outcome, can be verified independently, and is reasonable for a human to review as one pull request.
+
 ## Repository Map
 
 - `apps/*`: independently deployable products and sites.
