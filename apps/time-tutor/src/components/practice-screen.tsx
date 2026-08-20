@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   Easing,
   Platform,
@@ -126,6 +127,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
     null,
   );
   const [showWrongAnswerFeedback, setShowWrongAnswerFeedback] = useState(false);
+  const [wrongAnswerAnnouncement, setWrongAnswerAnnouncement] = useState('');
   const wrongAnswerShake = useRef(new Animated.Value(0)).current;
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
   const wrongAnswerLabelOpacity = useRef(new Animated.Value(0)).current;
@@ -146,6 +148,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
     wrongAnswerLabelOpacity.stopAnimation();
     wrongAnswerLabelOpacity.setValue(0);
     setShowWrongAnswerFeedback(false);
+    setWrongAnswerAnnouncement('');
   }, [wrongAnswerFlashOpacity, wrongAnswerLabelOpacity, wrongAnswerShake]);
 
   useEffect(() => clearWrongAnswerFeedback, [clearWrongAnswerFeedback]);
@@ -218,6 +221,14 @@ export function PracticeScreen<TPrompt, TAnswer>({
 
     setShowWrongAnswerFeedback(true);
 
+    const announcement = `Try again. You entered ${formatAnswerForFeedback(answer, timeFormat)}.`;
+
+    // AccessibilityInfo.announceForAccessibility reaches VoiceOver/TalkBack
+    // directly; it's a no-op on web, where the live-region state below (read
+    // by the persistently-mounted Text) is what screen readers pick up instead.
+    AccessibilityInfo.announceForAccessibility(announcement);
+    setWrongAnswerAnnouncement(announcement);
+
     Animated.parallel([
       Animated.sequence(
         WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
@@ -258,6 +269,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
 
     wrongAnswerFeedbackTimerRef.current = setTimeout(() => {
       setShowWrongAnswerFeedback(false);
+      setWrongAnswerAnnouncement('');
       wrongAnswerFeedbackTimerRef.current = null;
     }, WRONG_ANSWER_LABEL_FADE_IN_MS + WRONG_ANSWER_LABEL_VISIBLE_MS + WRONG_ANSWER_LABEL_FADE_MS);
   }
@@ -291,6 +303,9 @@ export function PracticeScreen<TPrompt, TAnswer>({
             <Text style={[styles.cardEyebrow, cardEyebrowStyle]}>
               {cardEyebrowText}
             </Text>
+            <Text accessibilityLiveRegion="polite" style={styles.visuallyHidden}>
+              {wrongAnswerAnnouncement}
+            </Text>
             <Animated.View
               style={[
                 styles.answerOverlayWrap,
@@ -316,6 +331,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
 
               {showWrongAnswerFeedback && result && !result.isCorrect ? (
                 <Animated.View
+                  aria-hidden
                   pointerEvents="none"
                   style={[styles.wrongAnswerLabelWrap, { opacity: wrongAnswerLabelOpacity }]}>
                   <View style={styles.wrongAnswerLabelPill}>
@@ -391,6 +407,12 @@ const styles = StyleSheet.create({
   },
   answerOverlayWrap: {
     position: 'relative',
+  },
+  visuallyHidden: {
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    width: 1,
   },
   wrongAnswerFlash: {
     ...StyleSheet.absoluteFillObject,
