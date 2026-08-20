@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import {
   Animated,
-  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -48,6 +47,10 @@ import {
   shouldUpdateBestStars,
 } from '@/lib/challenge-progression';
 import { useChallengeCountdown } from '@/lib/challenge-countdown';
+import {
+  buildWrongAnswerFlashAnimation,
+  buildWrongAnswerShakeAnimation,
+} from '@/lib/wrong-answer-shake';
 import { useAppState } from '@/state/app-state';
 import type {
   ChallengeDifficulty,
@@ -121,9 +124,6 @@ type ChallengeResultSummary = {
 const CHALLENGE_DURATION_SECONDS = 60;
 const SUCCESS_ADVANCE_DELAY_MS = 700;
 const WRONG_ANSWER_ADVANCE_DELAY_MS = 520;
-const WRONG_ANSWER_SHAKE_KEYFRAMES = [0, -8, 8, -6, 6, -3, 0] as const;
-const WRONG_ANSWER_SHAKE_DURATIONS = [0, 55, 50, 45, 40, 35, 30] as const;
-const WRONG_ANSWER_FLASH_OPACITY = 0.5;
 
 export function ChallengeScreen<TPrompt, TAnswer>({
   checkAnswerButtonDisabledStyle,
@@ -333,28 +333,8 @@ export function ChallengeScreen<TPrompt, TAnswer>({
       setIsAdvancing(true);
 
       Animated.parallel([
-        Animated.sequence(
-          WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
-            Animated.timing(wrongAnswerShake, {
-              duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
-              easing: Easing.out(Easing.quad),
-              toValue: offset,
-              useNativeDriver: true,
-            }),
-          ),
-        ),
-        Animated.sequence([
-          Animated.timing(wrongAnswerFlashOpacity, {
-            duration: 80,
-            toValue: WRONG_ANSWER_FLASH_OPACITY,
-            useNativeDriver: true,
-          }),
-          Animated.timing(wrongAnswerFlashOpacity, {
-            duration: 220,
-            toValue: 0,
-            useNativeDriver: true,
-          }),
-        ]),
+        buildWrongAnswerShakeAnimation(wrongAnswerShake),
+        buildWrongAnswerFlashAnimation(wrongAnswerFlashOpacity),
       ]).start();
 
       feedbackTimerRef.current = setTimeout(() => {

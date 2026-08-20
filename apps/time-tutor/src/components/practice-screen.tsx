@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 
 import {
   AccessibilityInfo,
   Animated,
-  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -22,6 +21,10 @@ import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { palette, shadows, typography } from '@/design/theme';
 import { triggerAnswerFeedback } from '@/lib/answer-feedback';
+import {
+  buildWrongAnswerFlashAnimation,
+  buildWrongAnswerShakeAnimation,
+} from '@/lib/wrong-answer-shake';
 import { useAppState } from '@/state/app-state';
 import type { PracticeInterval, TimeFormat } from '@/types/time';
 
@@ -86,11 +89,6 @@ type Props<TPrompt, TAnswer> = PracticeScreenConfig<TPrompt, TAnswer> & {
 
 const AUTO_ADVANCE_DELAY_MS = 1500;
 
-// Mirrors Challenge mode's wrong-answer shake + flash so the feel is
-// consistent across modes.
-const WRONG_ANSWER_SHAKE_KEYFRAMES = [0, -8, 8, -6, 6, -3, 0] as const;
-const WRONG_ANSWER_SHAKE_DURATIONS = [0, 55, 50, 45, 40, 35, 30] as const;
-const WRONG_ANSWER_FLASH_OPACITY = 0.5;
 const WRONG_ANSWER_LABEL_FADE_IN_MS = 140;
 const WRONG_ANSWER_LABEL_VISIBLE_MS = 1500;
 const WRONG_ANSWER_LABEL_FADE_MS = 220;
@@ -230,28 +228,8 @@ export function PracticeScreen<TPrompt, TAnswer>({
     setWrongAnswerAnnouncement(announcement);
 
     Animated.parallel([
-      Animated.sequence(
-        WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
-          Animated.timing(wrongAnswerShake, {
-            duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
-            easing: Easing.out(Easing.quad),
-            toValue: offset,
-            useNativeDriver: true,
-          }),
-        ),
-      ),
-      Animated.sequence([
-        Animated.timing(wrongAnswerFlashOpacity, {
-          duration: 80,
-          toValue: WRONG_ANSWER_FLASH_OPACITY,
-          useNativeDriver: true,
-        }),
-        Animated.timing(wrongAnswerFlashOpacity, {
-          duration: 220,
-          toValue: 0,
-          useNativeDriver: true,
-        }),
-      ]),
+      buildWrongAnswerShakeAnimation(wrongAnswerShake),
+      buildWrongAnswerFlashAnimation(wrongAnswerFlashOpacity),
       Animated.sequence([
         Animated.timing(wrongAnswerLabelOpacity, {
           duration: WRONG_ANSWER_LABEL_FADE_IN_MS,
