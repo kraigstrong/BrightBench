@@ -13,8 +13,8 @@ jest.mock('expo-symbols', () => ({
 }));
 
 jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
   ImpactFeedbackStyle: {
     Light: 'light',
     Medium: 'medium',
