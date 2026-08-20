@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { CelebrationOverlay } from '@education/ui';
 
@@ -42,6 +42,10 @@ function isAnswerCorrect(answer: TimeValue, prompt: TimeValue): boolean {
   return areTimesEqual(answer, prompt, { includeMeridiem: false });
 }
 
+function formatAnswerForFeedback(answer: TimeValue): string {
+  return formatTimeValue(answer, { includeMeridiem: false });
+}
+
 function renderPrompt({
   prompt,
   timeFormat,
@@ -66,7 +70,6 @@ function renderAnswer({
   answer,
   layout,
   onAnswerChange,
-  onDismissResult,
   onInteractionEnd,
   onInteractionStart,
   practiceInterval,
@@ -75,7 +78,6 @@ function renderAnswer({
   answer: TimeValue;
   layout: PracticeLayout;
   onAnswerChange: (value: AnswerUpdate<TimeValue>) => void;
-  onDismissResult: () => void;
   onInteractionEnd: () => void;
   onInteractionStart: () => void;
   practiceInterval: PracticeInterval;
@@ -94,28 +96,6 @@ function renderAnswer({
       />
 
       <CelebrationOverlay title="Nice work!" visible={Boolean(result?.isCorrect)} />
-
-      {result && !result.isCorrect ? (
-        <View style={styles.feedbackOverlay}>
-          <View style={styles.feedbackToast} testID="practice-wrong-answer-overlay">
-            <View style={styles.feedbackCopy}>
-              <Text style={styles.feedbackToastTitle}>Try again</Text>
-              <Text style={styles.feedbackToastText}>
-                {`You entered ${formatTimeValue(result.actual, {
-                  includeMeridiem: false,
-                })}`}
-              </Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onDismissResult}
-              style={styles.feedbackDismissButton}
-              testID="practice-dismiss-feedback-button">
-              <Text style={styles.feedbackDismissText}>Dismiss</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : null}
     </>
   );
 }
@@ -128,6 +108,7 @@ export function SetClockPracticeScreen({ practiceInterval, timeFormat }: Props) 
       createInitialAnswer={createInitialAnswer}
       createInitialPrompt={createInitialPrompt}
       createNextPrompt={createNextPrompt}
+      formatAnswerForFeedback={formatAnswerForFeedback}
       isAnswerCorrect={isAnswerCorrect}
       nextTimeTestId="next-time-button"
       practiceInterval={practiceInterval}
@@ -166,61 +147,5 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
     fontWeight: '700',
     textAlign: 'center',
-  },
-  feedbackOverlay: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  feedbackToast: {
-    alignItems: 'center',
-    backgroundColor: '#FBEAEC',
-    borderColor: palette.danger,
-    borderRadius: 18,
-    borderWidth: 2,
-    gap: 12,
-    maxWidth: '64%',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  feedbackCopy: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  feedbackToastTitle: {
-    color: palette.danger,
-    fontFamily: typography.displayFamily,
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  feedbackToastText: {
-    color: palette.danger,
-    flexShrink: 1,
-    fontFamily: typography.bodyFamily,
-    fontSize: 14,
-    fontWeight: '700',
-    lineHeight: 19,
-    textAlign: 'center',
-  },
-  feedbackDismissButton: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: 'rgba(182, 71, 87, 0.12)',
-    borderRadius: 999,
-    justifyContent: 'center',
-    minHeight: 30,
-    paddingHorizontal: 12,
-  },
-  feedbackDismissText: {
-    color: palette.danger,
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 16,
   },
 });

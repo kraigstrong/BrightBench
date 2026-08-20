@@ -12,6 +12,7 @@ import {
 import { palette, typography } from '@/design/theme';
 import {
   createInitialElapsedDuration,
+  formatElapsedDurationValue,
   formatTimeValue,
   isElapsedDurationCorrect,
   nextElapsedTimePairForInterval,
@@ -48,6 +49,10 @@ function isAnswerCorrect(
   prompt: PromptPair,
 ): boolean {
   return isElapsedDurationCorrect(answer, prompt[0], prompt[1]);
+}
+
+function formatAnswerForFeedback(answer: ElapsedDurationValue): string {
+  return formatElapsedDurationValue(answer);
 }
 
 function renderPromptTime(
@@ -129,7 +134,6 @@ function renderAnswer({
   answer: ElapsedDurationValue;
   layout: PracticeLayout;
   onAnswerChange: (value: ElapsedDurationValue) => void;
-  onDismissResult: () => void;
   onInteractionEnd: () => void;
   onInteractionStart: () => void;
   practiceInterval: PracticeInterval;
@@ -146,14 +150,6 @@ function renderAnswer({
       />
 
       <CelebrationOverlay title="Nice work!" visible={Boolean(result?.isCorrect)} />
-
-      {result && !result.isCorrect ? (
-        <View pointerEvents="none" style={styles.feedbackOverlay}>
-          <View style={styles.feedbackToast} testID="elapsed-wrong-answer-overlay">
-            <Text style={styles.feedbackToastTitle}>Try again</Text>
-          </View>
-        </View>
-      ) : null}
     </>
   );
 }
@@ -168,6 +164,7 @@ export function ElapsedTimePracticeScreen({ practiceInterval, timeFormat }: Prop
       createInitialAnswer={createInitialAnswer}
       createInitialPrompt={createInitialPrompt}
       createNextPrompt={createNextPrompt}
+      formatAnswerForFeedback={formatAnswerForFeedback}
       isAnswerCorrect={isAnswerCorrect}
       nextTimeTestId="elapsed-next-time-button"
       practiceInterval={practiceInterval}
@@ -260,32 +257,5 @@ const styles = StyleSheet.create({
   },
   cardEyebrow: {
     alignSelf: 'stretch',
-  },
-  feedbackOverlay: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  feedbackToast: {
-    alignItems: 'center',
-    backgroundColor: '#FBEAEC',
-    borderColor: palette.danger,
-    borderRadius: 18,
-    borderWidth: 2,
-    gap: 12,
-    maxWidth: '64%',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  feedbackToastTitle: {
-    color: palette.danger,
-    fontFamily: typography.displayFamily,
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
   },
 });
