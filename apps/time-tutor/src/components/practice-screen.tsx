@@ -221,10 +221,14 @@ export function PracticeScreen<TPrompt, TAnswer>({
 
     const announcement = `Try again. You entered ${formatAnswerForFeedback(answer, timeFormat)}.`;
 
-    // AccessibilityInfo.announceForAccessibility reaches VoiceOver/TalkBack
-    // directly; it's a no-op on web, where the live-region state below (read
-    // by the persistently-mounted Text) is what screen readers pick up instead.
-    AccessibilityInfo.announceForAccessibility(announcement);
+    // iOS has no live-region concept, so VoiceOver needs the explicit
+    // announcement call. Android's accessibilityLiveRegion (below) already
+    // announces TalkBack changes on its own, and calling
+    // announceForAccessibility there too would speak it twice; on web the
+    // live region is similarly what aria-live picks up.
+    if (Platform.OS === 'ios') {
+      AccessibilityInfo.announceForAccessibility(announcement);
+    }
     setWrongAnswerAnnouncement(announcement);
 
     Animated.parallel([
