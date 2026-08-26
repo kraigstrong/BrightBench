@@ -123,6 +123,7 @@ export function ReadClockPracticeScreen({ practiceInterval, timeFormat }: Props)
       renderAnswer={renderAnswer}
       renderPrompt={renderPrompt}
       resetsOnTimeFormatChange
+      showWrongAnswerLabel={false}
       timeFormat={timeFormat}
       title="Read the Clock"
     />

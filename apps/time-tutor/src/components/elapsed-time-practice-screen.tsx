@@ -171,6 +171,7 @@ export function ElapsedTimePracticeScreen({ practiceInterval, timeFormat }: Prop
       promptCardStyle={styles.promptCard}
       renderAnswer={renderAnswer}
       renderPrompt={renderPrompt}
+      showWrongAnswerLabel={false}
       timeFormat={timeFormat}
       title="Elapsed Time"
     />

@@ -7,12 +7,12 @@
 | Phase | State |
 |---|---|
 | 0 — Refactor + meta fix | Done (merged [#1](https://github.com/kraigstrong/BrightBench/pull/1)) |
-| 1 — Sound/haptics/progress/reorder | Done (merged [#2](https://github.com/kraigstrong/BrightBench/pull/2)); device feel and Practice wrong-answer refinement remain |
+| 1 — Sound/haptics/progress/reorder | Done (merged [#2](https://github.com/kraigstrong/BrightBench/pull/2)); Practice wrong-answer feedback redesigned and refined (merged [#10](https://github.com/kraigstrong/BrightBench/pull/10), [#11](https://github.com/kraigstrong/BrightBench/pull/11), [#12](https://github.com/kraigstrong/BrightBench/pull/12), [#13](https://github.com/kraigstrong/BrightBench/pull/13)); device feel review still remains |
 | 2 — Preview video | Backlog; not scheduled |
 | 3 — SEO content | Backlog; requires portfolio-content confirmation |
 | 4 — Analytics | Optional; not approved |
 
-**Current next product action:** refine Practice-mode wrong-answer feedback after a physical-device review of the shipped Phase 1 audio and haptics.
+**Current next product action:** a physical-device review of the shipped Phase 1 audio and haptics. Practice-mode wrong-answer feedback has been refined (see below) and no longer blocks anything.
 
 **Sequencing logic:** foundation/refactor first (so later phases build on clean code instead of duplicating work), then user-facing engagement features, then release assets, then content/SEO, and analytics last since it's the one irreversible-feeling decision (a new SDK + a privacy-label change) and benefits from being isolated rather than bundled with anything else.
 
@@ -61,7 +61,7 @@ This plan came out of a broader review of Time Tutor's codebase, website (timetu
 
 **Output gate (mid-phase, needs Kraig's hands):** after the first sound+haptics pass, stop and have Kraig try it on his own device before finalizing — this is the one step in the whole plan that specifically needs his hands, not just his eyes, since haptics can't be verified in Simulator. After that: same review-then-merge gate as Phase 0.
 
-**Follow-up (deferred, not blocking this phase):** Kraig dislikes the current Practice-mode "wrong answer" UX — the toast overlaid on the clock ("Try again" / "You entered X:XX" / Dismiss). He likes the haptics, and likes the feel of the Challenge-mode wrong-answer treatment (shake + flash, no blocking toast); the complaint is specifically about Practice mode's visual. Practice mode still needs to surface what the learner actually entered (that's the whole point of Practice vs. Challenge — untimed, see-your-mistake learning), so this isn't "remove the toast," it's "redesign how the entered value gets communicated." Worth looking at whether Challenge mode's non-blocking treatment (or something adjacent to it) can be adapted for Practice while still surfacing the entered time. Revisit after the rest of Phase 1 lands.
+**Follow-up (resolved):** Kraig disliked the original Practice-mode "wrong answer" UX — a toast overlaid on the clock ("Try again" / "You entered X:XX" / Dismiss) that blocked the input until dismissed. It was replaced with Challenge mode's non-blocking shake + red flash, plus a transient "You entered X" label ([#10](https://github.com/kraigstrong/BrightBench/pull/10), [#11](https://github.com/kraigstrong/BrightBench/pull/11), [#12](https://github.com/kraigstrong/BrightBench/pull/12)). After a follow-up review, the label was changed to persist until the learner starts correcting their answer (rather than auto-fading on a timer) and scoped to Set the Clock only — Read the Clock and Elapsed Time already show the entered value directly in their input widgets, so repeating it was redundant ([#13](https://github.com/kraigstrong/BrightBench/pull/13)).
 
 ---
 
