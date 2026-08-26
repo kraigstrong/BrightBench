@@ -7,9 +7,20 @@
 - Treat stored data as backward-compatible input and normalize older shapes safely.
 - Keep `app.json` version/build values synchronized with the native Xcode project.
 - Keep challenge difficulty mapping, star thresholds, mastery crowns, countdowns, and result reveals consistent across modes.
-- Keep gameplay calm, readable, accessible, and child-friendly.
+- Keep gameplay calm, readable, and child-friendly.
 - Child privacy, legal disclosures, permissions, and App Store metadata are release boundaries.
 - Audio and haptic changes require physical-device validation before release.
+
+## Accessibility policy
+
+Screen-reader support (VoiceOver/TalkBack) is best-effort, not a design target, for a
+solo-maintained app. Keep the cheap wins — `accessibilityLabel`/`accessibilityRole` on
+buttons, settings, and static screens — but do not chase live-region/announcement
+correctness edge cases (e.g. re-announcing an identical repeated value) or build
+alternate non-gesture input paths for custom drag controls (the analog clock has none
+today; that's an accepted gap, not a bug). If a reviewer or automated tool flags a gap
+here, the default answer is to accept the trade-off, not fix it — confirm with the user
+before spending real effort on assistive-technology work beyond the existing baseline.
 
 ## Approval required
 
