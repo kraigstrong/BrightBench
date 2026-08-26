@@ -79,6 +79,10 @@ export type PracticeScreenConfig<TPrompt, TAnswer> = {
   // Set only for modes whose initial-answer shape depends on timeFormat (e.g. digital
   // input), so the prompt doesn't silently reset for modes where it never did before.
   resetsOnTimeFormatChange?: boolean;
+  // Modes whose answer input already displays its value as text (digital steppers,
+  // duration wheels) don't need it repeated; only modes like Set the Clock, where the
+  // answer is hand positions on a dial, benefit from restating what was entered.
+  showWrongAnswerLabel?: boolean;
   title: string;
 };
 
@@ -90,8 +94,6 @@ type Props<TPrompt, TAnswer> = PracticeScreenConfig<TPrompt, TAnswer> & {
 const AUTO_ADVANCE_DELAY_MS = 1500;
 
 const WRONG_ANSWER_LABEL_FADE_IN_MS = 140;
-const WRONG_ANSWER_LABEL_VISIBLE_MS = 1500;
-const WRONG_ANSWER_LABEL_FADE_MS = 220;
 
 export function PracticeScreen<TPrompt, TAnswer>({
   answerCardStyle,
@@ -109,6 +111,7 @@ export function PracticeScreen<TPrompt, TAnswer>({
   renderAnswer,
   renderPrompt,
   resetsOnTimeFormatChange = false,
+  showWrongAnswerLabel = true,
   timeFormat,
   title,
 }: Props<TPrompt, TAnswer>) {
@@ -129,16 +132,8 @@ export function PracticeScreen<TPrompt, TAnswer>({
   const wrongAnswerShake = useRef(new Animated.Value(0)).current;
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
   const wrongAnswerLabelOpacity = useRef(new Animated.Value(0)).current;
-  const wrongAnswerFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
 
   const clearWrongAnswerFeedback = useCallback(() => {
-    if (wrongAnswerFeedbackTimerRef.current) {
-      clearTimeout(wrongAnswerFeedbackTimerRef.current);
-      wrongAnswerFeedbackTimerRef.current = null;
-    }
-
     wrongAnswerShake.stopAnimation();
     wrongAnswerShake.setValue(0);
     wrongAnswerFlashOpacity.stopAnimation();
@@ -234,26 +229,12 @@ export function PracticeScreen<TPrompt, TAnswer>({
     Animated.parallel([
       buildWrongAnswerShakeAnimation(wrongAnswerShake),
       buildWrongAnswerFlashAnimation(wrongAnswerFlashOpacity),
-      Animated.sequence([
-        Animated.timing(wrongAnswerLabelOpacity, {
-          duration: WRONG_ANSWER_LABEL_FADE_IN_MS,
-          toValue: 1,
-          useNativeDriver: true,
-        }),
-        Animated.timing(wrongAnswerLabelOpacity, {
-          delay: WRONG_ANSWER_LABEL_VISIBLE_MS,
-          duration: WRONG_ANSWER_LABEL_FADE_MS,
-          toValue: 0,
-          useNativeDriver: true,
-        }),
-      ]),
+      Animated.timing(wrongAnswerLabelOpacity, {
+        duration: WRONG_ANSWER_LABEL_FADE_IN_MS,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
     ]).start();
-
-    wrongAnswerFeedbackTimerRef.current = setTimeout(() => {
-      setShowWrongAnswerFeedback(false);
-      setWrongAnswerAnnouncement('');
-      wrongAnswerFeedbackTimerRef.current = null;
-    }, WRONG_ANSWER_LABEL_FADE_IN_MS + WRONG_ANSWER_LABEL_VISIBLE_MS + WRONG_ANSWER_LABEL_FADE_MS);
   }
 
   const handleAnswerChange = useCallback(
@@ -310,22 +291,15 @@ export function PracticeScreen<TPrompt, TAnswer>({
                   style={[styles.wrongAnswerFlash, { opacity: wrongAnswerFlashOpacity }]}
                 />
               ) : null}
-
-              {showWrongAnswerFeedback && result && !result.isCorrect ? (
-                <Animated.View
-                  aria-hidden
-                  pointerEvents="none"
-                  style={[styles.wrongAnswerLabelWrap, { opacity: wrongAnswerLabelOpacity }]}>
-                  <View style={styles.wrongAnswerLabelPill}>
-                    <Text
-                      style={styles.wrongAnswerLabelText}
-                      testID="practice-wrong-answer-label">
-                      {`You entered ${formatAnswerForFeedback(result.actual, timeFormat)}`}
-                    </Text>
-                  </View>
-                </Animated.View>
-              ) : null}
             </Animated.View>
+
+            {showWrongAnswerLabel && showWrongAnswerFeedback && result && !result.isCorrect ? (
+              <Animated.View aria-hidden pointerEvents="none" style={{ opacity: wrongAnswerLabelOpacity }}>
+                <Text style={styles.wrongAnswerLabelText} testID="practice-wrong-answer-label">
+                  {`You entered ${formatAnswerForFeedback(result.actual, timeFormat)}`}
+                </Text>
+              </Animated.View>
+            ) : null}
           </Card>
 
           <View style={styles.actionsRow}>
@@ -401,26 +375,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(231, 76, 60, 0.22)',
     borderRadius: 24,
   },
-  wrongAnswerLabelWrap: {
-    alignItems: 'center',
-    bottom: 0,
-    justifyContent: 'center',
-    left: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  wrongAnswerLabelPill: {
-    backgroundColor: '#FBEAEC',
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
   wrongAnswerLabelText: {
     color: palette.danger,
     fontFamily: typography.bodyFamily,
     fontSize: 14,
     fontWeight: '700',
+    textAlign: 'center',
   },
   actionsRow: {
     flexDirection: 'row',
