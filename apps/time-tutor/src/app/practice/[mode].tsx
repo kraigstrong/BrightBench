@@ -6,14 +6,18 @@ import { Card } from '@education/ui';
 
 import { PRACTICE_INTERVAL_OPTIONS } from '@/config/practice-intervals';
 import { palette, shadows, typography } from '@/design/theme';
+import { playModeTapSound } from '@/lib/answer-feedback';
 import { getHomeModeTitle } from '@/lib/time';
+import { useAppState } from '@/state/app-state';
 import type { PlayableMode, PracticeInterval } from '@/types/time';
 
 export default function PracticeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
+  const { soundEffectsEnabled } = useAppState();
 
   function launchPractice(interval: PracticeInterval) {
+    playModeTapSound(soundEffectsEnabled);
     router.replace(`/session/${mode}/practice?interval=${interval}`);
   }
 

@@ -8,6 +8,7 @@ import { BackButton, HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { OptionCard } from '@/components/option-card';
 import { palette, typography } from '@/design/theme';
+import { playModeTapSound } from '@/lib/answer-feedback';
 import { getFeatureAvailability } from '@/lib/feature-availability';
 import { getHomeModeTitle } from '@/lib/time';
 import { useAppState } from '@/state/app-state';
@@ -42,15 +43,19 @@ function getModeTintColor(mode: PlayableMode): string {
 export default function ModeScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
-  const { challengeProgress, clearChallengeModeProgress } = useAppState();
+  const { challengeProgress, clearChallengeModeProgress, soundEffectsEnabled } = useAppState();
   const challengeAvailability = getFeatureAvailability('challenge-mode');
   const accentColor = getModeAccentColor(mode);
   const challengeBackgroundColor = getModeTintColor(mode);
 
   function goToSession(sessionType: SessionType) {
+    // Bail before the click: a locked Challenge card goes nowhere, so a sound
+    // would suggest it did something.
     if (sessionType === 'challenge' && !challengeAvailability.enabled) {
       return;
     }
+
+    playModeTapSound(soundEffectsEnabled);
 
     if (sessionType === 'challenge') {
       router.push(`/challenge/${mode}`);

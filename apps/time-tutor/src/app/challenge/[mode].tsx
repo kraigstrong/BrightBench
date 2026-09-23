@@ -8,6 +8,7 @@ import {
   CHALLENGE_DIFFICULTY_LABELS,
   formatChallengeLaunchIntervalLabel,
 } from '@/config/challenge-thresholds';
+import { playModeTapSound } from '@/lib/answer-feedback';
 import { getFeatureAvailability } from '@/lib/feature-availability';
 import { getChallengeIntervalForDifficulty } from '@/lib/challenge-progression';
 import { getHomeModeTitle } from '@/lib/time';
@@ -17,7 +18,8 @@ import type { ChallengeDifficulty, PlayableMode } from '@/types/time';
 export default function ChallengeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
-  const { challengeProgress, setLastSelectedChallengeDifficulty } = useAppState();
+  const { challengeProgress, setLastSelectedChallengeDifficulty, soundEffectsEnabled } =
+    useAppState();
   const challengeAvailability = getFeatureAvailability('challenge-mode');
   const progress = challengeProgress[mode];
 
@@ -32,6 +34,7 @@ export default function ChallengeLaunchScreen() {
   }
 
   function launchDifficulty(difficulty: ChallengeDifficulty) {
+    playModeTapSound(soundEffectsEnabled);
     setLastSelectedChallengeDifficulty(mode, difficulty);
     router.replace(`/session/${mode}/challenge?difficulty=${difficulty}`);
   }
