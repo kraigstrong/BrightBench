@@ -2,11 +2,11 @@
 
 ## Active work
 
-- App: Portfolio
-- Objective: Select the next product-focused change after the agent framework rollout
-- Branch: `main`
-- Status: ready
-- Next action: choose the next meaningful app outcome from the portfolio table below
+- App: Time Tutor
+- Objective: Replace the placeholder reward sounds and add mode-tap, per-star, and crown audio
+- Branch: `time-tutor/reward-sound-refresh`
+- Status: baseline committed; star dings and drum roll approved on device
+- Next action: reduce mode-tap latency, then re-judge on device and open the PR
 - Blocked on: nothing
 
 ## Portfolio

@@ -24,9 +24,11 @@ export type ChallengeResultsCardProps = {
   masterySubtitle?: string;
   masteryTitle?: string;
   onBack: () => void;
+  onMasteryRevealed?: () => void;
   onPlayAgain: () => void;
   onRevealComplete?: () => void;
   onRevealStart?: () => void;
+  onStarRevealed?: (starIndex: number) => void;
   primaryActionLabel?: string;
   score: number;
   scoreThresholdOne: number;
@@ -60,9 +62,11 @@ export function ChallengeResultsCard({
   masterySubtitle = 'You mastered this challenge.',
   masteryTitle = 'Crown Unlocked!',
   onBack,
+  onMasteryRevealed,
   onPlayAgain,
   onRevealComplete,
   onRevealStart,
+  onStarRevealed,
   primaryActionLabel = 'Play Again',
   score,
   scoreThresholdOne,
@@ -84,6 +88,10 @@ export function ChallengeResultsCard({
   const accuracyStarScale = useRef(new Animated.Value(1)).current;
   const scoreStarScales = useRef([new Animated.Value(1), new Animated.Value(1)]).current;
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Held in refs so a caller passing inline handlers can't restart the reveal
+  // or re-fire the mastery moment just by re-rendering.
+  const onStarRevealedRef = useRef(onStarRevealed);
+  const onMasteryRevealedRef = useRef(onMasteryRevealed);
   const accuracyThresholdTriggeredRef = useRef(false);
   const scoreThresholdOneTriggeredRef = useRef(false);
   const scoreThresholdTwoTriggeredRef = useRef(false);
@@ -252,6 +260,11 @@ export function ChallengeResultsCard({
   ]);
 
   useEffect(() => {
+    onStarRevealedRef.current = onStarRevealed;
+    onMasteryRevealedRef.current = onMasteryRevealed;
+  }, [onMasteryRevealed, onStarRevealed]);
+
+  useEffect(() => {
     const accuracyThresholdPoint = accuracyThreshold / 100;
 
     const listenerId = accuracyProgress.addListener(({ value }) => {
@@ -264,6 +277,7 @@ export function ChallengeResultsCard({
         setShowAccuracyThresholdStar(true);
         setDisplayedStars((current) => Math.max(current, 1));
         runStarPop(accuracyStarScale);
+        onStarRevealedRef.current?.(1);
       }
     });
 
@@ -289,6 +303,7 @@ export function ChallengeResultsCard({
         setShowScoreThresholdOneStar(true);
         setDisplayedStars((current) => Math.max(current, 2));
         runStarPop(scoreStarScales[0]);
+        onStarRevealedRef.current?.(2);
       }
 
       if (
@@ -300,6 +315,7 @@ export function ChallengeResultsCard({
         setShowScoreThresholdTwoStar(true);
         setDisplayedStars(totalEarnedStars);
         runStarPop(scoreStarScales[1]);
+        onStarRevealedRef.current?.(3);
       }
     });
 
@@ -329,6 +345,7 @@ export function ChallengeResultsCard({
     }
 
     setShowMasteryReveal(true);
+    onMasteryRevealedRef.current?.();
     masteryOverlayOpacity.setValue(0);
     masteryCrownOpacity.setValue(0);
     masteryCrownScale.setValue(0.45);

@@ -34,6 +34,8 @@ import {
 import { getDemoChallengeResultOverride } from '@/config/demo-video';
 import { palette, shadows, typography } from '@/design/theme';
 import {
+  playCrownSound,
+  playStarRevealDing,
   startSuspenseLoop,
   stopSuspenseLoop,
   triggerAnswerFeedback,
@@ -533,12 +535,14 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             accuracyThreshold={thresholds.accuracyThreshold}
             didUnlockMastery={resultSummary.didUnlockMastery}
             onBack={() => router.back()}
+            onMasteryRevealed={() => playCrownSound(soundEffectsEnabled)}
             onPlayAgain={beginChallenge}
             onRevealComplete={() => {
               stopSuspenseLoop();
               triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled);
             }}
             onRevealStart={() => startSuspenseLoop(soundEffectsEnabled)}
+            onStarRevealed={() => playStarRevealDing(soundEffectsEnabled)}
             score={resultSummary.score}
             scoreThresholdOne={thresholds.scoreThresholdOne}
             scoreThresholdTwo={thresholds.scoreThresholdTwo}
