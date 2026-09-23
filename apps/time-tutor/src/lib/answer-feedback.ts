@@ -8,8 +8,24 @@ import { FEEDBACK_AUDIO_MANIFEST, type FeedbackAudioKey } from '@/config/audio-m
 // instead of cutting one another off.
 const STAR_DING_POOL_SIZE = 3;
 
-const players = new Map<FeedbackAudioKey, ReturnType<typeof createAudioPlayer>>();
-const starDingPool: ReturnType<typeof createAudioPlayer>[] = [];
+// The mode tap has to be heard the instant the card is pressed. The general
+// playback path awaits the audio-mode setup and a seekTo() bridge round-trip
+// before calling play(), and the router starts rendering the next screen in
+// between, so the click lands after the transition has already begun. These
+// keys get a player created up front and a fully synchronous play path.
+const INSTANT_SOUND_KEYS = ['modeTap'] as const satisfies readonly FeedbackAudioKey[];
+
+// A finished player sits at the end of its clip, so it needs rewinding before
+// it can sound again. Doing that on the tap itself is what we're avoiding, so
+// it happens after playback instead, comfortably clear of the longest of these
+// clips (mode-tap.mp3 is 0.2s).
+const INSTANT_SOUND_REWIND_DELAY_MS = 500;
+
+type Player = ReturnType<typeof createAudioPlayer>;
+
+const players = new Map<FeedbackAudioKey, Player>();
+const starDingPool: Player[] = [];
+const instantRewindTimers = new Map<FeedbackAudioKey, ReturnType<typeof setTimeout>>();
 let nextStarDingIndex = 0;
 let audioModeConfigured = false;
 
@@ -42,6 +58,61 @@ async function playFeedbackSound(key: FeedbackAudioKey) {
   // chime instead of getting silently dropped mid-playback.
   await player.seekTo(0).catch(() => undefined);
   player.play();
+}
+
+// Creates the latency-sensitive players and configures the audio session ahead
+// of the first press, so nothing has to be built while the user is waiting to
+// hear it. Safe to call more than once.
+export function prewarmInstantSounds(soundEffectsEnabled: boolean) {
+  if (!soundEffectsEnabled) {
+    return;
+  }
+
+  configureAudioMode().catch(() => undefined);
+
+  for (const key of INSTANT_SOUND_KEYS) {
+    if (!players.has(key)) {
+      players.set(key, createAudioPlayer(FEEDBACK_AUDIO_MANIFEST[key]));
+    }
+  }
+}
+
+// Plays a prewarmed one-shot with nothing awaited between the press and the
+// sound. Falls back to the general path (and prewarms for next time) if the
+// player isn't ready yet.
+function playInstantSound(key: (typeof INSTANT_SOUND_KEYS)[number]) {
+  const player = players.get(key);
+
+  if (!player) {
+    prewarmInstantSounds(true);
+    playFeedbackSound(key).catch(() => undefined);
+    return;
+  }
+
+  player.play();
+
+  const existingTimer = instantRewindTimers.get(key);
+
+  if (existingTimer) {
+    clearTimeout(existingTimer);
+  }
+
+  instantRewindTimers.set(
+    key,
+    setTimeout(() => {
+      instantRewindTimers.delete(key);
+
+      // This runs detached from any call site, so nothing upstream would catch
+      // a throw here. Normalize the result rather than assuming seekTo always
+      // hands back a promise.
+      try {
+        Promise.resolve(player.seekTo(0)).catch(() => undefined);
+      } catch {
+        // A rewind that fails just means the next press starts where this one
+        // ended; never worth taking the app down for.
+      }
+    }, INSTANT_SOUND_REWIND_DELAY_MS),
+  );
 }
 
 export function triggerAnswerFeedback(isCorrect: boolean, soundEffectsEnabled: boolean) {
@@ -114,7 +185,7 @@ export function playModeTapSound(soundEffectsEnabled: boolean) {
     return;
   }
 
-  playFeedbackSound('modeTap').catch(() => undefined);
+  playInstantSound('modeTap');
 }
 
 export function playCrownSound(soundEffectsEnabled: boolean) {

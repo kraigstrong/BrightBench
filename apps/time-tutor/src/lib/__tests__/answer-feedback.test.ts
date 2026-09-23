@@ -146,6 +146,73 @@ describe('answer feedback audio', () => {
     });
   });
 
+  describe('mode tap latency', () => {
+    it('builds the tap player up front when prewarmed', () => {
+      const { prewarmInstantSounds } = loadAnswerFeedback();
+
+      prewarmInstantSounds(true);
+
+      expect(playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap)).toHaveLength(1);
+    });
+
+    it('prewarms nothing when sound effects are disabled', () => {
+      const { prewarmInstantSounds } = loadAnswerFeedback();
+
+      prewarmInstantSounds(false);
+
+      expect(createAudioPlayerMock).not.toHaveBeenCalled();
+    });
+
+    // The whole point of the prewarm: the click must not wait on the audio-mode
+    // setup or a seekTo() round-trip while the router renders the next screen.
+    it('plays synchronously once prewarmed, with nothing awaited first', () => {
+      const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
+
+      prewarmInstantSounds(true);
+      const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+
+      playModeTapSound(true);
+
+      // No flushAsyncWork() — if play() needed a microtask it would fail here.
+      expect(tapPlayer.play).toHaveBeenCalledTimes(1);
+      expect(tapPlayer.seekTo).not.toHaveBeenCalled();
+    });
+
+    it('rewinds after playback rather than before the next press', () => {
+      jest.useFakeTimers();
+
+      try {
+        const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
+
+        prewarmInstantSounds(true);
+        const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+
+        playModeTapSound(true);
+        expect(tapPlayer.seekTo).not.toHaveBeenCalled();
+
+        jest.advanceTimersByTime(500);
+        expect(tapPlayer.seekTo).toHaveBeenCalledWith(0);
+
+        // A second press still plays immediately off the same player.
+        playModeTapSound(true);
+        expect(tapPlayer.play).toHaveBeenCalledTimes(2);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('still plays when a press arrives before any prewarm', async () => {
+      const { playModeTapSound } = loadAnswerFeedback();
+
+      playModeTapSound(true);
+      await flushAsyncWork();
+
+      const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+
+      expect(tapPlayer.play).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('suspense roll', () => {
     it('plays the drum roll once instead of looping', async () => {
       const { startSuspenseLoop } = loadAnswerFeedback();
