@@ -48,14 +48,14 @@ const modeCards: {
 ];
 
 export default function HomeScreen() {
-  const { challengeProgress, soundEffectsEnabled } = useAppState();
+  const { challengeProgress, soundEffectsReady } = useAppState();
   const masteredCount = countMasteredModes(challengeProgress);
 
   // Build the tap player while the home screen is idle rather than on the
   // press, so the first card tap of a session isn't slower than the rest.
   React.useEffect(() => {
-    prewarmInstantSounds(soundEffectsEnabled);
-  }, [soundEffectsEnabled]);
+    prewarmInstantSounds(soundEffectsReady);
+  }, [soundEffectsReady]);
 
   return (
     <AppShell>
@@ -95,7 +95,7 @@ export default function HomeScreen() {
             accentColor={card.accentColor}
             description={card.description}
             onPress={() => {
-              playModeTapSound(soundEffectsEnabled);
+              playModeTapSound(soundEffectsReady);
 
               if (card.mode === 'explore-time') {
                 router.push('/explore-time');

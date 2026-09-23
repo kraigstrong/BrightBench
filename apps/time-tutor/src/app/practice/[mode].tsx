@@ -14,10 +14,10 @@ import type { PlayableMode, PracticeInterval } from '@/types/time';
 export default function PracticeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
-  const { soundEffectsEnabled } = useAppState();
+  const { soundEffectsReady } = useAppState();
 
   function launchPractice(interval: PracticeInterval) {
-    playModeTapSound(soundEffectsEnabled);
+    playModeTapSound(soundEffectsReady);
     router.replace(`/session/${mode}/practice?interval=${interval}`);
   }
 

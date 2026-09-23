@@ -17,15 +17,23 @@ const INSTANT_SOUND_KEYS = ['modeTap'] as const satisfies readonly FeedbackAudio
 
 // A finished player sits at the end of its clip, so it needs rewinding before
 // it can sound again. Doing that on the tap itself is what we're avoiding, so
-// it happens after playback instead, comfortably clear of the longest of these
-// clips (mode-tap.mp3 is 0.2s).
-const INSTANT_SOUND_REWIND_DELAY_MS = 500;
+// it happens after playback instead, clear of the clip's length
+// (mode-tap.mp3 is 0.2s) plus room for playback to start.
+const INSTANT_SOUND_REWIND_DELAY_MS = 300;
+
+// Presses can land faster than a clip finishes — navigating two screens deep in
+// quick succession — so each key gets several players and rounds through them.
+// A single player would still be sitting at the end of its clip on the second
+// press, which plays nothing.
+const INSTANT_SOUND_POOL_SIZE = 3;
 
 type Player = ReturnType<typeof createAudioPlayer>;
+type InstantSoundKey = (typeof INSTANT_SOUND_KEYS)[number];
 
 const players = new Map<FeedbackAudioKey, Player>();
 const starDingPool: Player[] = [];
-const instantRewindTimers = new Map<FeedbackAudioKey, ReturnType<typeof setTimeout>>();
+const instantPools = new Map<InstantSoundKey, Player[]>();
+const instantCursors = new Map<InstantSoundKey, number>();
 let nextStarDingIndex = 0;
 let audioModeConfigured = false;
 
@@ -71,48 +79,58 @@ export function prewarmInstantSounds(soundEffectsEnabled: boolean) {
   configureAudioMode().catch(() => undefined);
 
   for (const key of INSTANT_SOUND_KEYS) {
-    if (!players.has(key)) {
-      players.set(key, createAudioPlayer(FEEDBACK_AUDIO_MANIFEST[key]));
+    if (!instantPools.has(key)) {
+      instantPools.set(
+        key,
+        Array.from({ length: INSTANT_SOUND_POOL_SIZE }, () =>
+          createAudioPlayer(FEEDBACK_AUDIO_MANIFEST[key]),
+        ),
+      );
+      instantCursors.set(key, 0);
     }
   }
 }
 
+// Schedules the rewind this player needs before it can sound again. Each player
+// owns its timer, so a later press on a different player never postpones this
+// one — the bug that pattern causes is silence, not a double-click.
+function scheduleInstantRewind(player: Player) {
+  setTimeout(() => {
+    // Detached from any call site, so nothing upstream would catch a throw.
+    // Normalize the result rather than assuming seekTo returns a promise.
+    try {
+      Promise.resolve(player.seekTo(0)).catch(() => undefined);
+    } catch {
+      // A rewind that fails just means the next press on this player starts
+      // where this one ended; never worth taking the app down for.
+    }
+  }, INSTANT_SOUND_REWIND_DELAY_MS);
+}
+
 // Plays a prewarmed one-shot with nothing awaited between the press and the
 // sound. Falls back to the general path (and prewarms for next time) if the
-// player isn't ready yet.
-function playInstantSound(key: (typeof INSTANT_SOUND_KEYS)[number]) {
-  const player = players.get(key);
-
-  if (!player) {
+// pool isn't built yet.
+function playInstantSound(key: InstantSoundKey) {
+  // A press can beat the prewarm — a deep link, or sound switched on mid-session.
+  // Building the pool here is still synchronous, so the click is not delayed.
+  if (!instantPools.has(key)) {
     prewarmInstantSounds(true);
+  }
+
+  const pool = instantPools.get(key);
+
+  if (!pool || pool.length === 0) {
     playFeedbackSound(key).catch(() => undefined);
     return;
   }
 
+  const cursor = instantCursors.get(key) ?? 0;
+  const player = pool[cursor];
+
+  instantCursors.set(key, (cursor + 1) % pool.length);
+
   player.play();
-
-  const existingTimer = instantRewindTimers.get(key);
-
-  if (existingTimer) {
-    clearTimeout(existingTimer);
-  }
-
-  instantRewindTimers.set(
-    key,
-    setTimeout(() => {
-      instantRewindTimers.delete(key);
-
-      // This runs detached from any call site, so nothing upstream would catch
-      // a throw here. Normalize the result rather than assuming seekTo always
-      // hands back a promise.
-      try {
-        Promise.resolve(player.seekTo(0)).catch(() => undefined);
-      } catch {
-        // A rewind that fails just means the next press starts where this one
-        // ended; never worth taking the app down for.
-      }
-    }, INSTANT_SOUND_REWIND_DELAY_MS),
-  );
+  scheduleInstantRewind(player);
 }
 
 export function triggerAnswerFeedback(isCorrect: boolean, soundEffectsEnabled: boolean) {

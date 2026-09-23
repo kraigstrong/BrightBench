@@ -43,7 +43,7 @@ function getModeTintColor(mode: PlayableMode): string {
 export default function ModeScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
-  const { challengeProgress, clearChallengeModeProgress, soundEffectsEnabled } = useAppState();
+  const { challengeProgress, clearChallengeModeProgress, soundEffectsReady } = useAppState();
   const challengeAvailability = getFeatureAvailability('challenge-mode');
   const accentColor = getModeAccentColor(mode);
   const challengeBackgroundColor = getModeTintColor(mode);
@@ -55,7 +55,7 @@ export default function ModeScreen() {
       return;
     }
 
-    playModeTapSound(soundEffectsEnabled);
+    playModeTapSound(soundEffectsReady);
 
     if (sessionType === 'challenge') {
       router.push(`/challenge/${mode}`);

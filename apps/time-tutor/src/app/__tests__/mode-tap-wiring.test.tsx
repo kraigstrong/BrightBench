@@ -95,6 +95,23 @@ describe('mode tap wiring', () => {
     expect(playModeTapSoundMock).toHaveBeenCalledWith(true);
   });
 
+  // soundEffectsEnabled defaults to true until AsyncStorage hydration finishes,
+  // and the home screen is pressable immediately at launch — so reading it
+  // directly would play a click to someone who had turned sound off.
+  it('stays silent until the stored sound setting has hydrated', () => {
+    render(
+      <SafeAreaProvider>
+        <AppStateProvider>
+          <ModeScreen />
+        </AppStateProvider>
+      </SafeAreaProvider>,
+    );
+
+    fireEvent.press(screen.getByTestId('practice-session-card'));
+
+    expect(playModeTapSoundMock).toHaveBeenCalledWith(false);
+  });
+
   it('passes the sound setting through rather than assuming it is on', () => {
     render(
       <SafeAreaProvider>

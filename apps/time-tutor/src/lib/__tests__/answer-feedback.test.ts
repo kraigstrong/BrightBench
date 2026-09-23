@@ -147,12 +147,22 @@ describe('answer feedback audio', () => {
   });
 
   describe('mode tap latency', () => {
-    it('builds the tap player up front when prewarmed', () => {
+    it('builds the tap players up front when prewarmed', () => {
       const { prewarmInstantSounds } = loadAnswerFeedback();
 
       prewarmInstantSounds(true);
 
-      expect(playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap)).toHaveLength(1);
+      expect(playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap).length).toBeGreaterThan(1);
+    });
+
+    it('builds the pool once across repeated prewarms', () => {
+      const { prewarmInstantSounds } = loadAnswerFeedback();
+
+      prewarmInstantSounds(true);
+      const afterFirst = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap).length;
+      prewarmInstantSounds(true);
+
+      expect(playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap)).toHaveLength(afterFirst);
     });
 
     it('prewarms nothing when sound effects are disabled', () => {
@@ -190,12 +200,41 @@ describe('answer feedback audio', () => {
         playModeTapSound(true);
         expect(tapPlayer.seekTo).not.toHaveBeenCalled();
 
-        jest.advanceTimersByTime(500);
+        jest.advanceTimersByTime(300);
         expect(tapPlayer.seekTo).toHaveBeenCalledWith(0);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
 
-        // A second press still plays immediately off the same player.
+    // A single player would still be sitting at the end of its 0.2s clip on the
+    // second press, so the click would be silent and every further press would
+    // push the rewind out again.
+    it('sounds on every press when presses arrive faster than the clip', () => {
+      jest.useFakeTimers();
+
+      try {
+        const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
+
+        prewarmInstantSounds(true);
+        const pool = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+
+        expect(pool.length).toBeGreaterThan(1);
+
+        // Three presses well inside the rewind delay.
         playModeTapSound(true);
-        expect(tapPlayer.play).toHaveBeenCalledTimes(2);
+        jest.advanceTimersByTime(80);
+        playModeTapSound(true);
+        jest.advanceTimersByTime(80);
+        playModeTapSound(true);
+
+        // Each press used a different player, so each actually sounded.
+        const played = pool.filter((player) => player.play.mock.calls.length > 0);
+        expect(played).toHaveLength(3);
+
+        // And no player had its own rewind cancelled by a later press.
+        jest.advanceTimersByTime(300);
+        played.forEach((player) => expect(player.seekTo).toHaveBeenCalledWith(0));
       } finally {
         jest.useRealTimers();
       }

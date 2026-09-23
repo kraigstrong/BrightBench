@@ -18,7 +18,7 @@ import type { ChallengeDifficulty, PlayableMode } from '@/types/time';
 export default function ChallengeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = (params.mode ?? 'digital-to-analog') as PlayableMode;
-  const { challengeProgress, setLastSelectedChallengeDifficulty, soundEffectsEnabled } =
+  const { challengeProgress, setLastSelectedChallengeDifficulty, soundEffectsReady } =
     useAppState();
   const challengeAvailability = getFeatureAvailability('challenge-mode');
   const progress = challengeProgress[mode];
@@ -34,7 +34,7 @@ export default function ChallengeLaunchScreen() {
   }
 
   function launchDifficulty(difficulty: ChallengeDifficulty) {
-    playModeTapSound(soundEffectsEnabled);
+    playModeTapSound(soundEffectsReady);
     setLastSelectedChallengeDifficulty(mode, difficulty);
     router.replace(`/session/${mode}/challenge?difficulty=${difficulty}`);
   }
