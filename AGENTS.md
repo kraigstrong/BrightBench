@@ -28,6 +28,7 @@ A work item produces one understandable outcome, can be verified independently, 
 - `apps/*`: independently deployable products and sites.
 - `packages/design`: platform-neutral palette, spacing, radii, typography tokens, and motion.
 - `packages/ui`: stable shared React Native primitives; no app-specific gameplay.
+- `packages/audio`: shared reward sound files and generic playback helpers; no gameplay or reward rules.
 - `packages/legal-pages`: configurable privacy, support, and help content.
 - `packages/app-config`: shared naming, routing, and release conventions.
 - `packages/typescript-config`: shared TypeScript configurations.
