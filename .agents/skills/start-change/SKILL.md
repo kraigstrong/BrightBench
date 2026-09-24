@@ -7,7 +7,7 @@ description: Scope and start a BrightBench repository change with minimal contex
 
 ## Workflow
 
-1. Read root AGENTS.md, docs/current.md, and the target app's nested AGENTS.md when present.
+1. Read root AGENTS.md, the open issues for the app in play (`gh issue list --state open --label "app:<app>" --json number,title,labels,body`), and the target app's nested AGENTS.md when present. Work state is in GitHub Issues, not in a committed file.
 2. Inspect git status, the current branch, and any existing diff before editing. Create a work-item-scoped branch before implementing if currently on `main`.
 3. When the objective spans more than one outcome (a milestone, phase, or roadmap section), select the next bounded work item before scoping anything else.
 4. State the user-visible outcome of that work item in one sentence.

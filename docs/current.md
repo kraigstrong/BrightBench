@@ -1,59 +1,68 @@
-# Current Work
+# Current Work (retired)
 
-## Active work
+**Live work state now lives in GitHub Issues.** This file is a tombstone. It is
+never updated, and nothing should be recorded here.
 
-- App: Shared packages (Time Tutor is the first consumer)
-- Objective: Add `@education/audio` holding the shared reward sounds and generic
-  playback helpers, and migrate Time Tutor onto it with no behavior change
-- Branch: `shared/audio-package`
-- Status: implemented and verified; in review. The Challenge results reveal was
-  exercised on a physical device after the move and all reward audio plays
-  correctly from the package. That pass surfaced a pre-existing drum-roll timing
-  defect, unrelated to this change and tracked in issue #17.
-- Next action: review and merge, then wire Letter Learner onto the shared
-  correct/try-again sounds
-- Blocked on: nothing
+## Where to look instead
 
-See `docs/decisions/0001-shared-audio-package-boundary.md` for what the package
-owns and what stays app-local.
+Read the open work for the app you are changing:
 
-## Decisions already made for the follow-up work
+```sh
+gh issue list --state open --label "app:<app>" --json number,title,labels,body
+```
 
-These are settled; the work items that carry them out are not started.
+`<app>` is one of `time-tutor`, `fraction-finder`, `letter-learner`,
+`marketing`, `letter-bingo`, `place-value`, or `shared` for packages, tooling,
+and repo-wide work.
 
-- **Letter Learner will adopt the shared `correct` and `try-again` sounds** when
-  it is wired up, replacing its duplicate copies. Its `go.mp3` has no shared
-  equivalent and stays app-local, and its letter-name, letter-sound, and digraph
-  recordings are curriculum content, so they stay app-local too.
-- **Fraction Finder's `soundEnabled` default will flip from `false` to `true`**
-  when it gains audio, matching Time Tutor and Letter Learner. Existing stored
-  user preferences must be preserved — the flip changes the default for new
-  installs only, not the value already on disk for an existing player.
-  Fraction Finder has no `expo-audio` dependency today, so wiring it up adds a
-  native dependency and is High risk.
+## Label families
 
-## Portfolio
+- `app:*` scopes an item to one app, or to `app:shared`.
+- `verify:*` names the evidence the item needs: `verify:automated`,
+  `verify:simulator`, `verify:device`, `verify:web`.
+- `owner:kraig` means only the developer can do it.
+- `blocked:kraig` means it is waiting on a decision or action from the developer.
+- `decision` means it needs a product, architecture, scope, or cost call before
+  implementation.
+- `defect-class` means the item covers a whole class of defects; closing it on a
+  single instance is wrong.
 
-| App | State | Next meaningful action |
-|---|---|---|
-| Time Tutor | Shipped, active | Physical-device haptic review (see `apps/time-tutor/docs/rollout-plan.md`) |
-| Fraction Finder | Development, automated PR gate passing | Run an iOS and web gameplay smoke pass |
-| Letter Learner | Development | Adopt the shared `correct`/`try-again` sounds from `@education/audio` |
-| Marketing | Deployable | Complete Vercel project linking and production environment setup |
-| Letter Bingo | Placeholder | Define the first playable learning loop |
-| Place Value | Placeholder | Define the first playable learning loop |
+Acceptance criteria live in the issue body, not in a separate document.
 
-## Open human checks
+An open issue with a linked pull request is in flight. A closed issue is done.
 
-- Judge Time Tutor haptic strength on a physical iPhone. Audio was judged on
-  device during the reward-sound refresh; haptics were not changed and have not
-  been reviewed since.
-- Confirm App Store privacy disclosures whenever permissions or data handling change.
-- Decide production domains and complete Vercel linking when the portfolio is ready.
+Milestones are per-app releases (`Time Tutor 1.2`, `Fraction Finder 1.0`,
+`Letter Learner 1.0`, `Marketing launch`) and carry release-blocking for that
+app only.
 
-## Known local blockers
+The project board (https://github.com/users/kraigstrong/projects/1) is a view
+over the issues, not a second source of truth. **If a board field and the issue
+disagree, the issue wins.**
 
-- `pod install` fails in this checkout: `react-native-reanimated` 4.2.1 rejects
-  the hoisted `react-native-worklets` 0.8.3 (the apps pin 0.7.2, which installs
-  nested). This predates the audio package work and blocks fresh iOS native
-  builds locally.
+Gotcha: `gh issue list` with a label or milestone that does not exist prints
+`[]` and **exits 0**. An empty result means check the name first; it does not
+mean there is no work.
+
+## Why it moved
+
+This file was a status marker. Keeping it accurate meant editing a tracked file
+on nearly every branch, which produced churn, merge friction, and lines that
+outlived the work they described.
+
+The `@education/audio` work (#16) showed both failure modes in one change. An
+open human check listed here went stale the moment the check was performed, and
+the active-work block restated what the pull request already said — branch,
+status, next action — so the two could only ever agree by hand.
+
+`kraigstrong/Keepsake` hit the same problem and measured it: because its ship
+step required editing this file per work item, 17 of every 60 commits changed no
+product code. It fixed it by deleting that step rather than by trying to keep
+the file honest. BrightBench has done the same. `AGENTS.md`'s documentation
+routing no longer has an "update the status file" instruction, and work state is
+never recorded in a committed file.
+
+`docs/decisions/` is unaffected. ADRs are durable, not status, and stay in the
+repository.
+
+Older documents and commits still cite `docs/current.md`. They are correct about
+what was true when they were written and are deliberately not being rewritten.

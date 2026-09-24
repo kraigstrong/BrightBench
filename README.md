@@ -10,7 +10,13 @@ BrightBench is a portfolio of focused educational apps built on a shared technic
 - Marketing: deployable Next.js portfolio site.
 - Letter Bingo and Place Value: future products.
 
-Current priorities and outstanding human checks live in [`docs/current.md`](docs/current.md). Git history and pull requests are the durable record of completed work.
+The list above is orientation and changes rarely. Current priorities, outstanding human checks, and what is in flight live in GitHub Issues, never in a committed file:
+
+```sh
+gh issue list --state open --label "app:<app>" --json number,title,labels,body
+```
+
+Git history and pull requests are the durable record of completed work.
 
 ## Stack
 
@@ -59,7 +65,7 @@ npm run dev -w marketing
 Start with:
 
 1. [`AGENTS.md`](AGENTS.md)
-2. [`docs/current.md`](docs/current.md)
+2. The open issues for the app in play: `gh issue list --state open --label "app:<app>" --json number,title,labels,body`
 3. A target app's nested `AGENTS.md`, when present
 4. Files directly involved in the change
 

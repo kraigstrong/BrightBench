@@ -9,11 +9,54 @@ BrightBench is a portfolio of independently deployable educational apps with a s
 For routine work, read only:
 
 1. This file.
-2. `docs/current.md`.
+2. The open issues for the app in play:
+
+       gh issue list --state open --label "app:<app>" --json number,title,labels,body
+
 3. The target app's nested `AGENTS.md`, when one exists.
 4. Files directly involved in the change.
 
 Read additional documentation only when the routing section says it is relevant.
+
+## Current-State Pointer
+
+Work state lives in GitHub Issues. There is no status file.
+
+The canonical read is one command, scoped to the app being changed:
+
+```sh
+gh issue list --state open --label "app:<app>" --json number,title,labels,body
+```
+
+`<app>` is `time-tutor`, `fraction-finder`, `letter-learner`, `marketing`,
+`letter-bingo`, `place-value`, or `shared` for packages, tooling, and repo-wide
+work.
+
+Labels:
+
+- `app:*` scopes an item to one app, or to `app:shared`.
+- `verify:*` declares the evidence the item needs: `verify:automated`,
+  `verify:simulator`, `verify:device`, `verify:web`.
+- `owner:kraig` means only the developer can do it.
+- `blocked:kraig` means it is waiting on the developer.
+- `decision` means it needs a product, architecture, scope, or cost call before
+  implementation.
+- `defect-class` means the item covers a whole class of defects; closing it on a
+  single instance is wrong.
+
+Acceptance criteria live in the issue body. An open issue with a linked pull
+request is in flight; a closed issue is done. Close an issue from its pull
+request with `Closes #N`.
+
+Milestones are per-app releases and carry release-blocking for that app only.
+
+The project board (https://github.com/users/kraigstrong/projects/1) is a view
+over the issues, not a second source of truth. If a board field and the issue
+disagree, the issue wins.
+
+Gotcha: a label or milestone that does not exist prints `[]` and **exits 0**. An
+empty result means check the name against `gh label list` first; it does not
+mean there is no work.
 
 ## Scope Of A Change
 
@@ -33,7 +76,7 @@ A work item produces one understandable outcome, can be verified independently, 
 - `packages/app-config`: shared naming, routing, and release conventions.
 - `packages/typescript-config`: shared TypeScript configurations.
 - `packages/eslint-config`: shared ESLint configurations.
-- `docs/current.md`: active work, portfolio status, and outstanding human checks.
+- `docs/current.md`: tombstone. Work state moved to GitHub Issues; the file is never updated.
 - `docs/decisions`: durable decisions that meet the ADR threshold.
 - `.agents/skills`: canonical reusable workflows for agents.
 
@@ -143,6 +186,21 @@ Required evidence:
 - Physical-device or production validation where relevant.
 - Explicit record of remaining human release checks.
 
+### Declaring The Evidence On The Issue
+
+The tiers above stay prose and remain the rule. The `verify:*` labels are the
+per-issue declaration of what that item's evidence is, applied when the issue is
+filed so it is known before implementation starts:
+
+| Tier | Labels the issue carries |
+|---|---|
+| Low | `verify:automated` |
+| Medium | `verify:automated`, plus `verify:simulator` or `verify:web` for the changed flow |
+| High | the Medium set, plus `verify:device` when device feel, native behavior, or a release is involved |
+
+The labels do not replace the tier. Assign the tier from the diff, then confirm
+the issue's labels match; correct the labels if they do not.
+
 Use `.agents/skills/verify-change` for the detailed workflow.
 
 ## Human Approval Boundaries
@@ -160,6 +218,8 @@ Ask before:
 
 Routine implementation inside an approved objective does not require repeated confirmation.
 
+When a decision is needed and the human turn is not available, the escalation has a home: open an issue with the `decision` label using `.github/ISSUE_TEMPLATE/decision-needed.md`. State the decision required, why it matters, the viable options with tradeoffs, and a recommendation. Never a bare "I need a decision." Add `blocked:kraig` when the work cannot proceed until it is answered.
+
 ## Review Priorities
 
 Review the actual branch diff, not only the implementation summary. Prioritize:
@@ -176,7 +236,7 @@ Independent review is required at High risk and valuable at your discretion for 
 
 ## Documentation Routing
 
-- Active status or portfolio priority: update `docs/current.md`. Keep each row's next action scoped to one bounded work item, not a phase or milestone.
+- Active status, portfolio priority, open human checks, or blockers: never record work state in a committed file. It lives in GitHub Issues. File or update an issue instead, scoped to one bounded work item.
 - Package boundaries or system shape: read and update `docs/architecture.md`.
 - Shared visual decisions: read and update `docs/design-canon.md`.
 - Deployment or release process: read and update `docs/release-playbook.md`.

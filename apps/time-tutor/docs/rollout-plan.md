@@ -1,6 +1,6 @@
 # Time Tutor — Rollout Backlog
 
-> This is historical product context and a backlog, not an autonomous phase queue. Follow `docs/current.md` and the user's current objective; do not start the next numbered item merely because an earlier item is complete. A phase's "What to do" list is a set of candidate work items, not one PR — implement and land one at a time. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
+> This is historical product context and a backlog, not an autonomous phase queue. Follow the open issues (`gh issue list --state open --label "app:time-tutor"`) and the user's current objective; do not start the next numbered item merely because an earlier item is complete. A phase's "What to do" list is a set of candidate work items, not one PR — implement and land one at a time. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
 
 ## Status
 
