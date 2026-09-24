@@ -147,6 +147,12 @@ function scheduleInstantRewind(player: Player, delayMs: number) {
     // Detached from any call site, so nothing upstream would catch a throw.
     // Normalize the result rather than assuming seekTo returns a promise.
     try {
+      // Pause before seeking. A player that has reached the end of its clip was
+      // never paused — it is still nominally playing, just out of audio — so
+      // seeking it back to 0 makes it play the clip a second time. That is
+      // heard as a double click one rewind-delay after the press. Pausing a
+      // finished player is a no-op, so this is safe whatever state it is in.
+      player.pause();
       Promise.resolve(player.seekTo(0)).catch(() => undefined);
     } catch {
       // A rewind that fails just means the next press on this player starts

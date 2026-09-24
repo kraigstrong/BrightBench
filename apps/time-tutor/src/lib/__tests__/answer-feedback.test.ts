@@ -207,6 +207,32 @@ describe('answer feedback audio', () => {
       }
     });
 
+    // A player that reached the end of its clip was never paused — it is still
+    // nominally playing, just out of audio. Seeking it back to 0 in that state
+    // replays the clip, heard as a double click one rewind-delay after the
+    // press. The rewind must pause first.
+    it('pauses before rewinding so the clip cannot play a second time', () => {
+      jest.useFakeTimers();
+
+      try {
+        const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
+
+        prewarmInstantSounds(true);
+        const [tapPlayer] = playersCreatedFor(REWARD_SOUNDS.modeTap);
+
+        playModeTapSound(true);
+        jest.advanceTimersByTime(300);
+
+        expect(tapPlayer.pause).toHaveBeenCalled();
+        expect(tapPlayer.seekTo).toHaveBeenCalledWith(0);
+        expect(tapPlayer.pause.mock.invocationCallOrder[0]).toBeLessThan(
+          tapPlayer.seekTo.mock.invocationCallOrder[0],
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     // A single player would still be sitting at the end of its 0.2s clip on the
     // second press, so the click would be silent and every further press would
     // push the rewind out again.
