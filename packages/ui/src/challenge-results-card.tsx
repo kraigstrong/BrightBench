@@ -26,7 +26,10 @@ export type ChallengeResultsCardProps = {
   onBack: () => void;
   onMasteryRevealed?: () => void;
   onPlayAgain: () => void;
-  onRevealComplete?: () => void;
+  // `skipped` distinguishes a reveal the player cut short from one that ran its
+  // full length. They finish in the same state, but anything scored to the
+  // reveal's own timing — audio in particular — has to know the difference.
+  onRevealComplete?: (info: { skipped: boolean }) => void;
   onRevealStart?: () => void;
   onStarRevealed?: (starIndex: number) => void;
   primaryActionLabel?: string;
@@ -146,11 +149,14 @@ export function ChallengeResultsCard({
     ]).start();
   }, []);
 
-  const finishReveal = useCallback(() => {
-    setDisplayedStars(totalEarnedStars);
-    setIsFullyRevealed(true);
-    onRevealComplete?.();
-  }, [onRevealComplete, totalEarnedStars]);
+  const finishReveal = useCallback(
+    (skipped = false) => {
+      setDisplayedStars(totalEarnedStars);
+      setIsFullyRevealed(true);
+      onRevealComplete?.({ skipped });
+    },
+    [onRevealComplete, totalEarnedStars],
+  );
 
   const resetReveal = useCallback(() => {
     clearTimers();
@@ -241,8 +247,10 @@ export function ChallengeResultsCard({
 
     timersRef.current.push(scoreMarkerTimer);
 
+    // Wrapped rather than passed directly so the timer can never supply an
+    // argument of its own for `skipped`.
     const finishTimer = setTimeout(
-      finishReveal,
+      () => finishReveal(false),
       scoreStartDelay + scoreTotalDuration + FINISH_REVEAL_DELAY_MS,
     );
 
@@ -467,7 +475,7 @@ export function ChallengeResultsCard({
     setShowScoreThresholdTwoStar(scoreEarnedThresholdTwoStar);
     setShowAccuracyPlayerMarker(true);
     setShowScorePlayerMarker(true);
-    finishReveal();
+    finishReveal(true);
   }
 
   function handleReanimate() {

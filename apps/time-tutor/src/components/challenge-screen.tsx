@@ -554,12 +554,22 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             onBack={() => router.back()}
             onMasteryRevealed={() => playCrownSound(soundEffectsEnabled)}
             onPlayAgain={beginChallenge}
-            onRevealComplete={() => {
-              // The roll is deliberately not stopped here. Its crash lands on
-              // the score bar completing and then rings out over the finished
-              // card; cutting it at reveal-complete is what made the ending
-              // sound abrupt. Leaving the reveal stops it — see the effect
-              // above.
+            onRevealComplete={({ skipped }) => {
+              // A reveal that ran its full length keeps the roll: the crash is
+              // scored to the score bar completing and then rings out over the
+              // finished card. Cutting it there is what made the ending sound
+              // abrupt.
+              //
+              // A skipped reveal is different. The player jumped the bars to
+              // the end, so the moment the crash exists to punctuate has
+              // already passed and it would fire seconds later over a static
+              // card. Skipping keeps the player on the results screen, so the
+              // cleanup effect above does not run and this is the only place
+              // that can stop it.
+              if (skipped) {
+                stopSuspenseLoop();
+              }
+
               triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled);
             }}
             onRevealStart={() => startSuspenseLoop(soundEffectsEnabled)}

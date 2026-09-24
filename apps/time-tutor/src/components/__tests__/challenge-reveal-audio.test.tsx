@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { createAudioPlayer } from 'expo-audio';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -32,13 +32,25 @@ const createAudioPlayerMock = createAudioPlayer as unknown as jest.Mock;
 
 type MockPlayer = { pause: jest.Mock; play: jest.Mock; seekTo: jest.Mock };
 
+// @education/audio caches one player per sound at module level, so only the
+// first test in this file causes createAudioPlayer to be called for the roll.
+// Later tests reuse that same object; jest.clearAllMocks() in beforeEach resets
+// its own play/pause records, so assertions stay per-test.
+let cachedRollPlayer: MockPlayer | undefined;
+
 function rollPlayer(): MockPlayer | undefined {
-  return createAudioPlayerMock.mock.calls
+  const found = createAudioPlayerMock.mock.calls
     .map((call, index) => ({
       asset: call[0],
       player: createAudioPlayerMock.mock.results[index]?.value as MockPlayer,
     }))
     .find((candidate) => candidate.asset === REWARD_SOUNDS.suspenseRoll)?.player;
+
+  if (found) {
+    cachedRollPlayer = found;
+  }
+
+  return cachedRollPlayer;
 }
 
 // The run's timer sets the finished status from inside a setTimeRemaining
@@ -89,10 +101,6 @@ describe('challenge reveal audio', () => {
     jest.useRealTimers();
   });
 
-  // Two halves of one behaviour, asserted in one test on purpose: the package
-  // caches players at module level, so a second test would reuse this player
-  // after the first test's automatic unmount had already paused it.
-  //
   // The crash lands on the score bar completing and then rings out over the
   // finished card. Stopping the roll at reveal-complete is what cut the cymbal
   // off mid-decay and made the ending sound abrupt. Since nothing in the normal
@@ -117,6 +125,26 @@ describe('challenge reveal audio', () => {
     expect((player as MockPlayer).pause).not.toHaveBeenCalled();
 
     view.unmount();
+
+    expect((player as MockPlayer).pause).toHaveBeenCalled();
+  });
+
+  // Skipping jumps the bars to their end and fires onRevealComplete without
+  // leaving the results screen, so the cleanup effect never runs. The moment
+  // the crash exists to punctuate has already passed, so it must not fire
+  // seconds later over a static card.
+  it('stops the roll when the reveal is skipped', async () => {
+    renderChallenge();
+    await runChallengeToCompletion();
+
+    const player = rollPlayer();
+
+    expect(player).toBeDefined();
+    expect((player as MockPlayer).pause).not.toHaveBeenCalled();
+
+    act(() => {
+      fireEvent.press(screen.getByTestId('challenge-results-skip-overlay'));
+    });
 
     expect((player as MockPlayer).pause).toHaveBeenCalled();
   });
