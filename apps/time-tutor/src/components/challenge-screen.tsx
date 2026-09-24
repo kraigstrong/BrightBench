@@ -320,6 +320,23 @@ export function ChallengeScreen<TPrompt, TAnswer>({
     beginChallenge();
   }, [beginChallenge]);
 
+  const isShowingResults = runStatus === 'finished' && resultSummary !== null;
+
+  // The drum roll now outlives the reveal on purpose so its crash can ring out
+  // over the finished card, which means nothing in the normal path stops it.
+  // Leaving the reveal has to — by Back, by Play Again, or by navigating away —
+  // or the roll follows the player to the next screen. Stopping a roll that was
+  // never started is a no-op, so this is safe even with sound switched off.
+  useEffect(() => {
+    if (!isShowingResults) {
+      return;
+    }
+
+    return () => {
+      stopSuspenseLoop();
+    };
+  }, [isShowingResults]);
+
   const triggerWrongAnswerFeedback = useCallback(
     (nextPrompt: TPrompt) => {
       if (feedbackTimerRef.current) {
@@ -538,7 +555,11 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             onMasteryRevealed={() => playCrownSound(soundEffectsEnabled)}
             onPlayAgain={beginChallenge}
             onRevealComplete={() => {
-              stopSuspenseLoop();
+              // The roll is deliberately not stopped here. Its crash lands on
+              // the score bar completing and then rings out over the finished
+              // card; cutting it at reveal-complete is what made the ending
+              // sound abrupt. Leaving the reveal stops it — see the effect
+              // above.
               triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled);
             }}
             onRevealStart={() => startSuspenseLoop(soundEffectsEnabled)}
