@@ -1,0 +1,26 @@
+{
+  "name": "@education/audio",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint"
+  },
+  "peerDependencies": {
+    "expo-audio": "*"
+  },
+  "devDependencies": {
+    "@education/eslint-config": "0.0.0",
+    "@education/typescript-config": "0.0.0",
+    "eslint": "^9.39.4",
+    "expo-audio": "~55.0.16",
+    "typescript": "5.9.2"
+  }
+}
