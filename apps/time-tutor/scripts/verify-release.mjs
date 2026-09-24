@@ -42,7 +42,8 @@ if (xcodeBuilds.length !== 1 || xcodeBuilds[0] !== expectedBuild) {
   );
 }
 
-const audioDir = resolve(appRoot, 'assets/audio/ui');
+// The reward sounds are shared suite assets and live in @education/audio.
+const audioDir = resolve(appRoot, '../../packages/audio/assets/ui');
 const audioFiles = readdirSync(audioDir).filter((file) => file.endsWith('.mp3'));
 const credits = readFileSync(resolve(audioDir, 'CREDITS.md'), 'utf8').trim();
 if (!audioFiles.length) {

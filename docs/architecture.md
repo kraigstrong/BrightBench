@@ -72,6 +72,34 @@ Should not contain:
 - per-app gameplay widgets
 - tightly coupled screens
 
+### `@education/audio`
+Should contain:
+- the shared reward sound files and their credits
+- generic playback helpers:
+  - audio-mode configuration
+  - lazy single players keyed by sound
+  - a round-robin pool so overlapping plays ring together
+  - a prewarmed synchronous "instant sound" path for latency-sensitive presses
+
+Should not contain:
+- which sound means "correct", "wrong", or "round complete"
+- reward rules such as when a summary sound replaces per-star dings
+- haptics
+- a sound-effects settings gate
+
+The split is deliberate: the package knows how to make a noise, the app decides
+what the noise means. Function names stay generic verbs — `playSound`,
+`playPooledSound`, `playInstantSound` — with no gameplay vocabulary.
+
+Sound files belong here rather than in an app because reward audio is suite
+identity, not product identity. Product identity — icons, splash screens, store
+metadata — stays app-local. Curriculum audio (letter names, phoneme
+recordings) is content, not reward feedback, and also stays app-local.
+
+`expo-audio` is a peer dependency. The package does not pull a native module
+into an app that does not already have one; adding audio to an app without
+`expo-audio` is a native-dependency change in that app.
+
 ### `@education/legal-pages`
 Should contain:
 - generic support/privacy content builders
@@ -92,7 +120,7 @@ Each app should own:
 - gameplay logic
 - content/curriculum rules
 - App Store identity
-- assets and iconography
+- assets and iconography, except the shared reward sounds in `@education/audio`
 - bundle IDs and EAS config
 - Vercel project linkage
 

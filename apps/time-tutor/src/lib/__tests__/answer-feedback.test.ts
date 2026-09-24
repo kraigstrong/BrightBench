@@ -1,7 +1,7 @@
 import { createAudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 
-import { FEEDBACK_AUDIO_MANIFEST } from '@/config/audio-manifest';
+import { REWARD_SOUNDS } from '@education/audio';
 
 // The shared jest setup hands back a player whose seekTo() returns undefined,
 // which is enough for render tests but swallows playback here. These tests need
@@ -64,7 +64,7 @@ describe('answer feedback audio', () => {
       loadAnswerFeedback().triggerRoundCompleteFeedback(0, true);
       await flushAsyncWork();
 
-      const [player] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.roundNone);
+      const [player] = playersCreatedFor(REWARD_SOUNDS.roundNone);
 
       expect(player.play).toHaveBeenCalledTimes(1);
       expect(notificationAsyncMock).toHaveBeenCalledWith('warning');
@@ -98,7 +98,7 @@ describe('answer feedback audio', () => {
       await playStarRevealDing(true);
       await playStarRevealDing(true);
 
-      const pool = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.starDing);
+      const pool = playersCreatedFor(REWARD_SOUNDS.starDing);
 
       expect(pool).toHaveLength(3);
       for (const player of pool) {
@@ -128,8 +128,8 @@ describe('answer feedback audio', () => {
       playCrownSound(true);
       await flushAsyncWork();
 
-      const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
-      const [crownPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.crown);
+      const [tapPlayer] = playersCreatedFor(REWARD_SOUNDS.modeTap);
+      const [crownPlayer] = playersCreatedFor(REWARD_SOUNDS.crown);
 
       expect(tapPlayer.play).toHaveBeenCalledTimes(1);
       expect(crownPlayer.play).toHaveBeenCalledTimes(1);
@@ -152,17 +152,17 @@ describe('answer feedback audio', () => {
 
       prewarmInstantSounds(true);
 
-      expect(playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap).length).toBeGreaterThan(1);
+      expect(playersCreatedFor(REWARD_SOUNDS.modeTap).length).toBeGreaterThan(1);
     });
 
     it('builds the pool once across repeated prewarms', () => {
       const { prewarmInstantSounds } = loadAnswerFeedback();
 
       prewarmInstantSounds(true);
-      const afterFirst = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap).length;
+      const afterFirst = playersCreatedFor(REWARD_SOUNDS.modeTap).length;
       prewarmInstantSounds(true);
 
-      expect(playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap)).toHaveLength(afterFirst);
+      expect(playersCreatedFor(REWARD_SOUNDS.modeTap)).toHaveLength(afterFirst);
     });
 
     it('prewarms nothing when sound effects are disabled', () => {
@@ -179,7 +179,7 @@ describe('answer feedback audio', () => {
       const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
 
       prewarmInstantSounds(true);
-      const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+      const [tapPlayer] = playersCreatedFor(REWARD_SOUNDS.modeTap);
 
       playModeTapSound(true);
 
@@ -195,13 +195,39 @@ describe('answer feedback audio', () => {
         const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
 
         prewarmInstantSounds(true);
-        const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+        const [tapPlayer] = playersCreatedFor(REWARD_SOUNDS.modeTap);
 
         playModeTapSound(true);
         expect(tapPlayer.seekTo).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(300);
         expect(tapPlayer.seekTo).toHaveBeenCalledWith(0);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    // A player that reached the end of its clip was never paused — it is still
+    // nominally playing, just out of audio. Seeking it back to 0 in that state
+    // replays the clip, heard as a double click one rewind-delay after the
+    // press. The rewind must pause first.
+    it('pauses before rewinding so the clip cannot play a second time', () => {
+      jest.useFakeTimers();
+
+      try {
+        const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
+
+        prewarmInstantSounds(true);
+        const [tapPlayer] = playersCreatedFor(REWARD_SOUNDS.modeTap);
+
+        playModeTapSound(true);
+        jest.advanceTimersByTime(300);
+
+        expect(tapPlayer.pause).toHaveBeenCalled();
+        expect(tapPlayer.seekTo).toHaveBeenCalledWith(0);
+        expect(tapPlayer.pause.mock.invocationCallOrder[0]).toBeLessThan(
+          tapPlayer.seekTo.mock.invocationCallOrder[0],
+        );
       } finally {
         jest.useRealTimers();
       }
@@ -217,7 +243,7 @@ describe('answer feedback audio', () => {
         const { playModeTapSound, prewarmInstantSounds } = loadAnswerFeedback();
 
         prewarmInstantSounds(true);
-        const pool = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+        const pool = playersCreatedFor(REWARD_SOUNDS.modeTap);
 
         expect(pool.length).toBeGreaterThan(1);
 
@@ -246,7 +272,7 @@ describe('answer feedback audio', () => {
       playModeTapSound(true);
       await flushAsyncWork();
 
-      const [tapPlayer] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.modeTap);
+      const [tapPlayer] = playersCreatedFor(REWARD_SOUNDS.modeTap);
 
       expect(tapPlayer.play).toHaveBeenCalledTimes(1);
     });
@@ -258,7 +284,7 @@ describe('answer feedback audio', () => {
 
       await startSuspenseLoop(true);
 
-      const [player] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.suspenseRoll);
+      const [player] = playersCreatedFor(REWARD_SOUNDS.suspenseRoll);
 
       expect(player.play).toHaveBeenCalledTimes(1);
       expect(player.loop).toBe(false);
@@ -273,7 +299,7 @@ describe('answer feedback audio', () => {
       await startSuspenseLoop(true);
       await stopSuspenseLoop();
 
-      const [player] = playersCreatedFor(FEEDBACK_AUDIO_MANIFEST.suspenseRoll);
+      const [player] = playersCreatedFor(REWARD_SOUNDS.suspenseRoll);
 
       expect(player.pause).toHaveBeenCalledTimes(1);
     });
