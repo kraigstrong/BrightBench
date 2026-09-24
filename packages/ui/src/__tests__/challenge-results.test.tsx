@@ -39,6 +39,58 @@ describe('ChallengeResultsOverlay', () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
+  // Consumers score audio to the reveal's own timing, so a reveal the player
+  // cut short has to be distinguishable from one that ran its full length —
+  // both end in the same visual state.
+  it('reports whether the reveal was skipped or ran its full length', () => {
+    const onRevealComplete = jest.fn();
+
+    const { unmount } = render(
+      <ChallengeResultsOverlay
+        accuracy={90}
+        accuracyThreshold={80}
+        didUnlockMastery={false}
+        onBack={jest.fn()}
+        onPlayAgain={jest.fn()}
+        onRevealComplete={onRevealComplete}
+        score={10}
+        scoreThresholdOne={4}
+        scoreThresholdTwo={9}
+        subtitle="Hard challenge"
+        title="Time's up!"
+      />,
+    );
+
+    act(() => jest.runAllTimers());
+
+    expect(onRevealComplete).toHaveBeenCalledTimes(1);
+    expect(onRevealComplete).toHaveBeenCalledWith({ skipped: false });
+
+    unmount();
+    onRevealComplete.mockClear();
+
+    render(
+      <ChallengeResultsOverlay
+        accuracy={90}
+        accuracyThreshold={80}
+        didUnlockMastery={false}
+        onBack={jest.fn()}
+        onPlayAgain={jest.fn()}
+        onRevealComplete={onRevealComplete}
+        score={10}
+        scoreThresholdOne={4}
+        scoreThresholdTwo={9}
+        subtitle="Hard challenge"
+        title="Time's up!"
+      />,
+    );
+
+    fireEvent.press(screen.getByTestId('challenge-results-skip-overlay'));
+
+    expect(onRevealComplete).toHaveBeenCalledTimes(1);
+    expect(onRevealComplete).toHaveBeenCalledWith({ skipped: true });
+  });
+
   it('fires onStarRevealed once per earned star, in reveal order', () => {
     const onStarRevealed = jest.fn();
 

@@ -320,6 +320,23 @@ export function ChallengeScreen<TPrompt, TAnswer>({
     beginChallenge();
   }, [beginChallenge]);
 
+  const isShowingResults = runStatus === 'finished' && resultSummary !== null;
+
+  // The drum roll now outlives the reveal on purpose so its crash can ring out
+  // over the finished card, which means nothing in the normal path stops it.
+  // Leaving the reveal has to — by Back, by Play Again, or by navigating away —
+  // or the roll follows the player to the next screen. Stopping a roll that was
+  // never started is a no-op, so this is safe even with sound switched off.
+  useEffect(() => {
+    if (!isShowingResults) {
+      return;
+    }
+
+    return () => {
+      stopSuspenseLoop();
+    };
+  }, [isShowingResults]);
+
   const triggerWrongAnswerFeedback = useCallback(
     (nextPrompt: TPrompt) => {
       if (feedbackTimerRef.current) {
@@ -537,8 +554,22 @@ export function ChallengeScreen<TPrompt, TAnswer>({
             onBack={() => router.back()}
             onMasteryRevealed={() => playCrownSound(soundEffectsEnabled)}
             onPlayAgain={beginChallenge}
-            onRevealComplete={() => {
-              stopSuspenseLoop();
+            onRevealComplete={({ skipped }) => {
+              // A reveal that ran its full length keeps the roll: the crash is
+              // scored to the score bar completing and then rings out over the
+              // finished card. Cutting it there is what made the ending sound
+              // abrupt.
+              //
+              // A skipped reveal is different. The player jumped the bars to
+              // the end, so the moment the crash exists to punctuate has
+              // already passed and it would fire seconds later over a static
+              // card. Skipping keeps the player on the results screen, so the
+              // cleanup effect above does not run and this is the only place
+              // that can stop it.
+              if (skipped) {
+                stopSuspenseLoop();
+              }
+
               triggerRoundCompleteFeedback(resultSummary.earnedStars, soundEffectsEnabled);
             }}
             onRevealStart={() => startSuspenseLoop(soundEffectsEnabled)}

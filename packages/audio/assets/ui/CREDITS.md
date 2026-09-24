@@ -33,10 +33,22 @@ Source URLs take the form
 
 - `suspense-roll.mp3` (drum roll under a results reveal)
   - Mixkit 566, "Drum Roll"
-  - Trimmed from the 5.94s source to 3.45s so the crash lands at ~3.0s, on the
-    score bar completing, with a 250ms fade from 3.20s. Time Tutor's reveal
-    stops the roll at 3.52s, so the file has to finish before then or the crash
-    gets cut mid-decay. Peak -3.4 dBFS.
+  - The 5.94s source delayed 200ms, trimmed to 5.25s, with a 150ms fade from
+    5.10s that only cleans the cut — the decay is already below -45 dB by then.
+    Audible content runs 0.20s to 5.05s. The crash peaks at 3.213s and the
+    cymbal decays naturally for about 1.8s after it. Peak -3.46 dBFS.
+  - The 200ms delay is what puts the crash on 3.20s, where Time Tutor's score
+    bar completes (80ms + 1420ms accuracy + 180ms handoff + 1520ms score). The
+    source's own crash is at 3.00s, so playing it undelayed fires it while the
+    bar is still filling.
+  - An earlier version of this file was cut to 3.45s with a 250ms fade from
+    3.20s, on the stated assumption that the reveal stopped the roll at 3.52s
+    and the file therefore had to end first. Both halves were wrong: the bar
+    completes at 3.20s rather than 3.00s, so the crash fired 194ms early, and
+    the fade then crushed a cymbal that was still at -15 dB, which is what made
+    the ending sound abrupt. The reveal no longer stops the roll at all — it
+    rings out over the finished card, and Time Tutor stops it only when the
+    player leaves the reveal.
 - `star-ding.mp3` (one per star as it pops in during a reveal)
   - Mixkit 600, "Achievement bell"
   - Trimmed from the 2.40s source to 1.40s. The strike is at 0-0.2s and the
