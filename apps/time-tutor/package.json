@@ -18,6 +18,7 @@
     "web:export": "expo export --platform web && node ./scripts/postprocess-web-export.mjs"
   },
   "dependencies": {
+    "@education/audio": "0.0.0",
     "@education/design": "0.0.0",
     "@education/legal-pages": "0.0.0",
     "@education/ui": "0.0.0",
