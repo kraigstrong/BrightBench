@@ -10,8 +10,8 @@ description: Run a BrightBench app release preflight covering versions, full ver
 Releasing is High risk. Read root AGENTS.md, docs/release-playbook.md, and the target app's nested AGENTS.md. For outstanding work and human checks, read the app's open issues and its release milestone:
 
 ```sh
-gh issue list --state open --label "app:<app>" --json number,title,labels,body
-gh issue list --state open --milestone "<App> <version>" --json number,title,labels
+gh issue list --state open --label "app:<app>" --limit 100 --json number,title,labels,body,closedByPullRequestsReferences
+gh issue list --state open --milestone "<App> <version>" --limit 100 --json number,title,labels
 ```
 
 Do not submit, publish, promote, tag, or roll back production without explicit human approval.

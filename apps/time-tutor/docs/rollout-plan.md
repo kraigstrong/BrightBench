@@ -1,18 +1,25 @@
 # Time Tutor — Rollout Backlog
 
-> This is historical product context and a backlog, not an autonomous phase queue. Follow the open issues (`gh issue list --state open --label "app:time-tutor"`) and the user's current objective; do not start the next numbered item merely because an earlier item is complete. A phase's "What to do" list is a set of candidate work items, not one PR — implement and land one at a time. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
+> This is historical product context and a backlog, not an autonomous phase queue. Follow the open issues (`gh issue list --state open --label "app:time-tutor" --limit 100`) and the user's current objective; do not start the next numbered item merely because an earlier item is complete. A phase's "What to do" list is a set of candidate work items, not one PR — implement and land one at a time. Human gates still apply to device feel, App Store actions, privacy, pricing, and release decisions.
 
-## Status
+## Historical phase record
 
-| Phase | State |
+This table records what each phase delivered and which pull requests landed it.
+It is history, not status — it is not updated as work progresses, and it is not
+where you look to find out what is active. **Anything still outstanding is an
+open issue**; see the pointer above.
+
+| Phase | What landed |
 |---|---|
-| 0 — Refactor + meta fix | Done (merged [#1](https://github.com/kraigstrong/BrightBench/pull/1)) |
-| 1 — Sound/haptics/progress/reorder | Done (merged [#2](https://github.com/kraigstrong/BrightBench/pull/2)); Practice wrong-answer feedback redesigned and refined (merged [#10](https://github.com/kraigstrong/BrightBench/pull/10), [#11](https://github.com/kraigstrong/BrightBench/pull/11), [#12](https://github.com/kraigstrong/BrightBench/pull/12), [#13](https://github.com/kraigstrong/BrightBench/pull/13)); device feel review still remains |
-| 2 — Preview video | Backlog; not scheduled |
-| 3 — SEO content | Backlog; requires portfolio-content confirmation |
-| 4 — Analytics | Optional; not approved |
+| 0 — Refactor + meta fix | Merged [#1](https://github.com/kraigstrong/BrightBench/pull/1) |
+| 1 — Sound/haptics/progress/reorder | Merged [#2](https://github.com/kraigstrong/BrightBench/pull/2); Practice wrong-answer feedback redesigned and refined in [#10](https://github.com/kraigstrong/BrightBench/pull/10), [#11](https://github.com/kraigstrong/BrightBench/pull/11), [#12](https://github.com/kraigstrong/BrightBench/pull/12), [#13](https://github.com/kraigstrong/BrightBench/pull/13); reward audio refreshed in [#15](https://github.com/kraigstrong/BrightBench/pull/15) and extracted to `@education/audio` in [#16](https://github.com/kraigstrong/BrightBench/pull/16) |
+| 2 — Preview video | Never started. Candidate work only, not tracked as an issue. |
+| 3 — SEO content | Never started. Candidate work only, not tracked as an issue. |
+| 4 — Analytics | Never started, never approved. Adding analytics is a human-approval boundary. |
 
-**Current next product action:** a physical-device review of the shipped Phase 1 audio and haptics. Practice-mode wrong-answer feedback has been refined (see below) and no longer blocks anything.
+The outstanding device review that used to be tracked here is now an issue, as
+is the drum-roll defect that the reward-audio work surfaced. Both are found
+through the pointer above rather than read from this file.
 
 **Sequencing logic:** foundation/refactor first (so later phases build on clean code instead of duplicating work), then user-facing engagement features, then release assets, then content/SEO, and analytics last since it's the one irreversible-feeling decision (a new SDK + a privacy-label change) and benefits from being isolated rather than bundled with anything else.
 

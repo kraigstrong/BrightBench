@@ -11,7 +11,7 @@ For routine work, read only:
 1. This file.
 2. The open issues for the app in play:
 
-       gh issue list --state open --label "app:<app>" --json number,title,labels,body
+       gh issue list --state open --label "app:<app>" --limit 100 --json number,title,labels,body,closedByPullRequestsReferences
 
 3. The target app's nested `AGENTS.md`, when one exists.
 4. Files directly involved in the change.
@@ -25,7 +25,7 @@ Work state lives in GitHub Issues. There is no status file.
 The canonical read is one command, scoped to the app being changed:
 
 ```sh
-gh issue list --state open --label "app:<app>" --json number,title,labels,body
+gh issue list --state open --label "app:<app>" --limit 100 --json number,title,labels,body,closedByPullRequestsReferences
 ```
 
 `<app>` is `time-tutor`, `fraction-finder`, `letter-learner`, `marketing`,
@@ -36,7 +36,7 @@ When no app has been named yet — picking the next thing to do rather than
 working inside one app — read the whole portfolio instead, then narrow:
 
 ```sh
-gh issue list --state open --json number,title,labels,milestone
+gh issue list --state open --limit 200 --json number,title,labels,milestone
 ```
 
 Labels:
@@ -51,9 +51,19 @@ Labels:
 - `defect-class` means the item covers a whole class of defects; closing it on a
   single instance is wrong.
 
-Acceptance criteria live in the issue body. An open issue with a linked pull
-request is in flight; a closed issue is done. Close an issue from its pull
-request with `Closes #N`.
+Acceptance criteria live in the issue body.
+
+An open issue whose `closedByPullRequestsReferences` is non-empty already has a
+pull request against it and is in flight — do not start it, or you will
+duplicate work in progress. An empty array means unstarted; a closed issue is
+done. That field is in the read above for exactly this reason: without it an
+in-flight item is indistinguishable from an untouched one. Close an issue from
+its pull request with `Closes #N`.
+
+The `--limit` matters. `gh issue list` fetches 30 by default and silently drops
+the rest, which would hide older open work now that this read replaces the
+status file. Keep an explicit limit above the real issue count wherever this
+command is prescribed.
 
 Milestones are per-app releases and carry release-blocking for that app only.
 

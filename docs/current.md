@@ -8,7 +8,7 @@ never updated, and nothing should be recorded here.
 Read the open work for the app you are changing:
 
 ```sh
-gh issue list --state open --label "app:<app>" --json number,title,labels,body
+gh issue list --state open --label "app:<app>" --limit 100 --json number,title,labels,body,closedByPullRequestsReferences
 ```
 
 `<app>` is one of `time-tutor`, `fraction-finder`, `letter-learner`,
@@ -29,7 +29,12 @@ and repo-wide work.
 
 Acceptance criteria live in the issue body, not in a separate document.
 
-An open issue with a linked pull request is in flight. A closed issue is done.
+An open issue whose `closedByPullRequestsReferences` is non-empty is in flight —
+a pull request already exists against it. An empty array means unstarted. A
+closed issue is done.
+
+`gh issue list` fetches 30 issues by default, so pass an explicit `--limit`
+above the real count or older open work is silently omitted.
 
 Milestones are per-app releases (`Time Tutor 1.2`, `Fraction Finder 1.0`,
 `Letter Learner 1.0`, `Marketing launch`) and carry release-blocking for that
