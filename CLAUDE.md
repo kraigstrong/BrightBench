@@ -5,9 +5,12 @@
 For routine Time Tutor work, the complete startup context is:
 
 1. `AGENTS.md`
-2. `docs/current.md`
+2. The open issues: `gh issue list --state open --label "app:time-tutor" --limit 100 --json number,title,labels,body,closedByPullRequestsReferences`
 3. `apps/time-tutor/AGENTS.md`
 4. Files directly involved in the change
+
+Work state lives in GitHub Issues, not in a committed file. See the
+"Current-State Pointer" section of `AGENTS.md`.
 
 Canonical reusable workflows live in `.agents/skills`. The `.claude/skills` entries are thin compatibility bridges and must not duplicate or diverge from the canonical workflow text.
 
