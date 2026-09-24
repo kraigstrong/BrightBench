@@ -6,7 +6,10 @@
 - Objective: Add `@education/audio` holding the shared reward sounds and generic
   playback helpers, and migrate Time Tutor onto it with no behavior change
 - Branch: `shared/audio-package`
-- Status: implemented and verified; in review
+- Status: implemented and verified; in review. The Challenge results reveal was
+  exercised on a physical device after the move and all reward audio plays
+  correctly from the package. That pass surfaced a pre-existing drum-roll timing
+  defect, unrelated to this change and tracked in issue #17.
 - Next action: review and merge, then wire Letter Learner onto the shared
   correct/try-again sounds
 - Blocked on: nothing
@@ -42,11 +45,6 @@ These are settled; the work items that carry them out are not started.
 
 ## Open human checks
 
-- Exercise Time Tutor's Challenge results reveal (suspense roll, per-star dings,
-  crown, starless summary) on a simulator or device after the audio package
-  move. Those four sounds bundle and serve correctly from the package, but the
-  Challenge flow is App Store-gated on web and could not be played there, so the
-  reveal's runtime playback has not been exercised since the move.
 - Judge Time Tutor haptic strength on a physical iPhone. Audio was judged on
   device during the reward-sound refresh; haptics were not changed and have not
   been reviewed since.
