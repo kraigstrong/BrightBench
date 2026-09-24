@@ -54,6 +54,10 @@ type AppStateValue = {
   setSoundEffectsEnabled: (value: boolean) => void;
   setTimeFormat: (value: TimeFormat) => void;
   soundEffectsEnabled: boolean;
+  // soundEffectsEnabled defaults to true before AsyncStorage hydration
+  // finishes, so reading it alone would play sound to someone who had turned it
+  // off. Anything that can fire during that window should gate on this instead.
+  soundEffectsReady: boolean;
   timeFormat: TimeFormat;
 };
 
@@ -232,6 +236,7 @@ export function AppStateProvider({
       setSoundEffectsEnabled,
       setTimeFormat,
       soundEffectsEnabled,
+      soundEffectsReady: isHydrated && soundEffectsEnabled,
       timeFormat,
     }),
     [challengeProgress, isHydrated, practiceInterval, soundEffectsEnabled, timeFormat],

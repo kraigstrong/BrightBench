@@ -10,6 +10,7 @@ import { HeaderBar } from '@/components/header-bar';
 import { HeaderSettingsButton } from '@/components/header-settings-button';
 import { ModeCard } from '@/components/mode-card';
 import { palette, shadows, typography } from '@/design/theme';
+import { playModeTapSound, prewarmInstantSounds } from '@/lib/answer-feedback';
 import { countMasteredModes, PLAYABLE_MODES } from '@/lib/challenge-progression';
 import { useAppState } from '@/state/app-state';
 import type { HomeMode, PlayableMode } from '@/types/time';
@@ -47,8 +48,14 @@ const modeCards: {
 ];
 
 export default function HomeScreen() {
-  const { challengeProgress } = useAppState();
+  const { challengeProgress, soundEffectsReady } = useAppState();
   const masteredCount = countMasteredModes(challengeProgress);
+
+  // Build the tap player while the home screen is idle rather than on the
+  // press, so the first card tap of a session isn't slower than the rest.
+  React.useEffect(() => {
+    prewarmInstantSounds(soundEffectsReady);
+  }, [soundEffectsReady]);
 
   return (
     <AppShell>
@@ -88,6 +95,8 @@ export default function HomeScreen() {
             accentColor={card.accentColor}
             description={card.description}
             onPress={() => {
+              playModeTapSound(soundEffectsReady);
+
               if (card.mode === 'explore-time') {
                 router.push('/explore-time');
                 return;
