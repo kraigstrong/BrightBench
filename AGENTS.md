@@ -32,6 +32,13 @@ gh issue list --state open --label "app:<app>" --json number,title,labels,body
 `letter-bingo`, `place-value`, or `shared` for packages, tooling, and repo-wide
 work.
 
+When no app has been named yet — picking the next thing to do rather than
+working inside one app — read the whole portfolio instead, then narrow:
+
+```sh
+gh issue list --state open --json number,title,labels,milestone
+```
+
 Labels:
 
 - `app:*` scopes an item to one app, or to `app:shared`.
