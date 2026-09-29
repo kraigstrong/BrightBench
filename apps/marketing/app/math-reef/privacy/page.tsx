@@ -2,11 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { palette, radii, spacing } from '@education/design';
 
-// Math Reef is a native iOS app built outside this repo; this is its App Store privacy policy URL.
-// Keep it in step with the app's PrivacyInfo.xcprivacy and App Store privacy answers.
+import { mathReefContactEmail as contactEmail } from '@/lib/math-reef';
 
-/** Math Reef's own contact, not the site-wide support fallback (which is Time Tutor's). */
-const contactEmail = 'support@brightbench.app';
+// Keep this in step with the app's PrivacyInfo.xcprivacy and App Store privacy answers.
 
 export const metadata: Metadata = {
   description: 'How Math Reef, a math practice game for kids, handles information.',
