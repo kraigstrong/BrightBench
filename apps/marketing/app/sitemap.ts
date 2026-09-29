@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = getPublicSiteOrigin();
   const now = new Date();
 
-  const staticPaths = ['/', '/support', '/privacy', '/learn'];
+  const staticPaths = ['/', '/support', '/privacy', '/math-reef/privacy', '/learn'];
 
   const productPaths = productPages
     .filter((page) => page.kind === 'app')
