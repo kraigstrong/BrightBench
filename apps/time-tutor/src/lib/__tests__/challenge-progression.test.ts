@@ -6,10 +6,12 @@ import {
   getDefaultChallengeDifficulty,
   getChallengeIntervalForDifficulty,
   isChallengeModeMastered,
+  PLAYABLE_MODES,
   shouldUpdateBestStars,
   totalStarsForMode,
 } from '@/lib/challenge-progression';
 import {
+  CHALLENGE_DIFFICULTIES,
   challengeThresholds,
   formatChallengeLaunchIntervalLabel,
 } from '@/config/challenge-thresholds';
@@ -27,32 +29,67 @@ describe('challenge progression helpers', () => {
     expect(formatChallengeLaunchIntervalLabel('1-minute')).toBe('1 min. intervals');
   });
 
-  it('uses the same challenge thresholds across all modes and difficulties', () => {
-    expect(challengeThresholds['digital-to-analog'].easy).toEqual({
-      scoreThresholdOne: 5,
-      scoreThresholdTwo: 8,
-      accuracyThreshold: 80,
+  it('scales the star thresholds by mode and difficulty', () => {
+    expect(challengeThresholds).toEqual({
+      'digital-to-analog': {
+        easy: { scoreThresholdOne: 4, scoreThresholdTwo: 7, accuracyThreshold: 80 },
+        medium: { scoreThresholdOne: 4, scoreThresholdTwo: 6, accuracyThreshold: 75 },
+        hard: { scoreThresholdOne: 3, scoreThresholdTwo: 5, accuracyThreshold: 70 },
+      },
+      'analog-to-digital': {
+        easy: { scoreThresholdOne: 5, scoreThresholdTwo: 8, accuracyThreshold: 80 },
+        medium: { scoreThresholdOne: 4, scoreThresholdTwo: 7, accuracyThreshold: 80 },
+        hard: { scoreThresholdOne: 3, scoreThresholdTwo: 5, accuracyThreshold: 75 },
+      },
+      'elapsed-time': {
+        easy: { scoreThresholdOne: 3, scoreThresholdTwo: 5, accuracyThreshold: 75 },
+        medium: { scoreThresholdOne: 3, scoreThresholdTwo: 4, accuracyThreshold: 70 },
+        hard: { scoreThresholdOne: 2, scoreThresholdTwo: 4, accuracyThreshold: 70 },
+      },
     });
-    expect(challengeThresholds['digital-to-analog'].medium).toEqual({
-      scoreThresholdOne: 5,
-      scoreThresholdTwo: 8,
-      accuracyThreshold: 80,
-    });
-    expect(challengeThresholds['digital-to-analog'].hard).toEqual({
-      scoreThresholdOne: 5,
-      scoreThresholdTwo: 8,
-      accuracyThreshold: 80,
-    });
-    expect(challengeThresholds['analog-to-digital'].easy).toEqual({
-      scoreThresholdOne: 5,
-      scoreThresholdTwo: 8,
-      accuracyThreshold: 80,
-    });
-    expect(challengeThresholds['elapsed-time'].hard).toEqual({
-      scoreThresholdOne: 5,
-      scoreThresholdTwo: 8,
-      accuracyThreshold: 80,
-    });
+  });
+
+  // The third star needs both score bars, so the second must sit strictly above
+  // the first or the two score stars would land on the same answer.
+  it('keeps the second score bar above the first in every cell', () => {
+    for (const mode of PLAYABLE_MODES) {
+      for (const difficulty of CHALLENGE_DIFFICULTIES) {
+        const cell = challengeThresholds[mode][difficulty];
+
+        expect(cell.scoreThresholdTwo).toBeGreaterThan(cell.scoreThresholdOne);
+      }
+    }
+  });
+
+  // Stars already earned are persisted and never recomputed, so loosening a
+  // threshold cannot strip them. Tightening one could still make a previously
+  // earned star unreachable on a replay, which would read as a regression.
+  it('never sets a bar above the original 5 / 8 / 80 for any cell', () => {
+    for (const mode of PLAYABLE_MODES) {
+      for (const difficulty of CHALLENGE_DIFFICULTIES) {
+        const cell = challengeThresholds[mode][difficulty];
+
+        expect(cell.scoreThresholdOne).toBeLessThanOrEqual(5);
+        expect(cell.scoreThresholdTwo).toBeLessThanOrEqual(8);
+        expect(cell.accuracyThreshold).toBeLessThanOrEqual(80);
+      }
+    }
+  });
+
+  // Elapsed Time at 1-minute granularity is the hardest cell in the app and the
+  // one that prompted this rebalance. Two stars has to stay reachable for a
+  // child who answers only a couple of questions but gets them right.
+  it('keeps two stars reachable in the hardest cell', () => {
+    const hardest = challengeThresholds['elapsed-time'].hard;
+
+    // Two right out of two: first score bar plus accuracy.
+    expect(calculateChallengeStars({ score: 2, accuracy: 100 }, hardest)).toBe(2);
+
+    // Two right out of four: the score bar only.
+    expect(calculateChallengeStars({ score: 2, accuracy: 50 }, hardest)).toBe(1);
+
+    // Four right out of five: both score bars plus accuracy.
+    expect(calculateChallengeStars({ score: 4, accuracy: 80 }, hardest)).toBe(3);
   });
 
   it('calculates stars from 80 percent accuracy, score 5, and score 8', () => {
