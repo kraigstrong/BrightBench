@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getPublicSiteOrigin, productCards } from '../src/lib/site.ts';
+import { getProductPageBySlug, getPublicSiteOrigin, productCards } from '../src/lib/site.ts';
 
 test('marketing content keeps one live Time Tutor card with an App Store URL', () => {
   const liveCards = productCards.filter((card) => card.availability === 'live');
@@ -13,4 +13,13 @@ test('marketing content keeps one live Time Tutor card with an App Store URL', (
 
 test('canonical origin has a safe absolute fallback', () => {
   assert.match(getPublicSiteOrigin(), /^https?:\/\//);
+});
+
+test('Math Reef has a card and a product page linking to its help and privacy pages', () => {
+  const card = productCards.find((product) => product.name === 'Math Reef');
+  assert.equal(card?.href, '/products/math-reef');
+  const page = getProductPageBySlug('math-reef');
+  assert.equal(page?.kind, 'app');
+  const links = page?.relatedLinks.map((link) => link.href) ?? [];
+  assert.ok(links.includes('/math-reef/support') && links.includes('/math-reef/privacy'));
 });
