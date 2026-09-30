@@ -9,7 +9,7 @@ const empty = { milestones: {}, rounds: {} };
 test('an empty response gives zeroed worlds with every level in curriculum order', () => {
   const dashboard = summarize(empty);
   assert.equal(dashboard.installs, 0);
-  assert.equal(dashboard.conversion, null);
+  assert.equal(dashboard.unlockRatio, null);
   assert.equal(dashboard.rounds, 0);
   assert.deepEqual(dashboard.worlds.map((world) => world.world), ['addition', 'subtraction', 'multiplication', 'division', 'exponents']);
   assert.deepEqual(dashboard.worlds.flatMap((world) => world.levels.map((row) => row.level)), [...levelIds]);
@@ -84,5 +84,7 @@ test('unlock milestones become the paywall funnel', () => {
   const dashboard = summarize({ milestones: { paywall_shown: 20, unlocked: 5 }, rounds: {} });
   assert.equal(dashboard.paywallShown, 20);
   assert.equal(dashboard.unlocked, 5);
-  assert.equal(dashboard.conversion, 0.25);
+  assert.equal(dashboard.unlockRatio, 0.25);
+  // Counted separately, so the ratio isn't capped at 100%.
+  assert.equal(summarize({ milestones: { paywall_shown: 2, unlocked: 3 }, rounds: {} }).unlockRatio, 1.5);
 });

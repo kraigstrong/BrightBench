@@ -44,8 +44,12 @@ export type Dashboard = {
   /** Installs that saw the unlock screen, and installs that unlocked the full game. */
   paywallShown: number;
   unlocked: number;
-  /** unlocked / paywallShown, or null before anyone saw the unlock screen. */
-  conversion: number | null;
+  /**
+   * unlocked / paywallShown for the same filters, or null with no unlock-screen views. A raw ratio,
+   * not a true conversion rate: the two milestones are counted separately, so an install can see
+   * the screen in one range or version and unlock in another (it can even exceed 100%).
+   */
+  unlockRatio: number | null;
   rounds: number;
   worlds: WorldSummary[];
 };
@@ -133,7 +137,7 @@ export function summarize(stats: Pick<StatsResponse, 'milestones' | 'rounds'>): 
     firstRounds: milestone('first_round'),
     paywallShown,
     unlocked,
-    conversion: paywallShown > 0 ? unlocked / paywallShown : null,
+    unlockRatio: paywallShown > 0 ? unlocked / paywallShown : null,
     rounds,
     worlds,
   };

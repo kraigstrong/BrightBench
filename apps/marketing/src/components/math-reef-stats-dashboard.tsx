@@ -200,11 +200,15 @@ export function MathReefStatsDashboard() {
             <StatTile
               label="Unlocked"
               value={dashboard.unlocked}
-              note={dashboard.conversion === null ? undefined : `${Math.round(dashboard.conversion * 100)}% of those who saw it`}
+              note={
+                dashboard.unlockRatio === null
+                  ? undefined
+                  : `${Math.round(dashboard.unlockRatio * 100)}% of the unlock-screen count (not a per-player rate)`
+              }
             />
           </div>
 
-          {dashboard.installs === 0 && dashboard.rounds === 0 && (
+          {dashboard.installs + dashboard.rounds + dashboard.paywallShown + dashboard.unlocked === 0 && (
             <p style={{ ...card, margin: 0 }}>No counts for these filters yet.</p>
           )}
 
