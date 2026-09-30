@@ -14,6 +14,7 @@
   "dependencies": {
     "@education/design": "0.0.0",
     "@education/legal-pages": "0.0.0",
+    "@upstash/redis": "^1.39.0",
     "next": "^16.2.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
