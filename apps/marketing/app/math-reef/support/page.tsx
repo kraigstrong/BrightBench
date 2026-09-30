@@ -105,7 +105,7 @@ export default function MathReefSupportPage() {
         ))}
 
         <p style={{ color: palette.inkMuted, margin: 0 }}>
-          Math Reef collects no information. See the{' '}
+          Math Reef collects no personal information, only anonymous usage counts. See the{' '}
           <Link href="/math-reef/privacy">privacy policy</Link>.
         </p>
       </section>

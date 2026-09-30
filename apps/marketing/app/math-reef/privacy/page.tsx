@@ -44,7 +44,7 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: 'Information Stored on Your Device',
     body: [
-      'Math Reef saves progress (stars, passed levels, and crowns) and sound settings on the device so a child can pick up where they left off. This stays on the device and is never sent to us.',
+      'Math Reef saves a progress record (each level\'s best score and stars, which levels are passed, and crowns) and sound settings on the device so a child can pick up where they left off. That record stays on the device and is never sent to us; only the anonymous counts described above are.',
       'Deleting the app removes this information. Like other app data, it may be included in your own device backups, which we cannot access.',
     ],
   },
