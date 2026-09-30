@@ -32,6 +32,12 @@ export const maxBodyBytes = 32 * 1024;
 /** The app's queue holds at most 200 events. */
 export const maxEvents = 200;
 /**
+ * Distinct `channel:appVersion` builds counted per day. The app key is public, so without a cap
+ * anyone could invent versions to grow storage and the work a stats read does without bound. Real
+ * traffic is a handful of builds (App Store, TestFlight, debug, across a few versions).
+ */
+export const maxBuildsPerDay = 20;
+/**
  * A round is a level's facts plus up to 3 review questions, and at least 10. The largest level
  * today has 13 facts, so no round is over 16; 30 leaves room for new levels while keeping the
  * number of distinct counters someone could create with the (public) app key small.
@@ -166,8 +172,11 @@ export function counterUpdates(batch: AnalyticsBatch, day: string): CounterUpdat
 
 /** Where counters live: Upstash Redis in production, a map in tests. */
 export interface CounterStore {
-  /** Applies every update and records the build as seen on `day`, all at once. */
-  increment(updates: CounterUpdate[], day: string, build: string): Promise<void>;
+  /**
+   * Applies every update and records the build as seen on `day`, all at once. Returns false, and
+   * counts nothing, when `build` is new for the day and `maxBuilds` builds are already counted.
+   */
+  increment(updates: CounterUpdate[], day: string, build: string, maxBuilds: number): Promise<boolean>;
   /** The builds seen on each day, in order. One round trip. */
   builds(days: string[]): Promise<string[][]>;
   /** The counters in each hash, in order. One round trip. */
@@ -218,12 +227,18 @@ export async function handleEvents(request: Request, deps: EventsDeps): Promise<
 
   const day = utcDay((deps.now ?? (() => new Date()))());
   const { batch } = result;
+  let counted: boolean;
   try {
-    await deps.store.increment(counterUpdates(batch, day), day, `${batch.channel}:${batch.appVersion}`);
+    const build = `${batch.channel}:${batch.appVersion}`;
+    counted = await deps.store.increment(counterUpdates(batch, day), day, build, maxBuildsPerDay);
   } catch {
     // Upstash errors quote the command; log a fixed string instead.
     log('math-reef events not counted: store unavailable');
     return status(503);
+  }
+  if (!counted) {
+    log('math-reef events not counted: too many builds today');
+    return status(429);
   }
   return status(204);
 }

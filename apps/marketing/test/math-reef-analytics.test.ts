@@ -10,6 +10,7 @@ import {
   isMilestoneName,
   levelIds,
   maxBodyBytes,
+  maxBuildsPerDay,
   validateBatch,
 } from '../src/lib/math-reef-analytics.ts';
 
@@ -37,14 +38,17 @@ class MemoryStore implements CounterStore {
   counts = new Map<string, Map<string, number>>();
   seen = new Map<string, Set<string>>();
   failing = false;
-  async increment(updates: CounterUpdate[], day: string, build: string) {
+  async increment(updates: CounterUpdate[], day: string, build: string, maxBuilds: number) {
     if (this.failing) throw new Error('command was: ["hincrby", ...]');
-    this.seen.set(day, (this.seen.get(day) ?? new Set()).add(build));
+    const seen = this.seen.get(day) ?? new Set<string>();
+    if (!seen.has(build) && seen.size >= maxBuilds) return false;
+    this.seen.set(day, seen.add(build));
     for (const { key, field, by } of updates) {
       const hash = this.counts.get(key) ?? new Map<string, number>();
       hash.set(field, (hash.get(field) ?? 0) + by);
       this.counts.set(key, hash);
     }
+    return true;
   }
   async builds(days: string[]) {
     return days.map((day) => [...(this.seen.get(day) ?? [])]);
@@ -234,6 +238,23 @@ test('oversized bodies are cut off by Content-Length or while streaming', async 
   assert.equal((await handleEvents(streamed, { store, appKey })).status, 413);
   assert.ok(pulled <= 6, `read ${pulled} chunks of an endless body`);
   assert.equal(store.counts.size, 0);
+});
+
+test('new builds past the daily cap are 429; known builds still count', async () => {
+  const store = new MemoryStore();
+  const logs: string[] = [];
+  const deps = { store, appKey, now: fixedDay, log: (message: string) => logs.push(message) };
+  for (let minor = 0; minor < maxBuildsPerDay; minor += 1) {
+    assert.equal((await handleEvents(post({ ...sample(), appVersion: `0.${minor}` }), deps)).status, 204);
+  }
+  assert.equal((await handleEvents(post({ ...sample(), appVersion: '9.99' }), deps)).status, 429);
+  assert.equal((await store.builds(['2026-10-01']))[0]?.length, maxBuildsPerDay);
+  assert.equal(await store.hash('mr:m:2026-10-01:testflight:9.99').then((hash) => Object.keys(hash ?? {}).length), 0);
+  assert.equal((await handleEvents(post({ ...sample(), appVersion: '0.3' }), deps)).status, 204);
+  // A new day starts a fresh count.
+  const nextDay = { ...deps, now: () => new Date('2026-10-02T09:00:00Z') };
+  assert.equal((await handleEvents(post({ ...sample(), appVersion: '9.99' }), nextDay)).status, 204);
+  assert.deepEqual(logs, ['math-reef events not counted: too many builds today']);
 });
 
 test('a store failure is 503 with a fixed log line', async () => {

@@ -16,12 +16,17 @@ function client(): Redis {
 }
 
 export const redisCounterStore: CounterStore = {
-  async increment(updates, day, build) {
+  async increment(updates, day, build, maxBuilds) {
+    const buildsKey = counterKeys.builds(day);
+    // Concurrent new builds can overshoot the cap by a few; it bounds growth, not an exact count.
+    const [known, count] = await client().pipeline().sismember(buildsKey, build).scard(buildsKey).exec<[number, number]>();
+    if (!known && count >= maxBuilds) return false;
     // A transaction, so a batch is counted whole or not at all.
     const tx = client().multi();
-    tx.sadd(counterKeys.builds(day), build);
+    tx.sadd(buildsKey, build);
     for (const { key, field, by } of updates) tx.hincrby(key, field, by);
     await tx.exec();
+    return true;
   },
   async builds(days) {
     if (days.length === 0) return [];

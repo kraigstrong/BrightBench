@@ -37,6 +37,9 @@ ignores):
 - `MATH_REEF_APP_KEY`: must match `ReefAnalytics.appKey` in the app. A bot filter, not a secret.
 - `MATH_REEF_STATS_SECRET`: a real secret for reading stats. Never put it in an app.
 
+At most 20 distinct `channel:appVersion` builds are counted per day (`maxBuildsPerDay`); a new
+build past that gets a 429. That bounds what anyone holding the public app key can make us store.
+
 Rate limiting is a Vercel Firewall rule on `/api/math-reef/events`, configured in the Vercel
 dashboard rather than in code.
 
