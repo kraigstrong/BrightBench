@@ -114,10 +114,10 @@ test('batch fields are checked', () => {
 });
 
 test('milestone names must be known', () => {
-  for (const name of ['first_launch', 'first_round', 'level_started:exp.3', 'level_passed:div.mixed', 'crown:exponents:gold']) {
+  for (const name of ['first_launch', 'first_round', 'paywall_shown', 'unlocked', 'level_started:exp.3', 'level_passed:div.mixed', 'crown:exponents:gold']) {
     assert.equal(isMilestoneName(name), true, name);
   }
-  for (const name of ['second_launch', 'level_started:add.nope', 'level_passed:', 'crown:algebra:gold', 'crown:addition:bronze']) {
+  for (const name of ['second_launch', 'paywall', 'unlocked:all', 'level_started:add.nope', 'level_passed:', 'crown:algebra:gold', 'crown:addition:bronze']) {
     assert.equal(isMilestoneName(name), false, name);
   }
   rejects({ ...sample(), events: [{ kind: 'milestone', name: 'level_started:add.nope' }] }, 'unknown milestone');
