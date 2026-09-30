@@ -30,7 +30,8 @@ const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'Does it need the internet?',
-    answer: 'No. Math Reef works entirely offline.',
+    answer:
+      'No. Math Reef works offline. When a connection is available, it sends anonymous usage counts, described in the privacy policy.',
   },
   {
     question: 'How do I start over?',

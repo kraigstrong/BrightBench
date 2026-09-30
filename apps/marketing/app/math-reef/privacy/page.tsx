@@ -4,19 +4,41 @@ import { palette, radii, spacing } from '@education/design';
 
 import { mathReefContactEmail as contactEmail } from '@/lib/math-reef';
 
-// Keep this in step with the app's PrivacyInfo.xcprivacy and App Store privacy answers.
+// Keep this in step with the app's PrivacyInfo.xcprivacy, its analytics payload (ReefAnalytics.swift),
+// the App Store privacy answers, and the analytics endpoint (src/lib/math-reef-analytics.ts).
 
 export const metadata: Metadata = {
-  description: 'How Math Reef, a math practice game for kids, handles information.',
+  description: 'How Math Reef, a math practice game for kids, handles information, including its anonymous usage counts.',
   title: 'Math Reef Privacy Policy',
 };
 
 const sections: { title: string; body: string[] }[] = [
   {
-    title: 'Information We Collect',
+    title: 'What Math Reef Sends',
     body: [
-      'Math Reef does not collect any information. There are no accounts, and the app does not ask for a name, email address, photo, or location.',
-      'The app makes no network connections. It has no ads, no analytics, no tracking, and no third-party code that collects data.',
+      'Math Reef has no accounts and never asks for a name, email address, photo, or location. It has no ads, no tracking, and no third-party code that collects data.',
+      'To learn which levels are too hard or too easy and where kids stop playing, the app sends anonymous usage counts to BrightBench: which levels are started and passed, which crowns are earned, and how each round ends (finished, quit, or left partway), with how many questions were answered correctly and the stars earned. Each report also says which version of the app sent it and whether it is a test build or the App Store version.',
+      'A few of these are sent only once per device, such as the first time a level is started, so the totals can show how many players reach each level.',
+    ],
+  },
+  {
+    title: 'What Is Never Sent',
+    body: [
+      'No name, account, contact details, photo, or location. No device, advertising, or other identifier, and nothing that could tell one child\'s or device\'s reports apart from another\'s. No dates or times, device model, system version, or language. Nothing about which answers were chosen or how long anything took.',
+    ],
+  },
+  {
+    title: 'How the Counts Are Kept and Used',
+    body: [
+      'We keep only running totals for each day, such as how many rounds of a level were finished. Individual reports are not stored, and the totals cannot be traced back to a child, a family, or a device.',
+      'The counts are used only to improve Math Reef. They are never used for advertising or tracking, and never sold or shared.',
+      'Math Reef works without an internet connection. A report that cannot be sent is simply discarded.',
+    ],
+  },
+  {
+    title: 'Service Providers',
+    body: [
+      'Reports are received by brightbench.app, which runs on Vercel, and the daily totals are stored with Upstash. Like any web service, Vercel handles each connection, including its IP address, to deliver the report. We do not store or log IP addresses.',
     ],
   },
   {
@@ -29,7 +51,7 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: "Children's Privacy",
     body: [
-      'Math Reef is made for children in grades 1 through 5. We do not collect personal information from children or anyone else through the app.',
+      'Math Reef is made for children in grades 1 through 5. We do not collect personal information from children or anyone else through the app; the anonymous counts described above contain none.',
       'If you believe a child has sent us personal information, for example by email, contact us and we will delete it.',
     ],
   },
