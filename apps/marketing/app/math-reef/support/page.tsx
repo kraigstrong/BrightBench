@@ -34,9 +34,19 @@ const faqs: { question: string; answer: string }[] = [
       'No. Math Reef works offline. When a connection is available, it sends anonymous usage counts, described in the privacy policy.',
   },
   {
+    question: 'What’s free, and what does the unlock include?',
+    answer:
+      'The first three levels of each world are free (one in Exponents). A one-time purchase unlocks every level in all five worlds, and Family Sharing lets it cover everyone in your family. Grown-ups make the purchase after answering a question kids can’t easily solve.',
+  },
+  {
+    question: 'How do I restore my purchase?',
+    answer:
+      'Tap the gear on the reef map, then For grown-ups, then Restore purchases. It works on any device signed in to the same Apple Account, or one in the same Family Sharing group.',
+  },
+  {
     question: 'How do I start over?',
     answer:
-      'Progress is saved only on the device. To clear it, delete the app and install it again.',
+      'Progress is saved only on the device. To clear it, delete the app and install it again. Your purchase isn’t lost: restore it from Settings.',
   },
   {
     question: 'What does it run on?',

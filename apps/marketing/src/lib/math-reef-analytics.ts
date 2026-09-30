@@ -66,7 +66,7 @@ function isIntIn(value: unknown, min: number, max: number): value is number {
 }
 
 export function isMilestoneName(name: string): boolean {
-  if (name === 'first_launch' || name === 'first_round') return true;
+  if (['first_launch', 'first_round', 'paywall_shown', 'unlocked'].includes(name)) return true;
   const level = /^level_(?:started|passed):(.+)$/.exec(name);
   if (level) return levelSet.has(level[1]!);
   const crown = /^crown:([a-z]+):(?:silver|gold)$/.exec(name);

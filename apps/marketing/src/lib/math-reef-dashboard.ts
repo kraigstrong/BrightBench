@@ -41,6 +41,11 @@ export type WorldSummary = {
 export type Dashboard = {
   installs: number;
   firstRounds: number;
+  /** Installs that saw the unlock screen, and installs that unlocked the full game. */
+  paywallShown: number;
+  unlocked: number;
+  /** unlocked / paywallShown, or null before anyone saw the unlock screen. */
+  conversion: number | null;
   rounds: number;
   worlds: WorldSummary[];
 };
@@ -121,5 +126,15 @@ export function summarize(stats: Pick<StatsResponse, 'milestones' | 'rounds'>): 
       }),
   }));
 
-  return { installs: milestone('first_launch'), firstRounds: milestone('first_round'), rounds, worlds };
+  const paywallShown = milestone('paywall_shown');
+  const unlocked = milestone('unlocked');
+  return {
+    installs: milestone('first_launch'),
+    firstRounds: milestone('first_round'),
+    paywallShown,
+    unlocked,
+    conversion: paywallShown > 0 ? unlocked / paywallShown : null,
+    rounds,
+    worlds,
+  };
 }

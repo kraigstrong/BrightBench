@@ -196,6 +196,12 @@ export function MathReefStatsDashboard() {
             <StatTile label="New installs" value={dashboard.installs} />
             <StatTile label="Played a round" value={dashboard.firstRounds} />
             <StatTile label="Rounds recorded" value={dashboard.rounds} />
+            <StatTile label="Saw the unlock screen" value={dashboard.paywallShown} />
+            <StatTile
+              label="Unlocked"
+              value={dashboard.unlocked}
+              note={dashboard.conversion === null ? undefined : `${Math.round(dashboard.conversion * 100)}% of those who saw it`}
+            />
           </div>
 
           {dashboard.installs === 0 && dashboard.rounds === 0 && (
@@ -249,11 +255,12 @@ function hasData(row: LevelRow) {
   return row.started + row.passed + row.finished + row.quit + row.abandoned > 0;
 }
 
-function StatTile({ label, value }: { label: string; value: number }) {
+function StatTile({ label, value, note }: { label: string; value: number; note?: string }) {
   return (
     <div style={{ ...card, alignContent: 'start', gap: 4, padding: spacing.md }}>
       <span style={{ color: palette.inkMuted, fontSize: 13, fontWeight: 700 }}>{label}</span>
       <span style={{ fontSize: 30, fontWeight: 800 }}>{value.toLocaleString()}</span>
+      {note && <span style={{ color: palette.inkMuted, fontSize: 13 }}>{note}</span>}
     </div>
   );
 }
