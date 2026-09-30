@@ -17,8 +17,15 @@ const sections: { title: string; body: string[] }[] = [
     title: 'What Math Reef Sends',
     body: [
       'Math Reef has no accounts and never asks for a name, email address, photo, or location. It has no ads, no tracking, and no third-party code that collects data.',
-      'To learn which levels are too hard or too easy and where kids stop playing, the app sends anonymous usage counts to BrightBench: which levels are started and passed, which crowns are earned, and how each round ends (finished, quit, or left partway), with how many questions were answered correctly and the stars earned. Each report also says which version of the app sent it and whether it is a test build or the App Store version.',
+      'To learn which levels are too hard or too easy and where kids stop playing, the app sends anonymous usage counts to BrightBench: which levels are started and passed, which crowns are earned, and how each round ends (finished, quit, or left partway), with how many questions were answered correctly and the stars earned. It also sends whether the unlock screen was shown and whether the full game was unlocked. Each report also says which version of the app sent it and whether it is a test build or the App Store version.',
       'A few of these are sent only once per device, such as the first time a level is started, so the totals can show how many players reach each level.',
+    ],
+  },
+  {
+    title: 'The Unlock',
+    body: [
+      'Math Reef is free to try: the first three levels of each world (one in Exponents) are free. A one-time purchase unlocks every level, and Family Sharing lets it cover the whole family.',
+      'The purchase screen is behind the same grown-ups-only question as our links. Purchases are handled entirely by Apple; we never see payment details or who made a purchase.',
     ],
   },
   {
