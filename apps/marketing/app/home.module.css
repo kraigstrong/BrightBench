@@ -335,6 +335,7 @@
   gap: 0.9rem;
   min-height: 100%;
   padding: 1.15rem;
+  position: relative;
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -366,6 +367,27 @@
   margin: 0;
 }
 
+/* The title link stretches over the whole card, so the card is one click target. */
+.cardLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardLink::after {
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+
+.cardLink:focus-visible {
+  outline: none;
+}
+
+.suiteCard:has(.cardLink:focus-visible) {
+  outline: 3px solid var(--card-accent);
+  outline-offset: 3px;
+}
+
 .cardBody {
   color: #5b6c7d;
   font-size: 0.97rem;
@@ -391,7 +413,9 @@
 
 .appStoreButton {
   display: inline-flex;
+  position: relative;
   width: fit-content;
+  z-index: 1;
 }
 
 .appStoreBadge {

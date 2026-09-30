@@ -260,9 +260,8 @@ export default async function ProductPageRoute({
             <h2 className={styles.sectionTitle}>Who it helps</h2>
             <div className={styles.sectionBody}>
               <p>
-                Time Tutor is built for <strong>{page.audience}</strong> and works
-                especially well for kids who need clock skills to feel more visual,
-                more concrete, and less frustrating.
+                {page.heroEyebrow} is built for <strong>{page.audience}</strong>{' '}
+                and works especially well for {page.audienceFit}.
               </p>
             </div>
           </section>

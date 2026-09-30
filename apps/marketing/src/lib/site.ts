@@ -84,6 +84,8 @@ type BaseDiscoveryPage = {
 export type ProductPage =
   | (BaseDiscoveryPage & {
       audience: string;
+      /** Finishes "<name> is built for <audience> and works especially well for …". */
+      audienceFit: string;
       discoverabilityCallout?: {
         body: string[];
         title: string;
@@ -174,6 +176,8 @@ export const productCards: ProductCard[] = [
 export const productPages: ProductPage[] = [
   {
     audience: 'Grades 1–5',
+    audienceFit:
+      'kids who need math facts to become quick and automatic, a few minutes at a time',
     faqItems: [
       {
         answer:
@@ -277,6 +281,8 @@ export const productPages: ProductPage[] = [
   },
   {
     audience: 'Grades 1-3',
+    audienceFit:
+      'kids who need clock skills to feel more visual, more concrete, and less frustrating',
     faqItems: [
       {
         answer:

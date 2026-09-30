@@ -23,3 +23,18 @@ test('Math Reef has a card and a product page linking to its help and privacy pa
   const links = page?.relatedLinks.map((link) => link.href) ?? [];
   assert.ok(links.includes('/math-reef/support') && links.includes('/math-reef/privacy'));
 });
+
+test('every home-page card links to a product page that exists', () => {
+  for (const card of productCards) {
+    const slug = card.href.replace(/^\/products\//, '');
+    assert.ok(getProductPageBySlug(slug), `${card.name} links to missing ${card.href}`);
+  }
+});
+
+test('Math Reef page copy never falls back to Time Tutor wording', () => {
+  const page = getProductPageBySlug('math-reef');
+  assert.equal(page?.kind, 'app');
+  if (page?.kind !== 'app') return;
+  assert.equal(page.heroEyebrow, 'Math Reef');
+  assert.doesNotMatch(JSON.stringify(page), /Time Tutor|clock/i);
+});
