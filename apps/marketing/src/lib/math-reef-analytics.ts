@@ -1,3 +1,5 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+
 // Math Reef's anonymous analytics: strict validation of the batches the app sends, and the
 // counters they become. Only counts are stored, never a payload, an IP, or anything that could
 // tell one install from another. The app side is `MathReef/ReefAnalytics.swift` in
@@ -29,9 +31,13 @@ export const outcomes = ['finished', 'quit', 'abandoned'] as const;
 export const maxBodyBytes = 32 * 1024;
 /** The app's queue holds at most 200 events. */
 export const maxEvents = 200;
-/** Rounds have at least 10 questions; the upper bound only keeps out nonsense. */
+/**
+ * A round is a level's facts plus up to 3 review questions, and at least 10. The largest level
+ * today has 13 facts, so no round is over 16; 30 leaves room for new levels while keeping the
+ * number of distinct counters someone could create with the (public) app key small.
+ */
 const minTarget = 10;
-const maxTarget = 500;
+const maxTarget = 30;
 
 type Channel = (typeof channels)[number];
 type Outcome = (typeof outcomes)[number];
@@ -105,12 +111,12 @@ export function validateBatch(body: unknown): ValidationResult {
   if (!isRecord(body) || !hasExactKeys(body, ['appVersion', 'channel', 'events'])) {
     return { ok: false, reason: 'batch has unexpected or missing keys' };
   }
-  if (typeof body.appVersion !== 'string' || !/^\d{1,3}\.\d{1,3}(\.\d{1,3})?$/.test(body.appVersion)) {
+  if (typeof body.appVersion !== 'string' || !/^\d{1,2}\.\d{1,2}(\.\d{1,2})?$/.test(body.appVersion)) {
     return { ok: false, reason: 'bad appVersion' };
   }
   if (!channels.includes(body.channel as Channel)) return { ok: false, reason: 'unknown channel' };
   if (!Array.isArray(body.events) || body.events.length < 1 || body.events.length > maxEvents) {
-    return { ok: false, reason: 'events must be 1-200 items' };
+    return { ok: false, reason: `events must be 1-${maxEvents} items` };
   }
   for (const event of body.events) {
     const reason = validateEvent(event);
@@ -121,8 +127,8 @@ export function validateBatch(body: unknown): ValidationResult {
 
 // MARK: Counters
 
-/** One counter to increment: a hash field. */
-export type CounterUpdate = { key: string; field: string };
+/** One counter to increment by `by`: a hash field. */
+export type CounterUpdate = { key: string; field: string; by: number };
 
 /** `YYYY-MM-DD` in UTC. The app sends no time, so the server's receive date is the only one. */
 export function utcDay(date: Date): string {
@@ -141,28 +147,37 @@ export function roundField(event: RoundEvent): string {
   return [event.level, event.outcome, event.correct, event.target, event.stars ?? '-'].join('|');
 }
 
+/** Repeats within a batch become one increment, so a batch costs one command per distinct counter. */
 export function counterUpdates(batch: AnalyticsBatch, day: string): CounterUpdate[] {
   const { appVersion, channel } = batch;
-  return batch.events.map((event) =>
-    event.kind === 'milestone'
-      ? { key: counterKeys.milestones(day, channel, appVersion), field: event.name }
-      : { key: counterKeys.rounds(day, channel, appVersion), field: roundField(event) },
-  );
+  const updates = new Map<string, CounterUpdate>();
+  for (const event of batch.events) {
+    const [key, field] =
+      event.kind === 'milestone'
+        ? [counterKeys.milestones(day, channel, appVersion), event.name]
+        : [counterKeys.rounds(day, channel, appVersion), roundField(event)];
+    const id = `${key}\n${field}`;
+    const existing = updates.get(id);
+    if (existing) existing.by += 1;
+    else updates.set(id, { key, field, by: 1 });
+  }
+  return [...updates.values()];
 }
 
 /** Where counters live: Upstash Redis in production, a map in tests. */
 export interface CounterStore {
-  /** Increments every update by one and records the build as seen on `day`, all at once. */
+  /** Applies every update and records the build as seen on `day`, all at once. */
   increment(updates: CounterUpdate[], day: string, build: string): Promise<void>;
-  builds(day: string): Promise<string[]>;
-  read(key: string): Promise<Record<string, number>>;
+  /** The builds seen on each day, in order. One round trip. */
+  builds(days: string[]): Promise<string[][]>;
+  /** The counters in each hash, in order. One round trip. */
+  read(keys: string[]): Promise<Record<string, number>[]>;
 }
 
 // MARK: Handlers
 
 /** Hashing both sides first gives equal-length inputs, so the comparison can't leak the length. */
-async function sameSecret(given: string, expected: string): Promise<boolean> {
-  const { createHash, timingSafeEqual } = await import('node:crypto');
+function sameSecret(given: string, expected: string): boolean {
   const digest = (value: string) => createHash('sha256').update(value).digest();
   return expected.length > 0 && timingSafeEqual(digest(given), digest(expected));
 }
@@ -181,12 +196,12 @@ export type EventsDeps = { store: CounterStore; appKey: string; now?: () => Date
  */
 export async function handleEvents(request: Request, deps: EventsDeps): Promise<Response> {
   const log = deps.log ?? (() => {});
-  if (!(await sameSecret(request.headers.get('x-app-key') ?? '', deps.appKey))) return status(401);
+  if (!sameSecret(request.headers.get('x-app-key') ?? '', deps.appKey)) return status(401);
 
   const declared = Number(request.headers.get('content-length') ?? '0');
   if (declared > maxBodyBytes) return status(413);
-  const text = await request.text();
-  if (Buffer.byteLength(text) > maxBodyBytes) return status(413);
+  const text = await readLimited(request, maxBodyBytes);
+  if (text === null) return status(413);
 
   let body: unknown;
   try {
@@ -203,20 +218,50 @@ export async function handleEvents(request: Request, deps: EventsDeps): Promise<
 
   const day = utcDay((deps.now ?? (() => new Date()))());
   const { batch } = result;
-  await deps.store.increment(counterUpdates(batch, day), day, `${batch.channel}:${batch.appVersion}`);
+  try {
+    await deps.store.increment(counterUpdates(batch, day), day, `${batch.channel}:${batch.appVersion}`);
+  } catch {
+    // Upstash errors quote the command; log a fixed string instead.
+    log('math-reef events not counted: store unavailable');
+    return status(503);
+  }
   return status(204);
+}
+
+/** The body as text, or null once it passes `limit` bytes, without buffering the rest. */
+async function readLimited(request: Request, limit: number): Promise<string | null> {
+  if (!request.body) return '';
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > limit) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString('utf8');
 }
 
 export type StatsDeps = { store: CounterStore; statsSecret: string; now?: () => Date };
 
 const maxStatsDays = 366;
 
+/** Midnight UTC for a real `YYYY-MM-DD` date, or null (so `2026-02-30` doesn't roll over). */
+function parseDay(day: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const time = Date.parse(`${day}T00:00:00Z`);
+  return Number.isNaN(time) || utcDay(new Date(time)) !== day ? null : time;
+}
+
 function daysBetween(from: string, to: string): string[] | null {
-  const pattern = /^\d{4}-\d{2}-\d{2}$/;
-  if (!pattern.test(from) || !pattern.test(to)) return null;
-  const start = Date.parse(`${from}T00:00:00Z`);
-  const end = Date.parse(`${to}T00:00:00Z`);
-  if (Number.isNaN(start) || Number.isNaN(end) || end < start) return null;
+  const start = parseDay(from);
+  const end = parseDay(to);
+  if (start === null || end === null || end < start) return null;
   const days: string[] = [];
   for (let t = start; t <= end; t += 86_400_000) {
     days.push(utcDay(new Date(t)));
@@ -233,12 +278,13 @@ function daysBetween(from: string, to: string): string[] | null {
 export async function handleStats(request: Request, deps: StatsDeps): Promise<Response> {
   const auth = request.headers.get('authorization') ?? '';
   const given = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
-  if (!(await sameSecret(given, deps.statsSecret))) return status(401);
+  if (!sameSecret(given, deps.statsSecret)) return status(401);
 
   const url = new URL(request.url);
-  const today = utcDay((deps.now ?? (() => new Date()))());
-  const to = url.searchParams.get('to') ?? today;
-  const from = url.searchParams.get('from') ?? utcDay(new Date(Date.parse(`${to}T00:00:00Z`) - 29 * 86_400_000));
+  const to = url.searchParams.get('to') ?? utcDay((deps.now ?? (() => new Date()))());
+  const end = parseDay(to);
+  if (end === null) return status(400);
+  const from = url.searchParams.get('from') ?? utcDay(new Date(end - 29 * 86_400_000));
   const days = daysBetween(from, to);
   if (!days) return status(400);
   const channel = url.searchParams.get('channel');
@@ -249,14 +295,21 @@ export async function handleStats(request: Request, deps: StatsDeps): Promise<Re
   const add = (into: Record<string, number>, counts: Record<string, number>) => {
     for (const [field, count] of Object.entries(counts)) into[field] = (into[field] ?? 0) + Number(count);
   };
-  for (const day of days) {
-    for (const build of await deps.store.builds(day)) {
+  // Two round trips however long the range: the builds for every day, then every hash.
+  const buildsByDay = await deps.store.builds(days);
+  const keys: { milestones: string; rounds: string }[] = [];
+  days.forEach((day, index) => {
+    for (const build of buildsByDay[index] ?? []) {
       const [buildChannel, buildVersion] = build.split(':') as [string, string];
       if ((channel && buildChannel !== channel) || (appVersion && buildVersion !== appVersion)) continue;
-      add(milestones, await deps.store.read(counterKeys.milestones(day, buildChannel, buildVersion)));
-      add(rounds, await deps.store.read(counterKeys.rounds(day, buildChannel, buildVersion)));
+      keys.push({
+        milestones: counterKeys.milestones(day, buildChannel, buildVersion),
+        rounds: counterKeys.rounds(day, buildChannel, buildVersion),
+      });
     }
-  }
+  });
+  const hashes = await deps.store.read(keys.flatMap((pair) => [pair.milestones, pair.rounds]));
+  hashes.forEach((counts, index) => add(index % 2 === 0 ? milestones : rounds, counts));
   return Response.json(
     { from, to, channel: channel ?? 'all', appVersion: appVersion ?? 'all', milestones, rounds },
     { headers: noStore },

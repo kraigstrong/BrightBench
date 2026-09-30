@@ -17,15 +17,23 @@ function client(): Redis {
 
 export const redisCounterStore: CounterStore = {
   async increment(updates, day, build) {
-    const pipeline = client().multi();
-    pipeline.sadd(counterKeys.builds(day), build);
-    for (const { key, field } of updates) pipeline.hincrby(key, field, 1);
-    await pipeline.exec();
+    // A transaction, so a batch is counted whole or not at all.
+    const tx = client().multi();
+    tx.sadd(counterKeys.builds(day), build);
+    for (const { key, field, by } of updates) tx.hincrby(key, field, by);
+    await tx.exec();
   },
-  async builds(day) {
-    return client().smembers(counterKeys.builds(day));
+  async builds(days) {
+    if (days.length === 0) return [];
+    const pipeline = client().pipeline();
+    for (const day of days) pipeline.smembers(counterKeys.builds(day));
+    return pipeline.exec<string[][]>();
   },
-  async read(key) {
-    return (await client().hgetall<Record<string, number>>(key)) ?? {};
+  async read(keys) {
+    if (keys.length === 0) return [];
+    const pipeline = client().pipeline();
+    for (const key of keys) pipeline.hgetall(key);
+    const hashes = await pipeline.exec<(Record<string, number> | null)[]>();
+    return hashes.map((hash) => hash ?? {});
   },
 };
