@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type FormEvent, useState } from 'react';
+import { type CSSProperties, type FormEvent, useRef, useState } from 'react';
 import { palette, radii, spacing } from '@education/design';
 
 import {
@@ -65,8 +65,13 @@ export function MathReefStatsDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ stats: StatsResponse; dashboard: Dashboard } | null>(null);
+  /** The request in flight. A newer one aborts it, so only the latest filters ever update the page. */
+  const pending = useRef<AbortController | null>(null);
 
   async function load(code: string, next: Filters) {
+    pending.current?.abort();
+    const request = new AbortController();
+    pending.current = request;
     const params = new URLSearchParams();
     if (next.from) params.set('from', next.from);
     if (next.to) params.set('to', next.to);
@@ -78,7 +83,10 @@ export function MathReefStatsDashboard() {
       const response = await fetch(`/api/math-reef/stats?${params}`, {
         cache: 'no-store',
         headers: { Authorization: `Bearer ${code}` },
+        signal: request.signal,
       });
+      const stats = response.ok ? ((await response.json()) as StatsResponse) : null;
+      if (request.signal.aborted) return;
       if (response.status === 401) {
         setSecret('');
         setResult(null);
@@ -87,14 +95,17 @@ export function MathReefStatsDashboard() {
         setError('Check the dates: "to" can’t be before "from", and the range can be at most a year.');
       } else if (!response.ok) {
         setError(`Couldn’t load the counts (status ${response.status}). Try again in a moment.`);
-      } else {
-        const stats = (await response.json()) as StatsResponse;
+      } else if (stats) {
         setResult({ stats, dashboard: summarize(stats) });
       }
     } catch {
+      if (request.signal.aborted) return;
       setError('Couldn’t reach brightbench.app. Check your connection and try again.');
     } finally {
-      setLoading(false);
+      if (pending.current === request) {
+        pending.current = null;
+        setLoading(false);
+      }
     }
   }
 
@@ -144,7 +155,7 @@ export function MathReefStatsDashboard() {
     <div style={{ display: 'grid', gap: spacing.lg }}>
       <header style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.md, alignItems: 'baseline', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 32, margin: 0 }}>Math Reef stats</h1>
-        <button type="button" onClick={() => { setSecret(''); setResult(null); }} style={{ ...button, background: palette.surfaceMuted, color: palette.ink }}>
+        <button type="button" onClick={() => { pending.current?.abort(); setSecret(''); setResult(null); }} style={{ ...button, background: palette.surfaceMuted, color: palette.ink }}>
           Lock
         </button>
       </header>
