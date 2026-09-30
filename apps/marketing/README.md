@@ -21,3 +21,31 @@ npm run dev -w marketing
 ## Time Tutor links
 
 - **App Store:** `NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL` (falls back to the default listing in `src/lib/site.ts`).
+
+## Math Reef analytics
+
+Math Reef (the iOS app in `kraigstrong/bigger-fish`) posts anonymous usage counts to
+`POST /api/math-reef/events`, and `GET /api/math-reef/stats` sums them. Validation and counting live
+in `src/lib/math-reef-analytics.ts`, with tests in `test/math-reef-analytics.test.ts`. Only counters
+are stored, per UTC day, channel, and app version: never a payload or an IP address. Don't add
+request logging to these routes.
+
+Environment variables (Vercel project settings; locally in `apps/marketing/.env.local`, which git
+ignores):
+
+- `KV_REST_API_URL`, `KV_REST_API_TOKEN`: Upstash Redis, set by the Vercel Marketplace integration.
+- `MATH_REEF_APP_KEY`: must match `ReefAnalytics.appKey` in the app. A bot filter, not a secret.
+- `MATH_REEF_STATS_SECRET`: a real secret for reading stats. Never put it in an app.
+
+At most 20 distinct `channel:appVersion` builds are counted per day (`maxBuildsPerDay`); a new
+build past that gets a 429. That bounds what anyone holding the public app key can make us store.
+
+Rate limiting is a Vercel Firewall rule on `/api/math-reef/events`, configured in the Vercel
+dashboard rather than in code.
+
+When Math Reef adds a level, add its ID to `levelIds` before that app version ships.
+
+```bash
+curl -s "https://brightbench.app/api/math-reef/stats?from=2026-10-01&to=2026-10-31" \
+  -H "Authorization: Bearer $MATH_REEF_STATS_SECRET"
+```
