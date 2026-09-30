@@ -120,7 +120,11 @@ export default function HomePage() {
               key={product.name}
               style={{ '--card-accent': product.accent } as CSSProperties}>
               <div className={styles.cardAccent} />
-              <h3 className={styles.cardTitle}>{product.name}</h3>
+              <h3 className={styles.cardTitle}>
+                <Link className={styles.cardLink} href={product.href}>
+                  {product.name}
+                </Link>
+              </h3>
               <p className={styles.cardBody}>{product.blurb}</p>
               <div className={styles.cardFooter}>
                 {product.name === 'Time Tutor' && product.appStoreUrl ? (

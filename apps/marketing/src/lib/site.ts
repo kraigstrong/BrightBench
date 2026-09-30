@@ -84,6 +84,8 @@ type BaseDiscoveryPage = {
 export type ProductPage =
   | (BaseDiscoveryPage & {
       audience: string;
+      /** Finishes "<name> is built for <audience> and works especially well for …". */
+      audienceFit: string;
       discoverabilityCallout?: {
         body: string[];
         title: string;
@@ -144,6 +146,15 @@ export const productCards: ProductCard[] = [
     status: 'Live on the App Store',
   },
   {
+    accent: '#2E8B8B',
+    availability: 'in-progress',
+    blurb:
+      'Swim into the right answer: math practice from first sums to exponents for grades 1–5.',
+    href: '/products/math-reef',
+    name: 'Math Reef',
+    status: 'Coming soon to the App Store',
+  },
+  {
     accent: '#6FA5D8',
     availability: 'coming-soon',
     blurb: 'Early literacy practice for letter recognition, sounds, and fluency.',
@@ -164,7 +175,114 @@ export const productCards: ProductCard[] = [
 
 export const productPages: ProductPage[] = [
   {
+    audience: 'Grades 1–5',
+    audienceFit:
+      'kids who need math facts to become quick and automatic, a few minutes at a time',
+    faqItems: [
+      {
+        answer:
+          'Math Reef is for kids in grades 1 through 5. Each world starts easy and climbs in small steps, so a first grader and a fourth grader can both find their level.',
+        question: 'What age is Math Reef for?',
+      },
+      {
+        answer:
+          'Addition, subtraction, multiplication, division, and exponents: from +1 and making 10 through two-digit carrying and borrowing, every times table, dividing bigger numbers, and squares and cubes.',
+        question: 'What math does it cover?',
+      },
+      {
+        answer:
+          'Math Reef is free to try: the first three levels of every world are free (one in Exponents). A one-time purchase unlocks every level, and Family Sharing covers the whole family. There are no ads and no subscriptions.',
+        question: 'Is Math Reef free?',
+      },
+      {
+        answer:
+          'No. There are no accounts, ads, or tracking, and it works offline. The purchase screen and all links sit behind a question only grown-ups can easily answer. Math Reef sends only anonymous counts, such as how many players pass a level.',
+        question: 'Does it collect information about my child?',
+      },
+      {
+        answer:
+          'Math Reef is an iPhone app. It also runs on iPad in iPhone mode.',
+        question: 'What does it run on?',
+      },
+    ],
+    h1: 'Math practice that feels like a swim through the reef.',
+    heroEyebrow: 'Math Reef',
+    intro: [
+      'Math Reef is a math practice game for grades 1–5. Kids hold to swim up, let go to sink, and gulp down the fish carrying the right answer.',
+      'Five worlds climb from first sums to exponents in small, one-strategy steps, with stars, crowns, and a clear explanation whenever an answer is wrong.',
+    ],
+    kind: 'app',
+    learningItems: [
+      'Build fact fluency one strategy at a time: making 10, doubles, near doubles, and crossing 10.',
+      'Move from single digits to two-digit carrying and borrowing.',
+      'Learn every times table, then the division facts behind them.',
+      'Meet exponents with squares and cubes, and what the small number means.',
+      'Keep earlier skills fresh: rounds mix in a few questions from past levels.',
+    ],
+    metaDescription:
+      'Math Reef is a math game for kids in grades 1–5: addition, subtraction, multiplication, division, and exponents in short rounds with stars and crowns. Free to try on iPhone.',
+    modeItems: [
+      { body: 'From +1 and making 10 to two-digit sums with carrying.', title: 'Addition' },
+      { body: 'Counting back, doubles, and borrowing across tens.', title: 'Subtraction' },
+      { body: 'Every times table, then multiplying bigger numbers.', title: 'Multiplication' },
+      { body: 'The facts behind the tables, then dividing bigger numbers.', title: 'Division' },
+      { body: 'Squares and cubes, and what the small number means.', title: 'Exponents' },
+    ],
+    pageTitle: 'Math Reef | Math Games for Kids (Grades 1–5)',
+    practiceItems: [
+      'Short rounds: answer every question in the level, with a few review questions mixed in.',
+      'Two stars (80%) unlock the next level; three stars and crowns reward mastery.',
+      'Checkpoint levels let kids who already know the material test out and skip ahead.',
+      'A wrong answer shows the worked math, so a miss turns into practice.',
+    ],
+    primaryCta: {
+      href: '/math-reef/support',
+      label: 'Math Reef help and FAQ',
+    },
+    primaryTopic: 'math games for kids',
+    proofPoints: ['Grades 1–5', 'Five worlds', 'Stars + crowns', 'Works offline'],
+    relatedLinks: [
+      {
+        description: 'How to play, stars and unlocking, sound, starting over, and restoring a purchase.',
+        href: '/math-reef/support',
+        label: 'Math Reef help',
+      },
+      {
+        description: 'Exactly what Math Reef sends (anonymous counts only) and what it never does.',
+        href: '/math-reef/privacy',
+        label: 'Math Reef privacy policy',
+      },
+    ],
+    secondaryCta: {
+      href: '/math-reef/privacy',
+      label: 'How Math Reef handles privacy',
+    },
+    slug: 'math-reef',
+    status: 'Coming soon to the App Store',
+    trustItems: [
+      {
+        body: 'No ads, no accounts, no tracking. Math Reef sends only anonymous counts so the levels can get better.',
+        title: 'Made for kids',
+      },
+      {
+        body: 'The purchase screen and every link sit behind a question kids can’t easily solve.',
+        title: 'Grown-ups stay in charge',
+      },
+      {
+        body: 'Try the first levels of every world free; one purchase unlocks everything for the family.',
+        title: 'Free to try',
+      },
+    ],
+    usageItems: [
+      'Quick practice at home: a round takes a few minutes.',
+      'Works offline, so it travels well.',
+      'Each child’s progress is saved on the device they play on.',
+    ],
+  },
+  {
     audience: 'Grades 1-3',
+    audienceFit:
+      'kids who need clock skills to feel more visual, more concrete, and less frustrating',
     faqItems: [
       {
         answer:
