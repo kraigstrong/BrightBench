@@ -64,8 +64,9 @@ Configuration:
   This is not authentication; strict validation and bounded cardinality still apply.
 - `BIGGER_FISH_STATS_SECRET`: independent private reporting secret, never shipped in the app.
 
-Requests and storage are bounded: 64 KiB bodies, 25 events/batch, 20 builds and 500 distinct
-content contexts per receive-day. Redis enforces the two cardinality caps atomically. Only daily
+Requests and storage are bounded: 64 KiB bodies, 25 events/batch, 20 builds, 500 build/content
+pairs and 20,000 counter fields total per receive-day. Redis enforces all caps atomically
+before writing any part of a batch; reusing a context in another build consumes another pair. Only daily
 counters/sums/histograms and content/build indexes are stored, never raw run records or IDs.
 Keys expire 90 days after their day's last accepted write. No request/error-body logging in either
 route. Configure Vercel rate limiting on the event route before activating app collection; review
@@ -93,3 +94,8 @@ Before activation: merge/deploy the reviewed backend and policy, configure keys/
 validate synthetic traffic and protected reads, inspect provider logging/retention settings, update
 App Store disclosures, then explicitly enable the native client and verify a physical TestFlight
 build. No production data or deployment is needed for local contract tests.
+
+Storage limiter regressions execute the production Lua script against an in-memory Redis command
+shim: `node test/run-bigger-fish-redis.mjs` from `apps/marketing`. The runner uses a temporary
+Fengari interpreter through npm exec and does not modify dependencies or connect to Redis.
+This checks script behavior; live Upstash validation remains a release check.
