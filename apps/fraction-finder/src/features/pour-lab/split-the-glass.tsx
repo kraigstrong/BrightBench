@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Ellipse } from 'react-native-svg';
 
@@ -40,11 +40,6 @@ export function SplitTheGlass({
   const lab = useLabRounds('split', difficultyLevel);
   const { value, activeDirection, start, stop, reset } = usePour(0);
   const [availableWidth, setAvailableWidth] = useState(0);
-  const roundNumber = lab.round?.number;
-
-  useEffect(() => {
-    reset(0);
-  }, [roundNumber, reset]);
 
   const solved = lab.phase === 'solved';
   const leftTilt = useTween(activeDirection === 1 ? TIP_ANGLE : 0, 140, reduceMotion);

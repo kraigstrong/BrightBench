@@ -128,10 +128,20 @@ describe('Pour Lab prototype', () => {
     expect(screen.getByRole('button', { name: 'Next round' })).toBeTruthy();
   });
 
-  it('switches concepts and restarts rounds when the level changes', async () => {
+  it('switches concepts and restarts with an empty glass when the level changes', async () => {
     expoRouterMock.useLocalSearchParams.mockReturnValue({ concept: 'peek' });
     render(<PourLabScreen />);
     await screen.findByText('Glass 1');
+
+    // Water poured on round 1 must not carry into the new level's round 1.
+    tap('Pitcher', 6);
+    expect(screen.getByRole('button', { name: 'Check' })).toBeEnabled();
+    await act(async () => {
+      fireEvent.press(screen.getByRole('button', { name: 'Easy' }));
+    });
+    expect(await screen.findByText('Glass 1')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Check' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Pour out' })).toBeDisabled();
 
     fireEvent.press(screen.getByRole('tab', { name: 'B · Split the Glass' }));
     await settle();
@@ -143,11 +153,7 @@ describe('Pour Lab prototype', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Next round' }));
     await settle();
     expect(screen.getByText('Round 2')).toBeTruthy();
-
-    await act(async () => {
-      fireEvent.press(screen.getByRole('button', { name: 'Easy' }));
-    });
-    expect(screen.getByText('Round 1')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Check' })).toBeDisabled();
   });
 
   it('shows the development-only entry on the Pour mode screen only', () => {
@@ -161,5 +167,20 @@ describe('Pour Lab prototype', () => {
     expoRouterMock.useLocalSearchParams.mockReturnValue({ mode: 'find' });
     render(<ModeDetailScreen />);
     expect(screen.queryByText('Pour Lab')).toBeNull();
+  });
+
+  it('hides the entry in release builds', () => {
+    const globals = globalThis as { __DEV__?: boolean };
+    const previous = globals.__DEV__;
+    globals.__DEV__ = false;
+
+    try {
+      expoRouterMock.useLocalSearchParams.mockReturnValue({ mode: 'pour' });
+      render(<ModeDetailScreen />);
+      expect(screen.getByText('Practice')).toBeTruthy();
+      expect(screen.queryByText('Pour Lab')).toBeNull();
+    } finally {
+      globals.__DEV__ = previous;
+    }
   });
 });

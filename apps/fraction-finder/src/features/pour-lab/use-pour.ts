@@ -45,14 +45,30 @@ export function usePour(initialValue: number) {
     frameRef.current = requestAnimationFrame(tick);
   }, [commit]);
 
+  const finishPress = useCallback(
+    (press: ActivePress) => {
+      pressRef.current = null;
+      cancelFrame();
+      const poured = advancePour(valueRef.current, press.direction, Date.now() - press.lastTime);
+      commit(settlePour(press.startValue, poured, press.direction));
+    },
+    [cancelFrame, commit]
+  );
+
   const start = useCallback(
     (direction: PourDirection) => {
-      cancelFrame();
+      // React Native holds onPressOut until a minimum press duration and drops it when the
+      // next press lands first, so fast taps arrive as press-in, press-in. Settle the
+      // earlier tap so every tap still counts as one splash.
+      if (pressRef.current) {
+        finishPress(pressRef.current);
+      }
+
       pressRef.current = { direction, startValue: valueRef.current, lastTime: Date.now() };
       setActiveDirection(direction);
       frameRef.current = requestAnimationFrame(tick);
     },
-    [cancelFrame, tick]
+    [finishPress, tick]
   );
 
   const stop = useCallback(
@@ -62,13 +78,10 @@ export function usePour(initialValue: number) {
         return;
       }
 
-      pressRef.current = null;
-      cancelFrame();
-      const poured = advancePour(valueRef.current, press.direction, Date.now() - press.lastTime);
-      commit(settlePour(press.startValue, poured, press.direction));
+      finishPress(press);
       setActiveDirection(null);
     },
-    [cancelFrame, commit]
+    [finishPress]
   );
 
   const reset = useCallback(

@@ -79,9 +79,18 @@ export function PourLabScene({ initialConcept }: { initialConcept: PourLabConcep
       </View>
 
       {concept === 'peek' ? (
-        <PourAndPeek key="peek" difficultyLevel={difficultyLevel} reduceMotion={reduceMotion} />
+        // Keyed by level so a level change always starts from an empty glass.
+        <PourAndPeek
+          key={`peek-${difficultyLevel}`}
+          difficultyLevel={difficultyLevel}
+          reduceMotion={reduceMotion}
+        />
       ) : (
-        <SplitTheGlass key="split" difficultyLevel={difficultyLevel} reduceMotion={reduceMotion} />
+        <SplitTheGlass
+          key={`split-${difficultyLevel}`}
+          difficultyLevel={difficultyLevel}
+          reduceMotion={reduceMotion}
+        />
       )}
     </AppShell>
   );
