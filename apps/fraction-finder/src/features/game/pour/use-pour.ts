@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { advancePour, PourDirection, settlePour } from '@/features/pour-lab/pour-engine';
+import { advancePour, PourDirection, settlePour } from '@/features/game/pour/pour-engine';
 
 type ActivePress = {
   direction: PourDirection;

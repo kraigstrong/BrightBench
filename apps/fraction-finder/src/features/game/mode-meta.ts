@@ -47,7 +47,7 @@ export const MODE_META: Record<
     title: 'Pour to Target',
     shortTitle: 'Pour',
     description: 'Fill a container until it feels just right.',
-    promptHint: 'Drag to pour, then stop when it looks close.',
+    promptHint: 'Hold the pitcher to pour. Tap it for a splash.',
     accent: '#7086D8',
     surface: '#EEF1FF',
   },

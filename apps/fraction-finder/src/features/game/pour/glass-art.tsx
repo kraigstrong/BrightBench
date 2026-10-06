@@ -28,8 +28,6 @@ type GlassProps = {
   parts: number | null;
   partsOpacity?: number;
   highlight?: GlassHighlight | null;
-  /** Degrees, positive is clockwise. The glass pivots on the bottom corner it tips toward. */
-  tilt?: number;
 };
 
 export function glassGeometry({ cx, bottom, width, height }: Pick<GlassProps, 'cx' | 'bottom' | 'width' | 'height'>) {
@@ -38,19 +36,6 @@ export function glassGeometry({ cx, bottom, width, height }: Pick<GlassProps, 'c
   const top = bottom - height;
 
   return { left, right, top, bottom, levelFor: (value: number) => bottom - height * value };
-}
-
-export function glassPivot(geometry: ReturnType<typeof glassGeometry>, tilt: number) {
-  return { x: tilt >= 0 ? geometry.right : geometry.left, y: geometry.bottom };
-}
-
-/** Where the lip on the pouring side ends up once the glass is tipped. */
-export function tippedLip(geometry: ReturnType<typeof glassGeometry>, tilt: number) {
-  const pivot = glassPivot(geometry, tilt);
-  const radians = (tilt * Math.PI) / 180;
-  const dy = geometry.top - pivot.y;
-
-  return { x: pivot.x - dy * Math.sin(radians), y: pivot.y + dy * Math.cos(radians) };
 }
 
 export function Glass({
@@ -63,12 +48,9 @@ export function Glass({
   parts,
   partsOpacity = 1,
   highlight,
-  tilt = 0,
 }: GlassProps) {
   const geometry = glassGeometry({ cx, bottom, width, height });
   const { left, right, top } = geometry;
-  const pivot = glassPivot(geometry, tilt);
-  const transform = tilt ? `rotate(${tilt} ${pivot.x} ${pivot.y})` : undefined;
   const level = geometry.levelFor(Math.min(1, Math.max(0, fill)));
   const outline = [
     `M ${left} ${top}`,
@@ -93,25 +75,17 @@ export function Glass({
             width={width - STROKE}
             height={height + 40 - STROKE / 2}
             rx={CORNER - 2}
-            transform={transform}
           />
         </ClipPath>
       </Defs>
 
       {fill > 0 ? (
         <G clipPath={`url(#${id}-inside)`}>
-          {/* Water stays level in world space while the glass tips. */}
-          <Rect
-            x={left - height}
-            y={level}
-            width={width + height * 2}
-            height={height + 80}
-            fill={WATER_COLOR}
-          />
+          <Rect x={left} y={level} width={width} height={height + 40} fill={WATER_COLOR} />
           <Line
-            x1={left - height}
+            x1={left}
             y1={level + 1}
-            x2={right + height}
+            x2={right}
             y2={level + 1}
             stroke="rgba(255,255,255,0.65)"
             strokeWidth={2}
@@ -119,7 +93,7 @@ export function Glass({
         </G>
       ) : null}
 
-      <G transform={transform}>
+      <G>
         <Rect x={left + 9} y={top + 14} width={8} height={height - 30} rx={4} fill="rgba(255,255,255,0.4)" />
 
         {markLevels.map((y, index) => (
@@ -244,29 +218,6 @@ export function FallingStream({ x, from, to }: { x: number; from: number; to: nu
     <G>
       <Rect x={x - 4.5} y={from} width={9} height={to - from} rx={4.5} fill={WATER_COLOR} />
       <Ellipse cx={x} cy={to} rx={14} ry={4} fill="rgba(255,255,255,0.7)" />
-    </G>
-  );
-}
-
-export function ArcStream({
-  from,
-  to,
-}: {
-  from: { x: number; y: number };
-  to: { x: number; y: number };
-}) {
-  const control = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 36 };
-
-  return (
-    <G>
-      <Path
-        d={`M ${from.x} ${from.y} Q ${control.x} ${control.y} ${to.x} ${to.y}`}
-        fill="none"
-        stroke={WATER_COLOR}
-        strokeWidth={8}
-        strokeLinecap="round"
-      />
-      <Ellipse cx={to.x} cy={to.y} rx={12} ry={3.5} fill="rgba(255,255,255,0.7)" />
     </G>
   );
 }

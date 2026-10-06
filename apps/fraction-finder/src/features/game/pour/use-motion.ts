@@ -13,8 +13,9 @@ export function useReduceMotion() {
 
     AccessibilityInfo.isReduceMotionEnabled()
       .then((enabled) => {
-        if (mounted) {
-          setSystemReduceMotion(enabled);
+        // Starts false, so only an enabled preference needs a re-render.
+        if (mounted && enabled) {
+          setSystemReduceMotion(true);
         }
       })
       .catch(() => undefined);

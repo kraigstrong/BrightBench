@@ -7,10 +7,9 @@ import { ChoiceButton } from '@/components/ui/choice-button';
 import { fractionPalette } from '@/design/tokens';
 import { FRACTION_BY_ID } from '@/features/game/fractions';
 import { FractionBar } from '@/features/game/components/fraction-bar';
-import { FractionContainer } from '@/features/game/components/fraction-container';
 import { NumberLine } from '@/features/game/components/number-line';
 import { clamp, getFraction } from '@/features/game/math';
-import { BuildRound, EstimateRound, LineRound, PourRound } from '@/features/game/types';
+import { BuildRound, EstimateRound, LineRound } from '@/features/game/types';
 
 const ESTIMATE_BAR_SLICES = 8;
 
@@ -105,48 +104,6 @@ export function EstimatePanel({
   );
 }
 
-export function PourPanel({
-  round,
-  onSubmit,
-  disabled,
-  onInteraction,
-}: {
-  round: PourRound;
-  onSubmit: (input: number) => void;
-  disabled: boolean;
-  onInteraction: () => void;
-}) {
-  const [fill, setFill] = useState(0.12);
-  const [trackHeight, setTrackHeight] = useState(1);
-
-  useEffect(() => {
-    setFill(0.12);
-  }, [round.id]);
-
-  function updateFill(locationY: number) {
-    onInteraction();
-    const next = clamp(1 - locationY / trackHeight, 0.04, 0.96);
-    setFill(next);
-  }
-
-  return (
-    <View style={styles.modeBody}>
-      <View style={styles.visualStage}>
-        <View
-          onLayout={(event) => setTrackHeight(event.nativeEvent.layout.height)}
-          onMoveShouldSetResponder={() => true}
-          onStartShouldSetResponder={() => true}
-          onResponderGrant={(event) => updateFill(event.nativeEvent.locationY)}
-          onResponderMove={(event) => updateFill(event.nativeEvent.locationY)}
-          style={styles.pourSurface}>
-          <FractionContainer fillRatio={fill} fillColor={fractionPalette.water} />
-        </View>
-      </View>
-      <ChoiceButton label="Submit" onPress={() => onSubmit(fill)} disabled={disabled} />
-    </View>
-  );
-}
-
 export function LinePanel({
   round,
   onSubmit,
@@ -209,8 +166,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     fontFamily: typography.bodyFamily,
-  },
-  pourSurface: {
-    paddingVertical: spacing.sm,
   },
 });

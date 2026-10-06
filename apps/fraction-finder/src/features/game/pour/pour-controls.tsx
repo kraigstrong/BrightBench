@@ -1,9 +1,9 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import { palette, radii, spacing } from '@education/design';
-import { shadows, typography } from '@education/design/native';
-import { LabMessage, PourDirection } from '@/features/pour-lab/pour-engine';
+import { palette, radii } from '@education/design';
+import { typography } from '@education/design/native';
+import { PourDirection, PourMessage } from '@/features/game/pour/pour-engine';
 
 function noop() {}
 
@@ -19,29 +19,7 @@ export const holdPressProps = {
   ...(Platform.OS === 'web' ? { delayPressIn: 0 } : { unstable_pressDelay: 0 }),
 } as const;
 
-export function TargetCard({
-  eyebrow,
-  fraction,
-  caption,
-}: {
-  eyebrow: string;
-  fraction: string;
-  caption: string;
-}) {
-  return (
-    <View style={styles.targetCard}>
-      <Text style={styles.targetEyebrow}>{eyebrow}</Text>
-      <View style={styles.targetRow}>
-        <Text accessibilityRole="header" style={styles.targetFraction}>
-          {fraction}
-        </Text>
-        <Text style={styles.targetCaption}>{caption}</Text>
-      </View>
-    </View>
-  );
-}
-
-export function MessageArea({ message }: { message: LabMessage }) {
+export function MessageArea({ message }: { message: PourMessage }) {
   return (
     <View accessibilityLiveRegion="polite" style={styles.messageArea}>
       <Text
@@ -91,42 +69,6 @@ export function PourHotspot({
 }
 
 const styles = StyleSheet.create({
-  targetCard: {
-    backgroundColor: palette.ink,
-    borderRadius: 30,
-    gap: 2,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...shadows.card,
-  },
-  targetEyebrow: {
-    color: 'rgba(255,255,255,0.72)',
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
-  },
-  targetRow: {
-    alignItems: 'baseline',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: spacing.sm,
-  },
-  targetFraction: {
-    color: palette.white,
-    fontFamily: typography.displayFamily,
-    fontSize: 46,
-    fontWeight: '800',
-    lineHeight: 54,
-  },
-  targetCaption: {
-    color: palette.white,
-    flexShrink: 1,
-    fontFamily: typography.bodyFamily,
-    fontSize: 19,
-    fontWeight: '600',
-  },
   messageArea: {
     gap: 2,
     justifyContent: 'center',

@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react-native';
 import { AppState, AppStateStatus } from 'react-native';
 
-import { SPLASH_STEP } from '@/features/pour-lab/pour-engine';
-import { usePour } from '@/features/pour-lab/use-pour';
+import { SPLASH_STEP } from '@/features/game/pour/pour-engine';
+import { usePour } from '@/features/game/pour/use-pour';
 
 describe('usePour', () => {
   let appStateListener: ((status: AppStateStatus) => void) | null = null;
