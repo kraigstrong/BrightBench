@@ -82,6 +82,15 @@ export default function ModeDetailScreen() {
           title="1-Minute Challenge"
           tintColor={meta.surface}
         />
+        {mode === 'pour' && __DEV__ ? (
+          // Development-only entry to the Pour Lab prototype; release builds never show it.
+          <CompactFeatureCard
+            accentColor={meta.accent}
+            description="Prototype: two new ways to pour. Progress is not saved."
+            onPress={() => router.push('/lab/pour/peek')}
+            title="Pour Lab"
+          />
+        ) : null}
       </View>
     </AppShell>
   );
