@@ -5,14 +5,8 @@ import { palette, spacing } from '@education/design';
 import { typography } from '@education/design/native';
 import { ActionButton } from '@education/ui';
 import { MessageArea, PanelMessage } from '@/features/game/components/panel-message';
-import {
-  ADJUST_MESSAGE,
-  hopSizeLabel,
-  hopsLabel,
-  MAX_HOP_PARTS,
-  missMessage,
-  successMessage,
-} from '@/features/game/line/hop-engine';
+import { PartPicker } from '@/features/game/components/part-picker';
+import { ADJUST_MESSAGE, hopsLabel, missMessage, successMessage } from '@/features/game/line/hop-engine';
 import {
   FROG_HIT_RISE,
   FROG_HIT_SIZE,
@@ -94,7 +88,8 @@ export function HopPanel({
         : IDLE_MESSAGE;
 
   function resize(nextParts: number) {
-    if (locked) {
+    // Tapping the hop size already chosen leaves the frog where it is.
+    if (locked || nextParts === parts) {
       return;
     }
 
@@ -160,30 +155,14 @@ export function HopPanel({
         </View>
       </View>
 
-      <View style={styles.controlRow}>
-        <ActionButton
-          accessibilityLabel="Bigger hops"
-          compact
-          disabled={locked || parts <= 1}
-          label="Bigger"
-          onPress={() => resize(parts - 1)}
-          style={styles.controlButton}
-          variant="secondary"
-        />
-        <View accessibilityLiveRegion="polite" style={styles.controlCenter}>
-          <Text style={styles.controlCaption}>each hop</Text>
-          <Text style={styles.controlValue}>{hopSizeLabel(parts)}</Text>
-        </View>
-        <ActionButton
-          accessibilityLabel="Smaller hops"
-          compact
-          disabled={locked || parts >= MAX_HOP_PARTS}
-          label="Smaller"
-          onPress={() => resize(parts + 1)}
-          style={styles.controlButton}
-          variant="secondary"
-        />
-      </View>
+      <PartPicker
+        choiceLabel={(size) => `Hops of 1/${size}`}
+        disabled={locked}
+        label="Hop size"
+        onChange={resize}
+        value={parts === 1 ? null : parts}
+        variant="hops"
+      />
 
       <View style={styles.controlRow}>
         <ActionButton
@@ -195,7 +174,7 @@ export function HopPanel({
           style={styles.controlButton}
           variant="secondary"
         />
-        <Text accessibilityLiveRegion="polite" style={[styles.controlCenter, styles.controlValue]}>
+        <Text accessibilityLiveRegion="polite" style={styles.controlCount}>
           {hops === 0 ? 'At 0' : hopsLabel(hops)}
         </Text>
         <ActionButton
@@ -239,21 +218,12 @@ const styles = StyleSheet.create({
   controlButton: {
     minWidth: 96,
   },
-  controlCenter: {
-    alignItems: 'center',
-    flex: 1,
-    textAlign: 'center',
-  },
-  controlCaption: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  controlValue: {
+  controlCount: {
     color: palette.ink,
+    flex: 1,
     fontFamily: typography.displayFamily,
     fontSize: 18,
     fontWeight: '700',
+    textAlign: 'center',
   },
 });

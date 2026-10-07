@@ -2,10 +2,6 @@ import { PanelMessage } from '@/features/game/components/panel-message';
 import { canMakeTarget, capitalize, partName } from '@/features/game/equal-parts';
 import { getFraction } from '@/features/game/math';
 
-// The most pieces a bar can be cut into. Eight covers every Build denominator and the
-// equivalent builds the curriculum pool allows (2/4, 3/6, 4/8, 2/8, 6/8, 2/6, 4/6).
-export const MAX_PIECES = 8;
-
 /** Moves every filled piece to the left so the filled share reads as one stretch from 0. */
 export function packFilled(pieces: number, filledCount: number) {
   return Array.from({ length: pieces }, (_, index) => index < filledCount);

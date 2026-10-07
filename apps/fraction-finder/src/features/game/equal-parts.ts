@@ -1,5 +1,9 @@
 import { getFraction } from '@/features/game/math';
 
+// The ways a child can split a whole: exactly the denominators in the fraction pools.
+// Every target still has a choice that cannot make it (thirds for 3/4).
+export const PART_CHOICES = [2, 3, 4, 6, 8] as const;
+
 const PART_NAMES: Record<number, string> = {
   2: 'halves',
   3: 'thirds',

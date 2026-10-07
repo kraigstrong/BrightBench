@@ -45,17 +45,8 @@ async function renderSettled(ui: React.ReactElement) {
   await act(async () => {});
 }
 
-const HOP_SIZES = ['1 whole', '1/2', '1/3', '1/4', '1/5', '1/6', '1/7', '1/8'];
-
 function hopSizeTo(parts: number) {
-  for (let guard = 0; guard < 10; guard += 1) {
-    const current = HOP_SIZES.findIndex((label) => screen.queryByText(label)) + 1;
-    if (current === parts) {
-      return;
-    }
-    fireEvent.press(screen.getByLabelText(current < parts ? 'Smaller hops' : 'Bigger hops'));
-  }
-  throw new Error(`could not set hop size to 1/${parts}`);
+  fireEvent.press(screen.getByLabelText(`Hops of 1/${parts}`));
 }
 
 function hop(times: number) {
@@ -114,8 +105,8 @@ describe('Number Line mode (Hop It)', () => {
     await renderSettled(<ModePlayScene mode="line" sessionType="practice" difficultyLevel="medium" />);
 
     expect(screen.getByText('Hop the frog to 3/4.')).toBeTruthy();
-    expect(screen.getByText('1 whole')).toBeTruthy();
     expect(screen.getByText('At 0')).toBeTruthy();
+    expect(screen.getByLabelText('Hops of 1/4')).not.toBeChecked();
     expect(checkButton()).toBeDisabled();
     expect(screen.getByLabelText('Hop back')).toBeDisabled();
 
@@ -144,14 +135,15 @@ describe('Number Line mode (Hop It)', () => {
     expect(recordRound).toHaveBeenLastCalledWith(expect.objectContaining({ wasCorrect: true }));
     expect(screen.getByText('6 eighths is the same as 3/4!')).toBeTruthy();
     expect(screen.getByLabelText('Hop forward')).toBeDisabled();
-    expect(screen.getByLabelText('Smaller hops')).toBeDisabled();
+    expect(screen.getByLabelText('Hops of 1/4')).toBeDisabled();
+    expect(screen.getByLabelText('Hops of 1/8')).toBeChecked();
     expect(celebrationMock.mock.calls.at(-1)?.[0]).toEqual(
       expect.objectContaining({ visible: true, showMessage: false })
     );
 
     advance(1200);
     expect(screen.getByText('At 0')).toBeTruthy();
-    expect(screen.getByText('1 whole')).toBeTruthy();
+    expect(screen.getByLabelText('Hops of 1/8')).not.toBeChecked();
     expect(checkButton()).toBeDisabled();
   });
 
@@ -160,6 +152,9 @@ describe('Number Line mode (Hop It)', () => {
 
     hopSizeTo(4);
     hop(2);
+    // Tapping the hop size already chosen leaves the frog where it is.
+    hopSizeTo(4);
+    expect(screen.getByText('2 hops')).toBeTruthy();
     fireEvent.press(checkButton());
     expect(screen.getByText('Not quite to 3/4.')).toBeTruthy();
     expect(screen.getByText('The flag shows where 3/4 is.')).toBeTruthy();

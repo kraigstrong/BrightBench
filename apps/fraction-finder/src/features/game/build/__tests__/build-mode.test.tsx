@@ -44,17 +44,7 @@ async function renderSettled(ui: React.ReactElement) {
 }
 
 function cutTo(pieces: number) {
-  const fewer = screen.getByLabelText('Fewer pieces');
-  const more = screen.getByLabelText('Cut into more pieces');
-  for (let guard = 0; guard < 10; guard += 1) {
-    const current = screen.queryByText(/^(\d+) pieces$/)?.props.children;
-    const count = typeof current === 'string' ? Number(current.split(' ')[0]) : 1;
-    if (count === pieces) {
-      return;
-    }
-    fireEvent.press(count < pieces ? more : fewer);
-  }
-  throw new Error(`could not cut to ${pieces}`);
+  fireEvent.press(screen.getByLabelText(`Cut into ${pieces} pieces`));
 }
 
 function fill(count: number, pieces: number) {
@@ -135,7 +125,8 @@ describe('Build mode (Cut & Fill)', () => {
 
     expect(recordRound).toHaveBeenLastCalledWith(expect.objectContaining({ wasCorrect: true }));
     expect(screen.getByText('6 eighths is the same as 3/4!')).toBeTruthy();
-    expect(screen.getByLabelText('Cut into more pieces')).toBeDisabled();
+    expect(screen.getByLabelText('Cut into 4 pieces')).toBeDisabled();
+    expect(screen.getByLabelText('Cut into 8 pieces')).toBeChecked();
     expect(celebrationMock.mock.calls.at(-1)?.[0]).toEqual(
       expect.objectContaining({ visible: true, showMessage: false })
     );
@@ -150,6 +141,9 @@ describe('Build mode (Cut & Fill)', () => {
 
     cutTo(4);
     fill(3, 4);
+    // Tapping the cut already chosen keeps the fill.
+    cutTo(4);
+    expect(screen.getByText('3 of 4 filled')).toBeTruthy();
     fireEvent.press(checkButton());
 
     expect(screen.getByText("That's 3/4!")).toBeTruthy();

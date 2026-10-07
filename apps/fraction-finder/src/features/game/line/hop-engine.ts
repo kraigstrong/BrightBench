@@ -2,10 +2,6 @@ import { PanelMessage } from '@/features/game/components/panel-message';
 import { canMakeTarget, capitalize, partName } from '@/features/game/equal-parts';
 import { getFraction } from '@/features/game/math';
 
-// The most equal hops a whole can be split into. Eight covers every Number Line
-// denominator and the equivalent landings its pool allows (2/4, 6/8, 10/8, ...).
-export const MAX_HOP_PARTS = 8;
-
 /** "1/4" for a whole split into 4 hops; "1 whole" when it is not split. */
 export function hopSizeLabel(parts: number) {
   return parts === 1 ? '1 whole' : `1/${parts}`;
