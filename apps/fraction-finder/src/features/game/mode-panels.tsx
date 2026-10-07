@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { spacing } from '@education/design';
@@ -6,9 +6,8 @@ import { ChoiceButton } from '@/components/ui/choice-button';
 import { fractionPalette } from '@/design/tokens';
 import { FRACTION_BY_ID } from '@/features/game/fractions';
 import { FractionBar } from '@/features/game/components/fraction-bar';
-import { NumberLine } from '@/features/game/components/number-line';
-import { clamp, getFraction } from '@/features/game/math';
-import { EstimateRound, LineRound } from '@/features/game/types';
+import { clamp } from '@/features/game/math';
+import { EstimateRound } from '@/features/game/types';
 
 const ESTIMATE_BAR_SLICES = 8;
 
@@ -48,44 +47,6 @@ export function EstimatePanel({
           />
         ))}
       </View>
-    </View>
-  );
-}
-
-export function LinePanel({
-  round,
-  onSubmit,
-  disabled,
-  onInteraction,
-}: {
-  round: LineRound;
-  onSubmit: (input: number) => void;
-  disabled: boolean;
-  onInteraction: () => void;
-}) {
-  const [markerValue, setMarkerValue] = useState(0);
-  const target = getFraction(round.targetFractionId);
-
-  useEffect(() => {
-    setMarkerValue(0);
-  }, [round.id]);
-
-  return (
-    <View style={styles.modeBody}>
-      <NumberLine
-        difficultyLevel={round.difficultyLevel}
-        lineMax={round.lineMax}
-        markerValue={markerValue}
-        onChange={(value) => {
-          onInteraction();
-          setMarkerValue(value);
-        }}
-        revealTarget={false}
-        segmentCount={round.segmentCount}
-        targetValue={target.value}
-        disabled={disabled}
-      />
-      <ChoiceButton label="Submit" onPress={() => onSubmit(markerValue)} disabled={disabled} />
     </View>
   );
 }

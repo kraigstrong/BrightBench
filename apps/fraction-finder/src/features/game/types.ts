@@ -37,6 +37,9 @@ export type BuildAnswer = {
   filled: number;
 };
 
+/** A Number Line answer: the whole split into `parts` equal hops, and how many were hopped from 0. */
+export type LineAnswer = { parts: number; hops: number };
+
 export type BuildRound = RoundBase & {
   mode: 'build';
   partitions: number;
@@ -63,9 +66,8 @@ export type PourRound = RoundBase & {
 
 export type LineRound = RoundBase & {
   mode: 'line';
+  /** The line runs from 0 to this whole number. */
   lineMax: number;
-  segmentCount: number;
-  tolerance: number;
 };
 
 export type AnyRound = FindRound | BuildRound | CompareRound | EstimateRound | PourRound | LineRound;
