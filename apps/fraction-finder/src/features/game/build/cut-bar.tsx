@@ -4,10 +4,12 @@ import Svg, { ClipPath, Defs, G, Line, Path, Rect, Text as SvgText } from 'react
 import { palette } from '@education/design';
 import { fractionPalette } from '@/design/tokens';
 
-export const BAR_PAD_X = 10;
-export const BAR_TOP = 46;
+// Tight edges keep eighths wide enough to tap on a 360px phone.
+export const BAR_PAD_X = 4;
+// Room above the bar for the success bracket and its label.
+export const BAR_TOP = 40;
 export const BAR_HEIGHT = 78;
-export const CUT_BAR_HEIGHT = BAR_TOP + BAR_HEIGHT + 18;
+export const CUT_BAR_HEIGHT = BAR_TOP + BAR_HEIGHT + 12;
 
 const BAR_RADIUS = 22;
 const FILL_COLOR = fractionPalette.accent;

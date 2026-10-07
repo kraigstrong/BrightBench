@@ -117,7 +117,7 @@ describe('Build mode (Cut & Fill)', () => {
 
     cutTo(3);
     fill(2, 3);
-    expect(screen.getByText('2 of 3 pieces filled')).toBeTruthy();
+    expect(screen.getByText('2 of 3 filled')).toBeTruthy();
     fireEvent.press(checkButton());
 
     expect(recordRound).toHaveBeenLastCalledWith(
@@ -128,7 +128,7 @@ describe('Build mode (Cut & Fill)', () => {
     expect(screen.queryByText('Keep adjusting')).toBeNull();
 
     cutTo(8);
-    expect(screen.getByText('0 of 8 pieces filled')).toBeTruthy();
+    expect(screen.getByText('0 of 8 filled')).toBeTruthy();
     expect(screen.getByText('Use the dashed lines to fix it.')).toBeTruthy();
     fill(6, 8);
     fireEvent.press(checkButton());
@@ -154,6 +154,31 @@ describe('Build mode (Cut & Fill)', () => {
 
     expect(screen.getByText("That's 3/4!")).toBeTruthy();
     expect(screen.getByText('3 of 4 equal parts.')).toBeTruthy();
+  });
+
+  it('practice: Fill and Empty build the share without tapping pieces', async () => {
+    await renderSettled(<ModePlayScene mode="build" sessionType="practice" difficultyLevel="medium" />);
+
+    const fillButton = screen.getByLabelText('Fill one more piece');
+    const emptyButton = screen.getByLabelText('Empty one piece');
+    expect(emptyButton).toBeDisabled();
+
+    cutTo(8);
+    for (let press = 0; press < 7; press += 1) {
+      fireEvent.press(fillButton);
+    }
+    expect(screen.getByText('7 of 8 filled')).toBeTruthy();
+    expect(screen.getByLabelText('Piece 7 of 8')).toBeChecked();
+    expect(screen.getByLabelText('Piece 8 of 8')).not.toBeChecked();
+
+    fireEvent.press(emptyButton);
+    expect(screen.getByText('6 of 8 filled')).toBeTruthy();
+    expect(screen.getByLabelText('Piece 7 of 8')).not.toBeChecked();
+
+    fireEvent.press(checkButton());
+    expect(recordRound).toHaveBeenLastCalledWith(expect.objectContaining({ wasCorrect: true }));
+    expect(fillButton).toBeDisabled();
+    expect(emptyButton).toBeDisabled();
   });
 
   it('challenge: scores builds and advances on the existing timings', async () => {

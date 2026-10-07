@@ -19,6 +19,8 @@ import { useReduceMotion } from '@/lib/use-reduce-motion';
 import { usePlayOnChange, useTween } from '@/lib/use-tween';
 
 const STAGE_MAX_WIDTH = 520;
+// How far the bar reaches into the card's side padding.
+const STAGE_BLEED = 16;
 const IDLE_MESSAGE: PanelMessage = { title: '', tone: 'hint' };
 
 type BuildPanelProps = {
@@ -100,6 +102,22 @@ export function BuildPanel({
     setFilled((current) => current.map((isFilled, at) => (at === index ? !isFilled : isFilled)));
   }
 
+  // Big-button alternative to tapping pieces: fill the next empty piece from the left,
+  // or empty the last filled one.
+  function fillOne() {
+    const index = filled.indexOf(false);
+    if (index >= 0) {
+      toggle(index);
+    }
+  }
+
+  function emptyOne() {
+    const index = filled.lastIndexOf(true);
+    if (index >= 0) {
+      toggle(index);
+    }
+  }
+
   function check() {
     setLastSubmitted(signature);
     onSubmit({ pieces, filled: filledCount });
@@ -139,25 +157,41 @@ export function BuildPanel({
         </View>
       </View>
 
-      <Text style={styles.readout}>
-        {pieces === 1
-          ? filledCount
-            ? 'The whole bar is filled.'
-            : '1 whole bar'
-          : `${filledCount} of ${pieces} pieces filled`}
-      </Text>
+      <View style={styles.controlRow}>
+        <ActionButton
+          accessibilityLabel="Empty one piece"
+          compact
+          disabled={locked || filledCount === 0}
+          label="Empty"
+          onPress={emptyOne}
+          style={styles.controlButton}
+          variant="secondary"
+        />
+        <Text accessibilityLiveRegion="polite" style={styles.controlCount}>
+          {pieces === 1 ? (filledCount ? 'Whole bar filled' : 'Not filled') : `${filledCount} of ${pieces} filled`}
+        </Text>
+        <ActionButton
+          accessibilityLabel="Fill one more piece"
+          compact
+          disabled={locked || filledCount === pieces}
+          label="Fill"
+          onPress={fillOne}
+          style={styles.controlButton}
+          variant="secondary"
+        />
+      </View>
 
-      <View style={styles.cutRow}>
+      <View style={styles.controlRow}>
         <ActionButton
           accessibilityLabel="Fewer pieces"
           compact
           disabled={locked || pieces <= 1}
           label="Fewer"
           onPress={() => cut(pieces - 1)}
-          style={styles.cutButton}
+          style={styles.controlButton}
           variant="secondary"
         />
-        <Text accessibilityLiveRegion="polite" style={styles.cutCount}>
+        <Text accessibilityLiveRegion="polite" style={styles.controlCount}>
           {pieces === 1 ? 'Not cut yet' : `${pieces} pieces`}
         </Text>
         <ActionButton
@@ -166,7 +200,7 @@ export function BuildPanel({
           disabled={locked || pieces >= MAX_PIECES}
           label="Cut more"
           onPress={() => cut(pieces + 1)}
-          style={styles.cutButton}
+          style={styles.controlButton}
           variant="secondary"
         />
       </View>
@@ -183,30 +217,24 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     width: '100%',
   },
+  // Runs the bar past the card's padding so small pieces stay wide enough to tap.
   stageWrap: {
     alignItems: 'center',
-    width: '100%',
+    marginHorizontal: -STAGE_BLEED,
   },
   pieceHit: {
     borderRadius: radii.sm,
     position: 'absolute',
   },
-  readout: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  cutRow: {
+  controlRow: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  cutButton: {
+  controlButton: {
     minWidth: 96,
   },
-  cutCount: {
+  controlCount: {
     color: palette.ink,
     flex: 1,
     fontFamily: typography.displayFamily,
