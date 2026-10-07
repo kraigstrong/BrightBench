@@ -117,7 +117,7 @@ describe('app screens', () => {
     expect(screen.queryByText('Played')).toBeNull();
     expect(screen.queryByText('High score')).toBeNull();
     expect(screen.getByText('Match a picture to the right fraction.')).toBeTruthy();
-    expect(screen.getByText('Drag the marker to match the fraction.')).toBeTruthy();
+    expect(screen.getByText('Hop a frog along the line to land on the fraction.')).toBeTruthy();
     expect(screen.queryByText('Choose the fraction that is larger.')).toBeNull();
     expect(screen.getByLabelText('Open settings')).toBeTruthy();
   });

@@ -18,7 +18,8 @@ import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { FractionMeter } from '@/features/game/components/fraction-meter';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { BuildPanel } from '@/features/game/build/build-panel';
-import { EstimatePanel, LinePanel } from '@/features/game/mode-panels';
+import { HopPanel } from '@/features/game/line/hop-panel';
+import { EstimatePanel } from '@/features/game/mode-panels';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
 import { PourPanel } from '@/features/game/pour/pour-panel';
@@ -74,11 +75,8 @@ function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) 
         body: 'Look for which picture shows more of the whole.',
       };
     case 'line':
-      return {
-        title: 'Keep going',
-        body: 'Move the marker and check again when the spot feels better.',
-        detail: feedback.detailLabel,
-      };
+      // Number Line explains a miss under the line, where the flag shows the true spot.
+      return null;
   }
 }
 
@@ -93,7 +91,7 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
   const retryFeedback = retryFeedbackForMode(mode, feedback);
   const reduceMotion = useReduceMotion();
   // These modes explain misses and label successes on the play surface itself.
-  const showsOwnFeedback = mode === 'pour' || mode === 'build';
+  const showsOwnFeedback = mode === 'pour' || mode === 'build' || mode === 'line';
 
   useEffect(() => {
     if (nextRoundTimeoutRef.current) {
@@ -260,11 +258,14 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
           />
         ) : null}
         {mode === 'line' ? (
-          <LinePanel
+          <HopPanel
+            key={round.id}
             round={round as LineRound}
             onSubmit={submit}
             disabled={isCelebrating}
             onInteraction={clearRetryFeedback}
+            missEvaluation={feedback}
+            solved={isCelebrating}
           />
         ) : null}
       </GameScreenShell>

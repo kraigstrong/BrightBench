@@ -1,10 +1,5 @@
-import {
-  canMakeTarget,
-  missMessage,
-  packFilled,
-  partName,
-  successMessage,
-} from '@/features/game/build/build-engine';
+import { missMessage, packFilled, successMessage } from '@/features/game/build/build-engine';
+import { canMakeTarget, partName } from '@/features/game/equal-parts';
 import { evaluateBuildRound } from '@/features/game/modes/build';
 import { BuildRound } from '@/features/game/types';
 

@@ -54,8 +54,8 @@ export const MODE_META: Record<
   line: {
     title: 'Number Line',
     shortTitle: 'Line',
-    description: 'Drag the marker to match the fraction.',
-    promptHint: 'Place the marker, then check how close you are.',
+    description: 'Hop a frog along the line to land on the fraction.',
+    promptHint: 'Pick a hop size, then hop to the fraction.',
     accent: '#8B6BC7',
     surface: '#F4EEFF',
   },

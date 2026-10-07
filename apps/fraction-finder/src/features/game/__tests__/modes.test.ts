@@ -3,6 +3,7 @@ import { generateFindRound } from '@/features/game/modes/find';
 import { generateLineRound, evaluateLineRound } from '@/features/game/modes/line';
 import { evaluatePourRound } from '@/features/game/modes/pour';
 import { getFraction } from '@/features/game/math';
+import { LineRound } from '@/features/game/types';
 
 describe('mode engines', () => {
   it('creates find rounds with the target inside the choices', () => {
@@ -62,60 +63,57 @@ describe('mode engines', () => {
     expect(far.scoreBand).toBe('far');
   });
 
-  it('builds easy number-line rounds with quarter marks', () => {
-    const round = generateLineRound({ difficultyLevel: 'easy' });
-
-    expect(round.lineMax).toBe(1);
-    expect(round.segmentCount).toBe(4);
-    expect(['1-2', '1-4', '3-4']).toContain(round.targetFractionId);
-  });
-
-  it('builds medium and hard number-line rounds from denominator-based partitions', () => {
+  it('builds number-line rounds from the existing pools, running to 2 on Hard', () => {
+    const easyRound = generateLineRound({ difficultyLevel: 'easy' });
     const mediumRound = generateLineRound({ difficultyLevel: 'medium' });
     const hardRound = generateLineRound({ difficultyLevel: 'hard' });
-    const mediumTarget = getFraction(mediumRound.targetFractionId);
-    const hardTarget = getFraction(hardRound.targetFractionId);
 
+    expect(easyRound.lineMax).toBe(1);
+    expect(['1-2', '1-4', '3-4']).toContain(easyRound.targetFractionId);
+    expect(easyRound.prompt).toBe(`Hop the frog to ${getFraction(easyRound.targetFractionId).label}.`);
     expect(mediumRound.lineMax).toBe(1);
-    expect(mediumRound.segmentCount).toBe(mediumTarget.denominator);
     expect(hardRound.lineMax).toBe(2);
-    expect(hardRound.segmentCount).toBe(hardTarget.denominator * 2);
   });
 
-  it('scores number-line placement by closeness to the target point', () => {
-    const close = evaluateLineRound(
-      {
-        id: 'line-test',
-        mode: 'line',
-        prompt: 'Where does 5/4 go on the number line?',
-        targetFractionId: '5-4',
-        representation: 'line',
-        difficultyLevel: 'hard',
-        lineMax: 2,
-        segmentCount: 8,
-        tolerance: 0.1,
-      },
-      1.29
-    );
-    const far = evaluateLineRound(
-      {
-        id: 'line-test',
-        mode: 'line',
-        prompt: 'Where does 1/2 go on the number line?',
-        targetFractionId: '1-2',
-        representation: 'line',
-        difficultyLevel: 'easy',
-        lineMax: 1,
-        segmentCount: 4,
-        tolerance: 0.08,
-      },
-      0.82
-    );
+  it('scores number-line hops only when they land exactly, equivalents included', () => {
+    const round: LineRound = {
+      id: 'line-test',
+      mode: 'line',
+      prompt: 'Hop the frog to 5/4.',
+      targetFractionId: '5-4',
+      representation: 'line',
+      difficultyLevel: 'hard',
+      lineMax: 2,
+    };
+    const own = evaluateLineRound(round, { parts: 4, hops: 5 });
+    const equivalent = evaluateLineRound(round, { parts: 8, hops: 10 });
+    const near = evaluateLineRound(round, { parts: 6, hops: 7 });
+    const far = evaluateLineRound({ ...round, targetFractionId: '1-2', lineMax: 1 }, { parts: 8, hops: 7 });
 
-    expect(close.isCorrect).toBe(true);
-    expect(close.scoreBand).toBe('close');
-    expect(close.nearestFractionId).toBe('5-4');
+    expect(own).toEqual(expect.objectContaining({ isCorrect: true, scoreBand: 'exact', actualValue: 1.25 }));
+    expect(equivalent).toEqual(expect.objectContaining({ isCorrect: true, scoreBand: 'exact' }));
+    // 7/6 is 0.083 from 5/4, inside the old Hard tolerance of 0.1. Hop It does not accept it.
+    expect(near.isCorrect).toBe(false);
+    expect(near.scoreBand).toBe('almost');
+    expect(near.detailLabel).toBe('Try a little farther right.');
     expect(far.isCorrect).toBe(false);
     expect(far.scoreBand).toBe('far');
+    expect(far.detailLabel).toBe('Try a little farther left.');
+  });
+
+  it('never calls a wrong landing exact, even when it sits very near the target', () => {
+    const round: LineRound = {
+      id: 'line-test',
+      mode: 'line',
+      prompt: 'Hop the frog to 1/6.',
+      targetFractionId: '1-6',
+      representation: 'line',
+      difficultyLevel: 'medium',
+      lineMax: 1,
+    };
+    const result = evaluateLineRound(round, { parts: 7, hops: 1 });
+
+    expect(result.isCorrect).toBe(false);
+    expect(result.scoreBand).toBe('close');
   });
 });

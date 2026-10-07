@@ -4,15 +4,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { palette, radii, spacing } from '@education/design';
 import { typography } from '@education/design/native';
 import { ActionButton } from '@education/ui';
-import {
-  ADJUST_MESSAGE,
-  MAX_PIECES,
-  missMessage,
-  packFilled,
-  successMessage,
-} from '@/features/game/build/build-engine';
+import { ADJUST_MESSAGE, missMessage, packFilled, successMessage } from '@/features/game/build/build-engine';
 import { BAR_HEIGHT, BAR_TOP, barGeometry, CutBar, CUT_BAR_HEIGHT } from '@/features/game/build/cut-bar';
 import { MessageArea, PanelMessage } from '@/features/game/components/panel-message';
+import { PartPicker } from '@/features/game/components/part-picker';
 import { getFraction } from '@/features/game/math';
 import { BuildAnswer, BuildRound, RoundEvaluation } from '@/features/game/types';
 import { useReduceMotion } from '@/lib/use-reduce-motion';
@@ -84,7 +79,8 @@ export function BuildPanel({
         : IDLE_MESSAGE;
 
   function cut(nextPieces: number) {
-    if (locked) {
+    // Tapping the cut already chosen keeps the fill.
+    if (locked || nextPieces === pieces) {
       return;
     }
 
@@ -144,7 +140,8 @@ export function BuildPanel({
             <Pressable
               accessibilityLabel={pieces === 1 ? 'Whole bar' : `Piece ${index + 1} of ${pieces}`}
               accessibilityRole="checkbox"
-              accessibilityState={{ checked: isFilled, disabled: locked }}
+              aria-checked={isFilled}
+              aria-disabled={locked}
               disabled={locked}
               key={`hit-${index}`}
               onPress={() => toggle(index)}
@@ -157,6 +154,15 @@ export function BuildPanel({
         </View>
       </View>
 
+      <PartPicker
+        choiceLabel={(parts) => `Cut into ${parts} pieces`}
+        disabled={locked}
+        label="Cut into"
+        onChange={cut}
+        value={pieces === 1 ? null : pieces}
+        variant="bar"
+      />
+
       <View style={styles.controlRow}>
         <ActionButton
           accessibilityLabel="Empty one piece"
@@ -168,7 +174,11 @@ export function BuildPanel({
           variant="secondary"
         />
         <Text accessibilityLiveRegion="polite" style={styles.controlCount}>
-          {pieces === 1 ? (filledCount ? 'Whole bar filled' : 'Not filled') : `${filledCount} of ${pieces} filled`}
+          {pieces === 1
+            ? filledCount
+              ? 'Whole bar filled'
+              : 'Not cut yet'
+            : `${filledCount} of ${pieces} filled`}
         </Text>
         <ActionButton
           accessibilityLabel="Fill one more piece"
@@ -176,30 +186,6 @@ export function BuildPanel({
           disabled={locked || filledCount === pieces}
           label="Fill"
           onPress={fillOne}
-          style={styles.controlButton}
-          variant="secondary"
-        />
-      </View>
-
-      <View style={styles.controlRow}>
-        <ActionButton
-          accessibilityLabel="Fewer pieces"
-          compact
-          disabled={locked || pieces <= 1}
-          label="Fewer"
-          onPress={() => cut(pieces - 1)}
-          style={styles.controlButton}
-          variant="secondary"
-        />
-        <Text accessibilityLiveRegion="polite" style={styles.controlCount}>
-          {pieces === 1 ? 'Not cut yet' : `${pieces} pieces`}
-        </Text>
-        <ActionButton
-          accessibilityLabel="Cut into more pieces"
-          compact
-          disabled={locked || pieces >= MAX_PIECES}
-          label="Cut more"
-          onPress={() => cut(pieces + 1)}
           style={styles.controlButton}
           variant="secondary"
         />

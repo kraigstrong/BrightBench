@@ -1,28 +1,6 @@
 import { PanelMessage } from '@/features/game/components/panel-message';
+import { canMakeTarget, capitalize, partName } from '@/features/game/equal-parts';
 import { getFraction } from '@/features/game/math';
-
-// The most pieces a bar can be cut into. Eight covers every Build denominator and the
-// equivalent builds the curriculum pool allows (2/4, 3/6, 4/8, 2/8, 6/8, 2/6, 4/6).
-export const MAX_PIECES = 8;
-
-const PART_NAMES: Record<number, string> = {
-  2: 'halves',
-  3: 'thirds',
-  4: 'fourths',
-  5: 'fifths',
-  6: 'sixths',
-  7: 'sevenths',
-  8: 'eighths',
-};
-
-export function partName(pieces: number) {
-  return PART_NAMES[pieces] ?? `${pieces} pieces`;
-}
-
-/** Whether a bar cut into `pieces` equal pieces can show the target exactly. */
-export function canMakeTarget(targetFractionId: string, pieces: number) {
-  return pieces % getFraction(targetFractionId).denominator === 0;
-}
 
 /** Moves every filled piece to the left so the filled share reads as one stretch from 0. */
 export function packFilled(pieces: number, filledCount: number) {
@@ -80,8 +58,4 @@ export function successMessage(
     body: `${filledCount} of ${pieces} equal parts fill the same space as ${target.numerator} of ${target.denominator}.`,
     tone: 'success',
   };
-}
-
-function capitalize(word: string) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
 }

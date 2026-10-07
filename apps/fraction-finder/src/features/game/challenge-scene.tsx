@@ -28,7 +28,8 @@ import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
 import { BuildPanel } from '@/features/game/build/build-panel';
-import { EstimatePanel, LinePanel } from '@/features/game/mode-panels';
+import { HopPanel } from '@/features/game/line/hop-panel';
+import { EstimatePanel } from '@/features/game/mode-panels';
 import { PourPanel } from '@/features/game/pour/pour-panel';
 import {
   AnyRound,
@@ -36,6 +37,7 @@ import {
   ChallengeModeKey,
   DifficultyLevel,
   FindRound,
+  LineRound,
   PourRound,
   RoundEvaluation,
 } from '@/features/game/types';
@@ -89,7 +91,7 @@ export function ChallengeScene({
   const meta = MODE_META[mode];
   const reduceMotion = useReduceMotion();
   // These modes label a correct answer on the play surface itself.
-  const showsOwnFeedback = mode === 'pour' || mode === 'build';
+  const showsOwnFeedback = mode === 'pour' || mode === 'build' || mode === 'line';
 
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
   const timerProgress =
@@ -361,11 +363,13 @@ export function ChallengeScene({
         );
       case 'line':
         return (
-          <LinePanel
+          <HopPanel
+            key={round.id}
             disabled={disabled}
-            onInteraction={() => undefined}
-            onSubmit={(value) => submit(value)}
-            round={round as any}
+            onSubmit={(answer) => submit(answer)}
+            round={round as LineRound}
+            showMessages={false}
+            solved={showSuccessOverlay}
           />
         );
       default:
