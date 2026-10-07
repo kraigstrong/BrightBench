@@ -10,7 +10,7 @@ type ActivePress = {
 };
 
 /**
- * Hold-to-pour engine shared by both Pour Lab concepts. `value` is the amount in the
+ * Hold-to-pour engine behind the Pour panel. `value` is the amount in the
  * glass being filled (0..1). Holding moves it steadily; releasing stops immediately;
  * a short tap moves exactly one splash.
  */
