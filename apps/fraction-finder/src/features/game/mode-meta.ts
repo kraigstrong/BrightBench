@@ -22,8 +22,8 @@ export const MODE_META: Record<
   build: {
     title: 'Build the Fraction',
     shortTitle: 'Build',
-    description: 'Fill the right number of equal parts.',
-    promptHint: 'Tap the pieces you want to shade.',
+    description: 'Cut a bar into equal parts and fill the fraction.',
+    promptHint: 'Cut the bar into equal pieces, then tap pieces to fill.',
     accent: '#E7A54B',
     surface: '#FFF4E8',
   },

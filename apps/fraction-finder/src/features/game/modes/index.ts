@@ -4,7 +4,7 @@ import { generateEstimateRound, evaluateEstimateRound } from '@/features/game/mo
 import { generateFindRound, evaluateFindRound } from '@/features/game/modes/find';
 import { generateLineRound, evaluateLineRound } from '@/features/game/modes/line';
 import { generatePourRound, evaluatePourRound } from '@/features/game/modes/pour';
-import { AnyRound, GameMode, GenerateRoundOptions, RoundEvaluation } from '@/features/game/types';
+import { AnyRound, BuildAnswer, GameMode, GenerateRoundOptions, RoundEvaluation } from '@/features/game/types';
 
 export function generateRound(mode: GameMode, options: GenerateRoundOptions): AnyRound {
   switch (mode) {
@@ -28,7 +28,7 @@ export function evaluateRound(mode: GameMode, round: AnyRound, input: unknown): 
     case 'find':
       return evaluateFindRound(round as Extract<AnyRound, { mode: 'find' }>, input as string);
     case 'build':
-      return evaluateBuildRound(round as Extract<AnyRound, { mode: 'build' }>, input as number);
+      return evaluateBuildRound(round as Extract<AnyRound, { mode: 'build' }>, input as BuildAnswer);
     case 'compare':
       return evaluateCompareRound(
         round as Extract<AnyRound, { mode: 'compare' }>,
