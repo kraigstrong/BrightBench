@@ -17,9 +17,11 @@ import { FractionBar } from '@/features/game/components/fraction-bar';
 import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { FractionMeter } from '@/features/game/components/fraction-meter';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
-import { BuildPanel, EstimatePanel, LinePanel, PourPanel } from '@/features/game/mode-panels';
+import { BuildPanel, EstimatePanel, LinePanel } from '@/features/game/mode-panels';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
+import { PourPanel } from '@/features/game/pour/pour-panel';
+import { useReduceMotion } from '@/features/game/pour/use-motion';
 import { getFraction } from '@/features/game/math';
 import {
   AnyRound,
@@ -66,11 +68,8 @@ function retryFeedbackForMode(mode: GameMode, feedback: RoundEvaluation | null) 
         detail: feedback.detailLabel,
       };
     case 'pour':
-      return {
-        title: 'Keep pouring',
-        body: 'Adjust the fill and check again when it looks right.',
-        detail: feedback.detailLabel,
-      };
+      // Pour explains a miss under the glass instead, so nothing covers the water line.
+      return null;
     case 'compare':
       return {
         title: 'Try again',
@@ -94,6 +93,8 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
   const retryFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const meta = MODE_META[mode];
   const retryFeedback = retryFeedbackForMode(mode, feedback);
+  const reduceMotion = useReduceMotion();
+  const isPour = mode === 'pour';
 
   useEffect(() => {
     if (nextRoundTimeoutRef.current) {
@@ -215,7 +216,9 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
         hint={meta.promptHint}
         accent={meta.accent}
         retryFeedback={retryFeedback}
-        celebrationVisible={isCelebrating}
+        // Pour celebrates with confetti only so the labeled glass stays visible.
+        celebrationVisible={isCelebrating && !(isPour && reduceMotion)}
+        showSuccessMessage={!isPour}
         successMessage="Nice work!">
         {mode === 'find' ? (
           <FindRoundPanel round={round as FindRound} onSubmit={submit} disabled={isCelebrating} />
@@ -237,10 +240,13 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
         ) : null}
         {mode === 'pour' ? (
           <PourPanel
+            key={round.id}
             round={round as PourRound}
             onSubmit={submit}
             disabled={isCelebrating}
             onInteraction={clearRetryFeedback}
+            missEvaluation={feedback}
+            solved={isCelebrating}
           />
         ) : null}
         {mode === 'compare' ? (
@@ -349,9 +355,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     fontFamily: typography.bodyFamily,
-  },
-  pourSurface: {
-    paddingVertical: spacing.sm,
   },
   compareRow: {
     width: '100%',

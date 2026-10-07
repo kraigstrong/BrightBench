@@ -27,12 +27,15 @@ import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
-import { BuildPanel, EstimatePanel, LinePanel, PourPanel } from '@/features/game/mode-panels';
+import { BuildPanel, EstimatePanel, LinePanel } from '@/features/game/mode-panels';
+import { PourPanel } from '@/features/game/pour/pour-panel';
+import { useReduceMotion } from '@/features/game/pour/use-motion';
 import {
   AnyRound,
   ChallengeModeKey,
   DifficultyLevel,
   FindRound,
+  PourRound,
   RoundEvaluation,
 } from '@/features/game/types';
 import { useAppState } from '@/state/app-state';
@@ -82,6 +85,8 @@ export function ChallengeScene({
   const wrongAnswerShake = useRef(new Animated.Value(0)).current;
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
   const meta = MODE_META[mode];
+  const reduceMotion = useReduceMotion();
+  const isPour = mode === 'pour';
 
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
   const timerProgress =
@@ -336,10 +341,12 @@ export function ChallengeScene({
       case 'pour':
         return (
           <PourPanel
+            key={round.id}
             disabled={disabled}
-            onInteraction={() => undefined}
             onSubmit={(value) => submit(value)}
-            round={round as any}
+            round={round as PourRound}
+            showMessages={false}
+            solved={showSuccessOverlay}
           />
         );
       case 'line':
@@ -385,7 +392,9 @@ export function ChallengeScene({
 
         <GameScreenShell
           accent={meta.accent}
-          celebrationVisible={showSuccessOverlay}
+          // Pour celebrates with confetti only so the labeled glass stays visible.
+          celebrationVisible={showSuccessOverlay && !(isPour && reduceMotion)}
+          showSuccessMessage={!isPour}
           hint={meta.promptHint}
           prompt={round.prompt}
           successMessage="Nice work!">

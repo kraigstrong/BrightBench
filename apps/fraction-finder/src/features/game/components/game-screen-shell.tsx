@@ -26,6 +26,8 @@ type GameScreenShellProps = {
   footer?: React.ReactNode;
   retryFeedback?: RetryFeedback | null;
   celebrationVisible?: boolean;
+  /** False shows only the confetti, leaving the play card visible underneath. */
+  showSuccessMessage?: boolean;
   successMessage?: string;
 };
 
@@ -37,6 +39,7 @@ export function GameScreenShell({
   footer,
   retryFeedback,
   celebrationVisible = false,
+  showSuccessMessage = true,
   successMessage = 'Nice work!',
 }: GameScreenShellProps) {
   const feedbackProgress = useSharedValue(0);
@@ -88,7 +91,11 @@ export function GameScreenShell({
       </Animated.View>
 
       <View style={styles.playCardWrap}>
-        <CelebrationOverlay visible={celebrationVisible} title={successMessage} />
+        <CelebrationOverlay
+          visible={celebrationVisible}
+          showMessage={showSuccessMessage}
+          title={successMessage}
+        />
 
         <Card style={styles.playCard}>{children}</Card>
       </View>
