@@ -27,10 +27,12 @@ import { FindRoundPanel } from '@/features/game/components/find-round-panel';
 import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
-import { BuildPanel, EstimatePanel, LinePanel } from '@/features/game/mode-panels';
+import { BuildPanel } from '@/features/game/build/build-panel';
+import { EstimatePanel, LinePanel } from '@/features/game/mode-panels';
 import { PourPanel } from '@/features/game/pour/pour-panel';
 import {
   AnyRound,
+  BuildRound,
   ChallengeModeKey,
   DifficultyLevel,
   FindRound,
@@ -86,7 +88,8 @@ export function ChallengeScene({
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
   const meta = MODE_META[mode];
   const reduceMotion = useReduceMotion();
-  const isPour = mode === 'pour';
+  // These modes label a correct answer on the play surface itself.
+  const showsOwnFeedback = mode === 'pour' || mode === 'build';
 
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
   const timerProgress =
@@ -329,10 +332,12 @@ export function ChallengeScene({
       case 'build':
         return (
           <BuildPanel
+            key={round.id}
             disabled={disabled}
-            onInteraction={() => undefined}
-            onSubmit={(value) => submit(value)}
-            round={round as any}
+            onSubmit={(answer) => submit(answer)}
+            round={round as BuildRound}
+            showMessages={false}
+            solved={showSuccessOverlay}
           />
         );
       case 'estimate':
@@ -398,8 +403,8 @@ export function ChallengeScene({
         <GameScreenShell
           accent={meta.accent}
           celebrationVisible={showSuccessOverlay}
-          // Pour celebrates with confetti only so the labeled glass stays visible.
-          showSuccessMessage={!isPour}
+          // Confetti only, so the labeled result stays visible.
+          showSuccessMessage={!showsOwnFeedback}
           reduceMotion={reduceMotion}
           hint={meta.promptHint}
           prompt={round.prompt}

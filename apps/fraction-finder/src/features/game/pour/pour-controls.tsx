@@ -1,9 +1,8 @@
 import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 
-import { palette, radii } from '@education/design';
-import { typography } from '@education/design/native';
-import { PourDirection, PourMessage } from '@/features/game/pour/pour-engine';
+import { radii } from '@education/design';
+import { PourDirection } from '@/features/game/pour/pour-engine';
 
 function noop() {}
 
@@ -18,22 +17,6 @@ export const holdPressProps = {
   onLongPress: noop,
   ...(Platform.OS === 'web' ? { delayPressIn: 0 } : { unstable_pressDelay: 0 }),
 } as const;
-
-export function MessageArea({ message }: { message: PourMessage }) {
-  return (
-    <View accessibilityLiveRegion="polite" style={styles.messageArea}>
-      <Text
-        style={[
-          styles.messageTitle,
-          message.tone === 'hint' ? styles.messageHint : null,
-          message.tone === 'success' ? styles.messageSuccess : null,
-        ]}>
-        {message.title}
-      </Text>
-      {message.body ? <Text style={styles.messageBody}>{message.body}</Text> : null}
-    </View>
-  );
-}
 
 /** An invisible press target laid over part of the SVG stage. */
 export function PourHotspot({
@@ -69,35 +52,6 @@ export function PourHotspot({
 }
 
 const styles = StyleSheet.create({
-  messageArea: {
-    gap: 2,
-    justifyContent: 'center',
-    minHeight: 52,
-  },
-  messageTitle: {
-    color: palette.ink,
-    fontFamily: typography.displayFamily,
-    fontSize: 19,
-    fontWeight: '700',
-    lineHeight: 25,
-    textAlign: 'center',
-  },
-  messageHint: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  messageSuccess: {
-    color: palette.success,
-  },
-  messageBody: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 15,
-    lineHeight: 21,
-    textAlign: 'center',
-  },
   hotspot: {
     borderRadius: radii.md,
     position: 'absolute',

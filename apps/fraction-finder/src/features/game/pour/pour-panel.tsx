@@ -6,7 +6,8 @@ import { palette, spacing } from '@education/design';
 import { ActionButton } from '@education/ui';
 import { clamp, getFraction } from '@/features/game/math';
 import { FallingStream, Glass, glassGeometry, Pitcher, WATER_COLOR } from '@/features/game/pour/glass-art';
-import { holdPressProps, MessageArea, PourHotspot } from '@/features/game/pour/pour-controls';
+import { MessageArea } from '@/features/game/components/panel-message';
+import { holdPressProps, PourHotspot } from '@/features/game/pour/pour-controls';
 import {
   ADJUST_MESSAGE,
   GLASS_HEIGHT_SCALES,
@@ -16,7 +17,7 @@ import {
   PourMessage,
   successMessage,
 } from '@/features/game/pour/pour-engine';
-import { useTween } from '@/features/game/pour/use-motion';
+import { useTween } from '@/lib/use-tween';
 import { usePour } from '@/features/game/pour/use-pour';
 import { PourRound, RoundEvaluation } from '@/features/game/types';
 import { useReduceMotion } from '@/lib/use-reduce-motion';

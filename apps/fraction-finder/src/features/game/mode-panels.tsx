@@ -1,68 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { palette, spacing } from '@education/design';
-import { typography } from '@education/design/native';
+import { spacing } from '@education/design';
 import { ChoiceButton } from '@/components/ui/choice-button';
 import { fractionPalette } from '@/design/tokens';
 import { FRACTION_BY_ID } from '@/features/game/fractions';
 import { FractionBar } from '@/features/game/components/fraction-bar';
 import { NumberLine } from '@/features/game/components/number-line';
 import { clamp, getFraction } from '@/features/game/math';
-import { BuildRound, EstimateRound, LineRound } from '@/features/game/types';
+import { EstimateRound, LineRound } from '@/features/game/types';
 
 const ESTIMATE_BAR_SLICES = 8;
-
-export function BuildPanel({
-  round,
-  onSubmit,
-  disabled,
-  onInteraction,
-}: {
-  round: BuildRound;
-  onSubmit: (input: number) => void;
-  disabled: boolean;
-  onInteraction: () => void;
-}) {
-  const target = FRACTION_BY_ID[round.targetFractionId];
-  const [segments, setSegments] = useState<number[]>([]);
-
-  useEffect(() => {
-    setSegments([]);
-  }, [round.id]);
-
-  function toggle(index: number) {
-    onInteraction();
-    setSegments((current) =>
-      current.includes(index) ? current.filter((value) => value !== index) : [...current, index].sort()
-    );
-  }
-
-  return (
-    <View style={styles.modeBody}>
-      <Text style={styles.helperText}>
-        Tap the same kind of sections you see in Find the Fraction to shade {target.numerator} out of{' '}
-        {target.denominator} equal parts.
-      </Text>
-      <View style={styles.visualStage}>
-        <FractionBar
-          connected
-          numerator={target.numerator}
-          denominator={target.denominator}
-          interactive
-          selectedSegments={segments}
-          onToggleSegment={toggle}
-          tint={fractionPalette.accent}
-        />
-      </View>
-      <ChoiceButton
-        label="Submit"
-        onPress={() => onSubmit(segments.length)}
-        disabled={disabled || segments.length === 0}
-      />
-    </View>
-  );
-}
 
 export function EstimatePanel({
   round,
@@ -159,12 +107,5 @@ const styles = StyleSheet.create({
   answerStage: {
     width: '100%',
     gap: spacing.sm,
-  },
-  helperText: {
-    textAlign: 'center',
-    color: palette.inkMuted,
-    fontSize: 16,
-    lineHeight: 22,
-    fontFamily: typography.bodyFamily,
   },
 });

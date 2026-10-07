@@ -31,6 +31,12 @@ export type FindRound = RoundBase & {
   options: string[];
 };
 
+/** A Build answer: the bar was cut into `pieces` equal pieces and `filled` of them were filled. */
+export type BuildAnswer = {
+  pieces: number;
+  filled: number;
+};
+
 export type BuildRound = RoundBase & {
   mode: 'build';
   partitions: number;

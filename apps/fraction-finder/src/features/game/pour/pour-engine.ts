@@ -1,3 +1,4 @@
+import { PanelMessage } from '@/features/game/components/panel-message';
 import { clamp, getFraction } from '@/features/game/math';
 import { RoundEvaluation } from '@/features/game/types';
 
@@ -42,11 +43,7 @@ export function nextGlassHeightIndex() {
   return next;
 }
 
-export type PourMessage = {
-  title: string;
-  body?: string;
-  tone: 'hint' | 'adjust' | 'success';
-};
+export type PourMessage = PanelMessage;
 
 export const ADJUST_MESSAGE: PourMessage = {
   title: 'Use the equal parts to fix it.',
