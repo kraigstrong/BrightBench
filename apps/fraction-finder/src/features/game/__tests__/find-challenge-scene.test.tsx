@@ -1,5 +1,6 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { Animated } from 'react-native';
 
 import { FindChallengeScene } from '@/features/game/find-challenge-scene';
 import { createDefaultChallengeProgress } from '@/features/game/challenge-stars';
@@ -161,5 +162,28 @@ describe('FindChallengeScene', () => {
     });
 
     expect(generateFindRoundMock).toHaveBeenCalledTimes(4);
+  });
+
+  it.each([
+    [false, 9],
+    [true, 2],
+  ])('with Reduced motion %s, a wrong answer runs %i animation steps', (reducedMotion, steps) => {
+    const appState = useAppStateMock.getMockImplementation()?.() ?? useAppStateMock();
+    useAppStateMock.mockReturnValue({
+      ...appState,
+      settings: { ...appState.settings, reducedMotion },
+    });
+    render(<FindChallengeScene difficultyLevel="easy" />);
+
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    const timing = jest.spyOn(Animated, 'timing');
+    fireEvent.press(screen.getByText('1/4'));
+
+    // 7 shake keyframes plus the 2-step red flash; Reduced motion keeps only the flash.
+    expect(timing).toHaveBeenCalledTimes(steps);
+    timing.mockRestore();
   });
 });

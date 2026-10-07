@@ -29,7 +29,6 @@ import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
 import { BuildPanel, EstimatePanel, LinePanel } from '@/features/game/mode-panels';
 import { PourPanel } from '@/features/game/pour/pour-panel';
-import { useReduceMotion } from '@/features/game/pour/use-motion';
 import {
   AnyRound,
   ChallengeModeKey,
@@ -38,6 +37,7 @@ import {
   PourRound,
   RoundEvaluation,
 } from '@/features/game/types';
+import { useReduceMotion } from '@/lib/use-reduce-motion';
 import { useAppState } from '@/state/app-state';
 
 const CHALLENGE_DURATION_SECONDS = 60;
@@ -231,16 +231,21 @@ export function ChallengeScene({
     setIsAdvancing(true);
 
     Animated.parallel([
-      Animated.sequence(
-        WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
-          Animated.timing(wrongAnswerShake, {
-            duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
-            easing: Easing.out(Easing.quad),
-            toValue: offset,
-            useNativeDriver: true,
-          })
-        )
-      ),
+      // The shake is movement; Reduced motion keeps only the brief red flash.
+      ...(reduceMotion
+        ? []
+        : [
+            Animated.sequence(
+              WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
+                Animated.timing(wrongAnswerShake, {
+                  duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
+                  easing: Easing.out(Easing.quad),
+                  toValue: offset,
+                  useNativeDriver: true,
+                })
+              )
+            ),
+          ]),
       Animated.sequence([
         Animated.timing(wrongAnswerFlashOpacity, {
           duration: 80,
@@ -259,7 +264,7 @@ export function ChallengeScene({
       loadNextRound();
       resetFeedbackVisuals();
     }, WRONG_ANSWER_ADVANCE_DELAY_MS);
-  }, [loadNextRound, resetFeedbackVisuals, wrongAnswerFlashOpacity, wrongAnswerShake]);
+  }, [loadNextRound, reduceMotion, resetFeedbackVisuals, wrongAnswerFlashOpacity, wrongAnswerShake]);
 
   const submit = useCallback(
     (input: unknown) => {
@@ -392,9 +397,10 @@ export function ChallengeScene({
 
         <GameScreenShell
           accent={meta.accent}
+          celebrationVisible={showSuccessOverlay}
           // Pour celebrates with confetti only so the labeled glass stays visible.
-          celebrationVisible={showSuccessOverlay && !(isPour && reduceMotion)}
           showSuccessMessage={!isPour}
+          reduceMotion={reduceMotion}
           hint={meta.promptHint}
           prompt={round.prompt}
           successMessage="Nice work!">

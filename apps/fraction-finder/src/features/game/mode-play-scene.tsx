@@ -21,7 +21,6 @@ import { BuildPanel, EstimatePanel, LinePanel } from '@/features/game/mode-panel
 import { MODE_META } from '@/features/game/mode-meta';
 import { generateRound, evaluateRound } from '@/features/game/modes';
 import { PourPanel } from '@/features/game/pour/pour-panel';
-import { useReduceMotion } from '@/features/game/pour/use-motion';
 import { getFraction } from '@/features/game/math';
 import {
   AnyRound,
@@ -36,6 +35,7 @@ import {
   RoundEvaluation,
   SessionType,
 } from '@/features/game/types';
+import { useReduceMotion } from '@/lib/use-reduce-motion';
 import { useAppState } from '@/state/app-state';
 
 type ModePlaySceneProps = {
@@ -216,9 +216,10 @@ export function ModePlayScene({ mode, sessionType, difficultyLevel }: ModePlaySc
         hint={meta.promptHint}
         accent={meta.accent}
         retryFeedback={retryFeedback}
+        celebrationVisible={isCelebrating}
         // Pour celebrates with confetti only so the labeled glass stays visible.
-        celebrationVisible={isCelebrating && !(isPour && reduceMotion)}
         showSuccessMessage={!isPour}
+        reduceMotion={reduceMotion}
         successMessage="Nice work!">
         {mode === 'find' ? (
           <FindRoundPanel round={round as FindRound} onSubmit={submit} disabled={isCelebrating} />
