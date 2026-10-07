@@ -100,6 +100,23 @@ export function BuildPanel({
     setFilled((current) => current.map((isFilled, at) => (at === index ? !isFilled : isFilled)));
   }
 
+  // Big-button alternative to tapping pieces, which get narrow once the bar is cut into
+  // eighths. Fill one fills the leftmost empty piece; Empty one empties the rightmost
+  // filled piece.
+  function fillOne() {
+    const index = filled.indexOf(false);
+    if (index >= 0) {
+      toggle(index);
+    }
+  }
+
+  function emptyOne() {
+    const index = filled.lastIndexOf(true);
+    if (index >= 0) {
+      toggle(index);
+    }
+  }
+
   function check() {
     setLastSubmitted(signature);
     onSubmit({ pieces, filled: filledCount });
@@ -139,22 +156,42 @@ export function BuildPanel({
         </View>
       </View>
 
-      <Text style={styles.readout}>
-        {pieces === 1
-          ? filledCount
-            ? 'The whole bar is filled.'
-            : '1 whole bar'
-          : `${filledCount} of ${pieces} pieces filled`}
-      </Text>
+      <View style={styles.adjustRow}>
+        <ActionButton
+          accessibilityLabel="Empty one piece"
+          compact
+          disabled={locked || filledCount === 0}
+          label="Empty one"
+          onPress={emptyOne}
+          style={styles.adjustButton}
+          variant="secondary"
+        />
+        <Text accessibilityLiveRegion="polite" style={styles.readout}>
+          {pieces === 1
+            ? filledCount
+              ? 'Whole bar filled'
+              : 'Not filled'
+            : `${filledCount} of ${pieces} filled`}
+        </Text>
+        <ActionButton
+          accessibilityLabel="Fill one more piece"
+          compact
+          disabled={locked || filledCount === pieces}
+          label="Fill one"
+          onPress={fillOne}
+          style={styles.adjustButton}
+          variant="secondary"
+        />
+      </View>
 
-      <View style={styles.cutRow}>
+      <View style={styles.adjustRow}>
         <ActionButton
           accessibilityLabel="Fewer pieces"
           compact
           disabled={locked || pieces <= 1}
           label="Fewer"
           onPress={() => cut(pieces - 1)}
-          style={styles.cutButton}
+          style={styles.adjustButton}
           variant="secondary"
         />
         <Text accessibilityLiveRegion="polite" style={styles.cutCount}>
@@ -166,7 +203,7 @@ export function BuildPanel({
           disabled={locked || pieces >= MAX_PIECES}
           label="Cut more"
           onPress={() => cut(pieces + 1)}
-          style={styles.cutButton}
+          style={styles.adjustButton}
           variant="secondary"
         />
       </View>
@@ -193,17 +230,18 @@ const styles = StyleSheet.create({
   },
   readout: {
     color: palette.inkMuted,
+    flex: 1,
     fontFamily: typography.bodyFamily,
     fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
   },
-  cutRow: {
+  adjustRow: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  cutButton: {
+  adjustButton: {
     minWidth: 96,
   },
   cutCount: {

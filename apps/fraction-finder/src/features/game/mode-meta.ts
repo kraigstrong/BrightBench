@@ -23,7 +23,7 @@ export const MODE_META: Record<
     title: 'Build the Fraction',
     shortTitle: 'Build',
     description: 'Cut a bar into equal parts and fill the fraction.',
-    promptHint: 'Cut the bar into equal pieces, then tap pieces to fill.',
+    promptHint: 'Cut the bar, then fill the pieces.',
     accent: '#E7A54B',
     surface: '#FFF4E8',
   },
