@@ -7,7 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { palette, radii, spacing } from '@education/design';
-import { typography } from '@education/design/native';
+import { shadows, typography } from '@education/design/native';
 import { CelebrationOverlay, FeedbackCallout } from '@education/ui';
 import { Card } from '@/components/ui/card';
 import { layout } from '@/design/tokens';
@@ -29,6 +29,8 @@ type GameScreenShellProps = {
   /** False shows only the confetti, leaving the play card visible underneath. */
   showSuccessMessage?: boolean;
   successMessage?: string;
+  /** Skips confetti and slides; the success message, if shown, appears without animation. */
+  reduceMotion?: boolean;
 };
 
 export function GameScreenShell({
@@ -41,13 +43,15 @@ export function GameScreenShell({
   celebrationVisible = false,
   showSuccessMessage = true,
   successMessage = 'Nice work!',
+  reduceMotion = false,
 }: GameScreenShellProps) {
   const feedbackProgress = useSharedValue(0);
   const [promptHeight, setPromptHeight] = useState(0);
 
   useEffect(() => {
-    feedbackProgress.value = withTiming(retryFeedback ? 1 : 0, { duration: 220 });
-  }, [retryFeedback, feedbackProgress]);
+    const target = retryFeedback ? 1 : 0;
+    feedbackProgress.value = reduceMotion ? target : withTiming(target, { duration: 220 });
+  }, [retryFeedback, feedbackProgress, reduceMotion]);
 
   const feedbackStyle = useAnimatedStyle(() => ({
     opacity: feedbackProgress.value,
@@ -91,11 +95,22 @@ export function GameScreenShell({
       </Animated.View>
 
       <View style={styles.playCardWrap}>
-        <CelebrationOverlay
-          visible={celebrationVisible}
-          showMessage={showSuccessMessage}
-          title={successMessage}
-        />
+        {reduceMotion ? (
+          celebrationVisible && showSuccessMessage ? (
+            <View pointerEvents="none" style={styles.stillCelebration}>
+              <View style={styles.stillMessageCard}>
+                <Text style={styles.stillMessageTitle}>{successMessage}</Text>
+                <Text style={styles.stillMessageBody}>New challenge coming up</Text>
+              </View>
+            </View>
+          ) : null
+        ) : (
+          <CelebrationOverlay
+            visible={celebrationVisible}
+            showMessage={showSuccessMessage}
+            title={successMessage}
+          />
+        )}
 
         <Card style={styles.playCard}>{children}</Card>
       </View>
@@ -151,5 +166,35 @@ const styles = StyleSheet.create({
   },
   footer: {
     gap: spacing.sm,
+  },
+  // Matches CelebrationOverlay's message card, without the confetti or the pop-in.
+  stillCelebration: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 20,
+  },
+  stillMessageCard: {
+    alignItems: 'center',
+    backgroundColor: palette.surfaceOverlay,
+    borderColor: palette.gold,
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    maxWidth: 360,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    ...shadows.overlay,
+  },
+  stillMessageTitle: {
+    color: palette.ink,
+    fontFamily: typography.displayFamily,
+    fontSize: 26,
+    fontWeight: '700',
+  },
+  stillMessageBody: {
+    color: palette.inkMuted,
+    fontFamily: typography.bodyFamily,
+    fontSize: 15,
+    marginTop: 4,
   },
 });

@@ -14,6 +14,7 @@ import {
   DifficultyLevel,
   isChallengeModeKey,
 } from '@/features/game/types';
+import { useReduceMotion } from '@/lib/use-reduce-motion';
 import { useAppState } from '@/state/app-state';
 
 export function generateStaticParams() {
@@ -24,6 +25,7 @@ export default function ChallengeLaunchScreen() {
   const params = useLocalSearchParams<{ mode?: string }>();
   const mode = params.mode;
   const { progress, setLastSelectedChallengeDifficulty } = useAppState();
+  const reduceMotion = useReduceMotion();
 
   if (!isChallengeModeKey(mode)) {
     return <Redirect href="/modes" />;
@@ -42,7 +44,7 @@ export default function ChallengeLaunchScreen() {
     <View style={styles.screen}>
       <Stack.Screen
         options={{
-          animation: 'fade',
+          animation: reduceMotion ? 'none' : 'fade',
           gestureEnabled: true,
           headerShown: false,
           presentation: 'transparentModal',

@@ -33,6 +33,7 @@ import { GameScreenShell } from '@/features/game/components/game-screen-shell';
 import { MODE_META } from '@/features/game/mode-meta';
 import { evaluateFindRound, generateFindRound } from '@/features/game/modes/find';
 import { FindRound } from '@/features/game/types';
+import { useReduceMotion } from '@/lib/use-reduce-motion';
 import { useAppState } from '@/state/app-state';
 
 const CHALLENGE_DURATION_SECONDS = 60;
@@ -80,6 +81,7 @@ export function FindChallengeScene({
   const wrongAnswerShake = useRef(new Animated.Value(0)).current;
   const wrongAnswerFlashOpacity = useRef(new Animated.Value(0)).current;
   const meta = MODE_META.find;
+  const reduceMotion = useReduceMotion();
   const showSuccessOverlay = isAdvancing && !showWrongAnswerFeedback;
   const timerProgress =
     runStatus === 'running'
@@ -225,16 +227,21 @@ export function FindChallengeScene({
     setIsAdvancing(true);
 
     Animated.parallel([
-      Animated.sequence(
-        WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
-          Animated.timing(wrongAnswerShake, {
-            duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
-            easing: Easing.out(Easing.quad),
-            toValue: offset,
-            useNativeDriver: true,
-          })
-        )
-      ),
+      // The shake is movement; Reduced motion keeps only the brief red flash.
+      ...(reduceMotion
+        ? []
+        : [
+            Animated.sequence(
+              WRONG_ANSWER_SHAKE_KEYFRAMES.map((offset, index) =>
+                Animated.timing(wrongAnswerShake, {
+                  duration: WRONG_ANSWER_SHAKE_DURATIONS[index],
+                  easing: Easing.out(Easing.quad),
+                  toValue: offset,
+                  useNativeDriver: true,
+                })
+              )
+            ),
+          ]),
       Animated.sequence([
         Animated.timing(wrongAnswerFlashOpacity, {
           duration: 80,
@@ -253,7 +260,7 @@ export function FindChallengeScene({
       loadNextRound();
       resetFeedbackVisuals();
     }, WRONG_ANSWER_ADVANCE_DELAY_MS);
-  }, [loadNextRound, resetFeedbackVisuals, wrongAnswerFlashOpacity, wrongAnswerShake]);
+  }, [loadNextRound, reduceMotion, resetFeedbackVisuals, wrongAnswerFlashOpacity, wrongAnswerShake]);
 
   function submit(answerId: string) {
     if (runStatus !== 'running' || isAdvancing) {
@@ -320,6 +327,7 @@ export function FindChallengeScene({
         <GameScreenShell
           accent={meta.accent}
           celebrationVisible={showSuccessOverlay}
+          reduceMotion={reduceMotion}
           hint="Tap the matching fraction as quickly as you can."
           prompt={round.prompt}
           successMessage="Nice work!">

@@ -152,7 +152,7 @@ describe('Pour mode (Pour & Peek)', () => {
     fireEvent.press(checkButton());
 
     expect(screen.getByText("That's 1/2!")).toBeTruthy();
-    expect(lastCelebration()).toEqual(expect.objectContaining({ visible: false }));
+    expect(celebrationMock).not.toHaveBeenCalled();
   });
 
   it('challenge: scores pours and advances on the existing timings', async () => {

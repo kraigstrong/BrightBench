@@ -16,9 +16,10 @@ import {
   PourMessage,
   successMessage,
 } from '@/features/game/pour/pour-engine';
-import { useReduceMotion, useTween } from '@/features/game/pour/use-motion';
+import { useTween } from '@/features/game/pour/use-motion';
 import { usePour } from '@/features/game/pour/use-pour';
 import { PourRound, RoundEvaluation } from '@/features/game/types';
+import { useReduceMotion } from '@/lib/use-reduce-motion';
 
 const GLASS_WIDTH = 116;
 const STAGE_MAX_WIDTH = 420;

@@ -16,6 +16,7 @@ import {
   isChallengeModeKey,
   SessionType,
 } from '@/features/game/types';
+import { useHasMounted } from '@/lib/use-has-mounted';
 import { useAppState } from '@/state/app-state';
 
 const VALID_SESSIONS: SessionType[] = ['practice', 'challenge'];
@@ -40,6 +41,7 @@ export default function SessionScreen() {
     ? (params.difficulty as DifficultyLevel)
     : undefined;
   const { progress } = useAppState();
+  const hasMounted = useHasMounted();
 
   if (!isChallengeModeKey(mode) || !session || !VALID_SESSIONS.includes(session)) {
     return <Redirect href="/modes" />;
@@ -58,7 +60,9 @@ export default function SessionScreen() {
         }}
       />
       <AppShell maxWidth={layout.maxContentWidth} scroll={session !== 'challenge'}>
-        {session === 'practice' ? (
+        {/* Rounds are random and the difficulty comes from the query string, so the game
+            renders only in the browser; the static web page ships the empty shell. */}
+        {!hasMounted ? null : session === 'practice' ? (
           <ModePlayScene mode={mode} sessionType="practice" difficultyLevel={practiceDifficulty} />
         ) : (
           <ChallengeScene mode={mode} difficultyLevel={challengeDifficulty} />
