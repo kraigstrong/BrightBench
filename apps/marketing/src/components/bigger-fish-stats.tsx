@@ -1,11 +1,32 @@
 'use client';
 import { useState, type FormEvent } from 'react';
+import { difficultyRamp, type RampWorld } from '@/lib/bigger-fish-ramp';
 type Row = {build:string;context:{world:string;mode:string;level:number;setup:number;seed:string;revision:string}|null;counts:Record<string,number>;attempts:number;completedAttempts:number;successRate:number|null;allEndedSuccessRate:number|null;deathsWithGrowthPathRate:number|null};
 type Report = {notes:string[];rows:Row[]};
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
 // Daily totals are kept for 90 days (retentionDays in bigger-fish-analytics.ts), so that's the longest range.
 const ranges = [7,30,90];
 const utcDay = (ms:number) => new Date(ms).toISOString().slice(0,10);
+// Levels past ten are a world's Deep End. Fewer finished attempts than this and a bar is faded as too few to trust.
+const mainLevels = 10, fewAttempts = 5;
+function RampChart({worlds}:{worlds:RampWorld[]}) {
+  return <section aria-labelledby="ramp-heading">
+    <h2 id="ramp-heading">Win rate by level</h2>
+    <p><small>Wins ÷ (wins + deaths) for campaign levels, every build in this selection pooled. Gold bars are the Deep End; faded bars have fewer than {fewAttempts} finished attempts.</small></p>
+    {worlds.map(({world,levels})=><figure key={world} style={{margin:'0 0 24px'}}>
+      <figcaption><strong>{world}</strong></figcaption>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:170,borderBottom:'1px solid #999',paddingTop:8,overflowX:'auto'}}>
+        {levels.map(l=>{const n=l.wins+l.deaths;return <div key={l.level} role="img" aria-label={`Level ${l.level}: ${l.rate===null?'no finished attempts':`${percentage(l.rate)} of ${n} finished attempts`}`}
+          style={{flex:'1 0 32px',maxWidth:56,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+          <small>{l.rate===null?'—':`${Math.round(l.rate*100)}%`}</small>
+          <div style={{width:'100%',height:`${(l.rate??0)*130}px`,minHeight:l.rate===null?0:2,borderRadius:'4px 4px 0 0',
+            background:l.level>mainLevels?'#e0a526':'#2a9d8f',opacity:n<fewAttempts?0.35:1}}/>
+        </div>;})}
+      </div>
+      <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center'}}>{l.level}<br/>n={l.wins+l.deaths}</small>)}</div>
+    </figure>)}
+  </section>;
+}
 export default function BiggerFishStats() {
   const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
@@ -34,6 +55,7 @@ export default function BiggerFishStats() {
     {error&&<p role="alert">{error}</p>}
     {data&&<>
       <label>World <select value={world} onChange={e=>setWorld(e.target.value)}><option value="">All worlds</option>{worlds.map(w=><option key={w} value={w}>{w}</option>)}</select></label>
+      <RampChart worlds={difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})))}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
         <caption>Per-level success and death diagnostics</caption>
