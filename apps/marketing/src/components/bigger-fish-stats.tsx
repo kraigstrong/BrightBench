@@ -1,6 +1,6 @@
 'use client';
 import { useState, type FormEvent } from 'react';
-import { difficultyRamp, type RampWorld } from '@/lib/bigger-fish-ramp';
+import { difficultyRamp, tryGroups, type RampWorld } from '@/lib/bigger-fish-ramp';
 type Row = {build:string;context:{world:string;mode:string;level:number;setup:number;seed:string;revision:string}|null;counts:Record<string,number>;attempts:number;completedAttempts:number;successRate:number|null;allEndedSuccessRate:number|null;deathsWithGrowthPathRate:number|null};
 type Report = {from:string;to:string;notes:string[];rows:Row[]};
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
@@ -24,6 +24,29 @@ function RampChart({worlds}:{worlds:RampWorld[]}) {
         </div>;})}
       </div>
       <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center'}}>{l.level}<br/>n={l.wins+l.deaths}</small>)}</div>
+    </figure>)}
+  </section>;
+}
+// Light to dark as first clears take more tries, one shade per entry of `tryGroups`.
+const tryShades = ['#fde9a9','#fbd17a','#f6b35a','#ee8f45','#dd6a3a','#bf4630','#8c2318'];
+function TriesChart({worlds}:{worlds:RampWorld[]}) {
+  return <section aria-labelledby="tries-heading">
+    <h2 id="tries-heading">Tries to a first clear</h2>
+    <p><small>For each install&rsquo;s first clear of a campaign level: how many runs it took, the winning run and any it quit included. Bars split those first clears by tries; the number on top is the median. Faded bars have fewer than {fewAttempts} first clears; gold level numbers are the Deep End.</small></p>
+    <div aria-hidden="true" style={{display:'flex',flexWrap:'wrap',gap:12,margin:'0 0 12px'}}>{tryGroups.map((g,i)=><small key={g.label} style={{display:'flex',alignItems:'center',gap:4}}>
+      <span style={{display:'inline-block',width:12,height:12,borderRadius:2,background:tryShades[i]}}/>{g.label} {g.label==='1'?'try':'tries'}</small>)}</div>
+    {worlds.map(({world,levels})=><figure key={world} style={{margin:'0 0 24px'}}>
+      <figcaption><strong>{world}</strong></figcaption>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:170,borderBottom:'1px solid #999',paddingTop:8,overflowX:'auto'}}>
+        {levels.map(l=><div key={l.level} role="img" aria-label={`Level ${l.level}: ${l.medianTries===null?'no first clears':`median ${l.medianTries} tries over ${l.firstClears} first clears; `+tryGroups.map((g,i)=>`${l.tries[i]} took ${g.label}`).join(', ')}`}
+          style={{flex:'1 0 32px',maxWidth:56,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+          <small>{l.medianTries??'—'}</small>
+          <div style={{width:'100%',height:l.firstClears?130:0,display:'flex',flexDirection:'column-reverse',borderRadius:'4px 4px 0 0',overflow:'hidden',opacity:l.firstClears<fewAttempts?0.35:1}}>
+            {l.tries.map((n,i)=><div key={i} style={{height:`${l.firstClears?n/l.firstClears*100:0}%`,background:tryShades[i]}}/>)}
+          </div>
+        </div>)}
+      </div>
+      <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center',color:l.level>mainLevels?'#b07d0f':undefined}}>{l.level}<br/>n={l.firstClears}</small>)}</div>
     </figure>)}
   </section>;
 }
@@ -81,6 +104,7 @@ export default function BiggerFishStats() {
       <p>Showing receive-days {data.from} to {data.to} (UTC).</p>
       <label>World <select value={world} onChange={e=>setWorld(e.target.value)}><option value="">All worlds</option>{worlds.map(w=><option key={w} value={w}>{w}</option>)}</select></label>
       <FunnelChart worlds={perLevel}/>
+      <TriesChart worlds={perLevel}/>
       <RampChart worlds={perLevel}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
