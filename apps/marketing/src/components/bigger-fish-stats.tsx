@@ -27,6 +27,29 @@ function RampChart({worlds}:{worlds:RampWorld[]}) {
     </figure>)}
   </section>;
 }
+function FunnelChart({worlds}:{worlds:RampWorld[]}) {
+  // One scale across every world shown, so the drop from world to world reads as part of the same funnel.
+  const most=Math.max(1,...worlds.flatMap(w=>w.levels.map(l=>Math.max(l.started,l.cleared))));
+  const height=(n:number)=>`${n/most*130}px`;
+  return <section aria-labelledby="funnel-heading">
+    <h2 id="funnel-heading">Players clearing each level</h2>
+    <p><small>Installs that cleared each campaign level (solid) out of installs that started it (light), each install counted once per level. Use the 90-day range: an install counts only on the days its reports arrived, so a short range can miss its early levels.</small></p>
+    {worlds.map(({world,levels})=><figure key={world} style={{margin:'0 0 24px'}}>
+      <figcaption><strong>{world}</strong></figcaption>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:170,borderBottom:'1px solid #999',paddingTop:8,overflowX:'auto'}}>
+        {levels.map(l=>{const color=l.level>mainLevels?'#e0a526':'#2a9d8f';return <div key={l.level} role="img" aria-label={`Level ${l.level}: ${l.cleared} installs cleared it of ${l.started} that started it`}
+          style={{flex:'1 0 32px',maxWidth:56,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+          <small>{l.cleared}</small>
+          <div style={{position:'relative',width:'100%',height:height(Math.max(l.started,l.cleared))}}>
+            <div style={{position:'absolute',inset:0,borderRadius:'4px 4px 0 0',background:color,opacity:0.25}}/>
+            <div style={{position:'absolute',left:0,right:0,bottom:0,height:height(l.cleared),borderRadius:'4px 4px 0 0',background:color}}/>
+          </div>
+        </div>;})}
+      </div>
+      <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center'}}>{l.level}<br/>of {l.started}</small>)}</div>
+    </figure>)}
+  </section>;
+}
 export default function BiggerFishStats() {
   const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
@@ -42,6 +65,7 @@ export default function BiggerFishStats() {
   }
   const rows=(data?.rows??[]).filter(r=>r.context&&(!world||r.context.world===world));
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?[r.context.world]:[]))];
+  const perLevel=difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})));
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
@@ -56,7 +80,8 @@ export default function BiggerFishStats() {
     {data&&<>
       <p>Showing receive-days {data.from} to {data.to} (UTC).</p>
       <label>World <select value={world} onChange={e=>setWorld(e.target.value)}><option value="">All worlds</option>{worlds.map(w=><option key={w} value={w}>{w}</option>)}</select></label>
-      <RampChart worlds={difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})))}/>
+      <FunnelChart worlds={perLevel}/>
+      <RampChart worlds={perLevel}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
         <caption>Per-level success and death diagnostics</caption>
