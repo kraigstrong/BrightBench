@@ -27,6 +27,16 @@ test('store receives only counters, not individual run bodies; success rates sta
   assert.equal(rows[0]!.successRate,.5);assert.equal(rows[0]!.allEndedSuccessRate,.25);assert.equal(rows[0]!.deathsWithGrowthPathRate,1);
   assert.equal(rows[0]!.attempts,4);
 });
+test('report rows sort by world in campaign order, then level, then newest build',()=>{
+  const row=(world:string,level:number,build:string)=>({day:'2026-10-04',build,counts:{[`${Buffer.from(JSON.stringify([world,'campaign',level,level,'1','r1'])).toString('base64url')}|outcome.win`]:1}});
+  const rows=report([row('kelp-forest',1,'testflight:0.2:3'),row('future-world',1,'testflight:0.2:3'),row('shallow-reef',10,'testflight:0.2:3'),
+    row('shallow-reef',2,'testflight:0.1:2'),row('jelly-bloom',1,'testflight:0.2:3'),row('shallow-reef',2,'testflight:0.2:10'),row('shallow-reef',2,'testflight:0.2:3'),
+    row('shallow-reef',3,'testflight:1.2:10'),row('shallow-reef',3,'testflight:1.2.1:1')]);
+  assert.deepEqual(rows.map(r=>{const c=r.context as {world:string;level:number};return `${c.world} ${c.level} ${r.build}`;}),[
+    'shallow-reef 2 testflight:0.2:10','shallow-reef 2 testflight:0.2:3','shallow-reef 2 testflight:0.1:2',
+    'shallow-reef 3 testflight:1.2.1:1','shallow-reef 3 testflight:1.2:10','shallow-reef 10 testflight:0.2:3',
+    'jelly-bloom 1 testflight:0.2:3','kelp-forest 1 testflight:0.2:3','future-world 1 testflight:0.2:3']);
+});
 test('ingestion fails closed without keys and rejects oversized/unvalidated payloads',async()=>{
   const req=(body:unknown,key='key')=>new Request('https://example.test/events',{method:'POST',headers:{'X-App-Key':key},body:JSON.stringify(body)});
   assert.equal((await handleEvents(req(sample()),{store:store(),appKey:''})).status,401);
@@ -37,7 +47,10 @@ test('ingestion fails closed without keys and rejects oversized/unvalidated payl
 test('stats authentication, invalid dates and default beta-only filtering',async()=>{
   const req=(params:string,auth='Bearer secret')=>new Request('https://example.test/stats'+params,{headers:{Authorization:auth}});
   assert.equal((await handleStats(req(''),{store:store(),secret:''})).status,401);
-  for(const params of ['?to=bad','?to=2026-02-30','?from=2026-10-05&to=2026-10-04'])assert.equal((await handleStats(req(params),{store:store(),secret:'secret'})).status,400);
+  for(const params of ['?to=bad','?to=2026-02-30','?from=2026-10-05&to=2026-10-04','?from=2026-07-06&to=2026-10-04'])assert.equal((await handleStats(req(params),{store:store(),secret:'secret'})).status,400);
+  // The page's longest range, 90 days counting both ends, is the whole retention window.
+  let read:string[]=[];const all=store();all.read=async days=>{read=days;return [];};
+  assert.equal((await handleStats(req('?from=2026-07-07&to=2026-10-04'),{store:all,secret:'secret'})).status,200);assert.equal(read.length,90);
   const updates=counterUpdates(sample());const counts=Object.fromEntries(updates.map(u=>[u.field,u.by]));
   const s=store();s.read=async()=>[{day:'2026-10-04',build:'debug:0.1:2',counts},{day:'2026-10-04',build:'testflight:0.1:2',counts}];
   const response=await handleStats(req('?to=2026-10-04'),{store:s,secret:'secret'});

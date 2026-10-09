@@ -1,15 +1,86 @@
 'use client';
 import { useState, type FormEvent } from 'react';
+import { difficultyRamp, tryGroups, type RampWorld } from '@/lib/bigger-fish-ramp';
 type Row = {build:string;context:{world:string;mode:string;level:number;setup:number;seed:string;revision:string}|null;counts:Record<string,number>;attempts:number;completedAttempts:number;successRate:number|null;allEndedSuccessRate:number|null;deathsWithGrowthPathRate:number|null};
-type Report = {notes:string[];rows:Row[]};
+type Report = {from:string;to:string;notes:string[];rows:Row[]};
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
+// Daily totals are kept for 90 days (retentionDays in bigger-fish-analytics.ts), so that's the longest range.
+const ranges = [7,30,90];
+const utcDay = (ms:number) => new Date(ms).toISOString().slice(0,10);
+// Levels past ten are a world's Deep End. Fewer finished attempts than this and a bar is faded as too few to trust.
+const mainLevels = 10, fewAttempts = 5;
+function RampChart({worlds}:{worlds:RampWorld[]}) {
+  return <section aria-labelledby="ramp-heading">
+    <h2 id="ramp-heading">Win rate by level</h2>
+    <p><small>Wins ÷ (wins + deaths) for campaign levels, every build in this selection pooled. Gold bars are the Deep End; faded bars have fewer than {fewAttempts} finished attempts.</small></p>
+    {worlds.map(({world,levels})=><figure key={world} style={{margin:'0 0 24px'}}>
+      <figcaption><strong>{world}</strong></figcaption>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:170,borderBottom:'1px solid #999',paddingTop:8,overflowX:'auto'}}>
+        {levels.map(l=>{const n=l.wins+l.deaths;return <div key={l.level} role="img" aria-label={`Level ${l.level}: ${l.rate===null?'no finished attempts':`${percentage(l.rate)} of ${n} finished attempts`}`}
+          style={{flex:'1 0 32px',maxWidth:56,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+          <small>{l.rate===null?'—':`${Math.round(l.rate*100)}%`}</small>
+          <div style={{width:'100%',height:`${(l.rate??0)*130}px`,minHeight:l.rate===null?0:2,borderRadius:'4px 4px 0 0',
+            background:l.level>mainLevels?'#e0a526':'#2a9d8f',opacity:n<fewAttempts?0.35:1}}/>
+        </div>;})}
+      </div>
+      <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center'}}>{l.level}<br/>n={l.wins+l.deaths}</small>)}</div>
+    </figure>)}
+  </section>;
+}
+// Light to dark as first clears take more tries, one shade per entry of `tryGroups`.
+const tryShades = ['#fde9a9','#fbd17a','#f6b35a','#ee8f45','#dd6a3a','#bf4630','#8c2318'];
+function TriesChart({worlds}:{worlds:RampWorld[]}) {
+  return <section aria-labelledby="tries-heading">
+    <h2 id="tries-heading">Tries to a first clear</h2>
+    <p><small>For each install&rsquo;s first clear of a campaign level: how many runs it took, the winning run and any it quit included. Bars split those first clears by tries; the number on top is the median. Faded bars have fewer than {fewAttempts} first clears; gold level numbers are the Deep End.</small></p>
+    <div aria-hidden="true" style={{display:'flex',flexWrap:'wrap',gap:12,margin:'0 0 12px'}}>{tryGroups.map((g,i)=><small key={g.label} style={{display:'flex',alignItems:'center',gap:4}}>
+      <span style={{display:'inline-block',width:12,height:12,borderRadius:2,background:tryShades[i]}}/>{g.label} {g.label==='1'?'try':'tries'}</small>)}</div>
+    {worlds.map(({world,levels})=><figure key={world} style={{margin:'0 0 24px'}}>
+      <figcaption><strong>{world}</strong></figcaption>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:170,borderBottom:'1px solid #999',paddingTop:8,overflowX:'auto'}}>
+        {levels.map(l=><div key={l.level} role="img" aria-label={`Level ${l.level}: ${l.medianTries===null?'no first clears':`median ${l.medianTries} tries over ${l.firstClears} first clears; `+tryGroups.map((g,i)=>`${l.tries[i]} took ${g.label}`).join(', ')}`}
+          style={{flex:'1 0 32px',maxWidth:56,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+          <small>{l.medianTries??'—'}</small>
+          <div style={{width:'100%',height:l.firstClears?130:0,display:'flex',flexDirection:'column-reverse',borderRadius:'4px 4px 0 0',overflow:'hidden',opacity:l.firstClears<fewAttempts?0.35:1}}>
+            {l.tries.map((n,i)=><div key={i} style={{height:`${l.firstClears?n/l.firstClears*100:0}%`,background:tryShades[i]}}/>)}
+          </div>
+        </div>)}
+      </div>
+      <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center',color:l.level>mainLevels?'#b07d0f':undefined}}>{l.level}<br/>n={l.firstClears}</small>)}</div>
+    </figure>)}
+  </section>;
+}
+function FunnelChart({worlds}:{worlds:RampWorld[]}) {
+  // One scale across every world shown, so the drop from world to world reads as part of the same funnel.
+  const most=Math.max(1,...worlds.flatMap(w=>w.levels.map(l=>Math.max(l.started,l.cleared))));
+  const height=(n:number)=>`${n/most*130}px`;
+  return <section aria-labelledby="funnel-heading">
+    <h2 id="funnel-heading">Players clearing each level</h2>
+    <p><small>Installs that cleared each campaign level (solid) out of installs that started it (light), each install counted once per level. Use the 90-day range: an install counts only on the days its reports arrived, so a short range can miss its early levels.</small></p>
+    {worlds.map(({world,levels})=><figure key={world} style={{margin:'0 0 24px'}}>
+      <figcaption><strong>{world}</strong></figcaption>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:170,borderBottom:'1px solid #999',paddingTop:8,overflowX:'auto'}}>
+        {levels.map(l=>{const color=l.level>mainLevels?'#e0a526':'#2a9d8f';return <div key={l.level} role="img" aria-label={`Level ${l.level}: ${l.cleared} installs cleared it of ${l.started} that started it`}
+          style={{flex:'1 0 32px',maxWidth:56,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end',height:'100%'}}>
+          <small>{l.cleared}</small>
+          <div style={{position:'relative',width:'100%',height:height(Math.max(l.started,l.cleared))}}>
+            <div style={{position:'absolute',inset:0,borderRadius:'4px 4px 0 0',background:color,opacity:0.25}}/>
+            <div style={{position:'absolute',left:0,right:0,bottom:0,height:height(l.cleared),borderRadius:'4px 4px 0 0',background:color}}/>
+          </div>
+        </div>;})}
+      </div>
+      <div aria-hidden="true" style={{display:'flex',gap:6}}>{levels.map(l=><small key={l.level} style={{flex:'1 0 32px',maxWidth:56,textAlign:'center'}}>{l.level}<br/>of {l.started}</small>)}</div>
+    </figure>)}
+  </section>;
+}
 export default function BiggerFishStats() {
-  const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight');
+  const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
   async function load(e:FormEvent) {
     e.preventDefault();setLoading(true);setError('');setData(null);
     try {
-      const query=new URLSearchParams({channel});if(build)query.set('build',build);
+      const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
+      const query=new URLSearchParams({channel,from,to});if(build)query.set('build',build);
       const response=await fetch(`/api/bigger-fish/stats?${query}`,{headers:{Authorization:`Bearer ${secret}`},cache:'no-store'});
       if(!response.ok){setError(response.status===401?'Check the private reporting key.':'Report unavailable. Try again later.');return;}
       setData(await response.json());
@@ -17,18 +88,24 @@ export default function BiggerFishStats() {
   }
   const rows=(data?.rows??[]).filter(r=>r.context&&(!world||r.context.world===world));
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?[r.context.world]:[]))];
+  const perLevel=difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})));
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
-    <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts over the last 30 receive-days. Content and builds remain separate.</p>
+    <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       <label>Private reporting key<br/><input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off" required/></label>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
+      <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
       <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>
       <button disabled={loading}>{loading?'Loading…':'Load report'}</button>
     </form>
     <p>The key stays in this page’s memory and is sent in an authorization header, never a URL or local storage.</p>
     {error&&<p role="alert">{error}</p>}
     {data&&<>
+      <p>Showing receive-days {data.from} to {data.to} (UTC).</p>
       <label>World <select value={world} onChange={e=>setWorld(e.target.value)}><option value="">All worlds</option>{worlds.map(w=><option key={w} value={w}>{w}</option>)}</select></label>
+      <FunnelChart worlds={perLevel}/>
+      <TriesChart worlds={perLevel}/>
+      <RampChart worlds={perLevel}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
         <caption>Per-level success and death diagnostics</caption>
