@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from 'react';
 import { difficultyRamp, type RampWorld } from '@/lib/bigger-fish-ramp';
 type Row = {build:string;context:{world:string;mode:string;level:number;setup:number;seed:string;revision:string}|null;counts:Record<string,number>;attempts:number;completedAttempts:number;successRate:number|null;allEndedSuccessRate:number|null;deathsWithGrowthPathRate:number|null};
-type Report = {notes:string[];rows:Row[]};
+type Report = {from:string;to:string;notes:string[];rows:Row[]};
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
 // Daily totals are kept for 90 days (retentionDays in bigger-fish-analytics.ts), so that's the longest range.
 const ranges = [7,30,90];
@@ -43,7 +43,7 @@ export default function BiggerFishStats() {
   const rows=(data?.rows??[]).filter(r=>r.context&&(!world||r.context.world===world));
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?[r.context.world]:[]))];
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
-    <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts over the last {days} receive-days, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
+    <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       <label>Private reporting key<br/><input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off" required/></label>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
@@ -54,6 +54,7 @@ export default function BiggerFishStats() {
     <p>The key stays in this page’s memory and is sent in an authorization header, never a URL or local storage.</p>
     {error&&<p role="alert">{error}</p>}
     {data&&<>
+      <p>Showing receive-days {data.from} to {data.to} (UTC).</p>
       <label>World <select value={world} onChange={e=>setWorld(e.target.value)}><option value="">All worlds</option>{worlds.map(w=><option key={w} value={w}>{w}</option>)}</select></label>
       <RampChart worlds={difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})))}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>

@@ -142,12 +142,12 @@ export async function handleEvents(request: Request, deps: { store: ArcadeStore;
 // Display order only, not a registry: worlds not listed here sort after these, alphabetically.
 const worldOrder = ['shallow-reef', 'jelly-bloom', 'kelp-forest'];
 const worldRank = (world: string) => { const i = worldOrder.indexOf(world); return i < 0 ? worldOrder.length : i; };
-// Builds are `channel:version:build`; newer versions and build numbers first.
+// Builds are `channel:version:build`; newer versions first (1.2 = 1.2.0), then newer build numbers.
 function newerBuildFirst(a: string, b: string) {
-  const parts = (x: string) => { const [,version = '',build = ''] = x.split(':'); return [...version.split('.'), build].map(Number); };
+  const parts = (x: string) => { const [,version = '',build = ''] = x.split(':'); return {version: version.split('.').map(Number), build: Number(build)}; };
   const [pa,pb] = [parts(a),parts(b)];
-  for (let i = 0; i < Math.max(pa.length,pb.length); i++) { const d = (pb[i] ?? 0) - (pa[i] ?? 0); if (d) return d; }
-  return a.localeCompare(b);
+  for (let i = 0; i < Math.max(pa.version.length,pb.version.length); i++) { const d = (pb.version[i] ?? 0) - (pa.version[i] ?? 0); if (d) return d; }
+  return pb.build - pa.build || a.localeCompare(b);
 }
 type ReportContext = {world:string;mode:string;level:number;setup:number;seed:string;revision:string};
 function reportOrder(a: {build: string; context: unknown}, b: {build: string; context: unknown}) {
