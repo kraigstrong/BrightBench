@@ -139,6 +139,26 @@ export async function handleEvents(request: Request, deps: { store: ArcadeStore;
     return status(ok ? 204 : 429);
   } catch { return status(503); } // Never log errors or requests that may contain bodies/network metadata.
 }
+// Display order only, not a registry: worlds not listed here sort after these, alphabetically.
+const worldOrder = ['shallow-reef', 'jelly-bloom', 'kelp-forest'];
+const worldRank = (world: string) => { const i = worldOrder.indexOf(world); return i < 0 ? worldOrder.length : i; };
+// Builds are `channel:version:build`; newer versions and build numbers first.
+function newerBuildFirst(a: string, b: string) {
+  const parts = (x: string) => { const [,version = '',build = ''] = x.split(':'); return [...version.split('.'), build].map(Number); };
+  const [pa,pb] = [parts(a),parts(b)];
+  for (let i = 0; i < Math.max(pa.length,pb.length); i++) { const d = (pb[i] ?? 0) - (pa[i] ?? 0); if (d) return d; }
+  return a.localeCompare(b);
+}
+type ReportContext = {world:string;mode:string;level:number;setup:number;seed:string;revision:string};
+function reportOrder(a: {build: string; context: unknown}, b: {build: string; context: unknown}) {
+  const [ca,cb] = [a.context as ReportContext | null, b.context as ReportContext | null];
+  if (!ca || !cb) return Number(!ca) - Number(!cb) || newerBuildFirst(a.build,b.build);
+  return worldRank(ca.world) - worldRank(cb.world) || ca.world.localeCompare(cb.world)
+    || Number(ca.mode !== 'campaign') - Number(cb.mode !== 'campaign') || ca.mode.localeCompare(cb.mode)
+    || ca.level - cb.level || newerBuildFirst(a.build,b.build)
+    || ca.setup - cb.setup || ca.revision.localeCompare(cb.revision) || ca.seed.localeCompare(cb.seed);
+}
+// Rows sorted by world (campaign order), mode, level, then newest build first.
 export function report(rows: Awaited<ReturnType<ArcadeStore['read']>>) {
   // Keep builds and content distinct; do not link individual attempts.
   const groups = new Map<string, { build: string; context: unknown; counts: Record<string, number> }>();
@@ -153,7 +173,7 @@ export function report(rows: Awaited<ReturnType<ArcadeStore['read']>>) {
     }
     group.counts[metric] = (group.counts[metric] ?? 0) + value;
   }
-  return [...groups.values()].map(g => {
+  return [...groups.values()].sort(reportOrder).map(g => {
     const wins = g.counts['outcome.win'] ?? 0, deaths = g.counts['outcome.death'] ?? 0;
     const ended = wins + deaths + (g.counts['outcome.quit'] ?? 0) + (g.counts['outcome.abandoned'] ?? 0);
     return {...g, attempts: ended, completedAttempts: wins+deaths,
