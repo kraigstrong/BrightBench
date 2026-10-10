@@ -29,8 +29,8 @@ gh issue list --state open --label "app:<app>" --limit 100 --json number,title,l
 ```
 
 `<app>` is `time-tutor`, `fraction-finder`, `letter-learner`, `marketing`,
-`letter-bingo`, `place-value`, or `shared` for packages, tooling, and repo-wide
-work.
+`bigger-fish-site`, `letter-bingo`, `place-value`, or `shared` for packages,
+tooling, and repo-wide work.
 
 When no app has been named yet — picking the next thing to do rather than
 working inside one app — read the whole portfolio instead, then narrow:
@@ -100,7 +100,7 @@ A work item produces one understandable outcome, can be verified independently, 
 ## Technical Standards
 
 - Product apps use Expo-managed React Native, Expo Router, and React Native Web.
-- The marketing site uses Next.js App Router.
+- The marketing sites (brightbench.app, and biggerfish.app in `apps/bigger-fish-site`) use Next.js App Router.
 - Use npm workspaces and Turbo.
 - Apps remain independently deployable.
 - Time Tutor is the visual source of truth.

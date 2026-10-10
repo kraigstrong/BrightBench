@@ -1,0 +1,96 @@
+:root {
+  /* The game's water, from the app icon: deep navy below, teal light above. */
+  --abyss: #071530;
+  --deep: #0a2047;
+  --sea: #0f3d6b;
+  --teal: #2ab3c9;
+  --orange: #ffa630;
+  --pink: #ff5fa8;
+  --purple: #a46bf5;
+  --ink: #eef7ff;
+  --ink-muted: #a7c1dc;
+  --ink-faint: #6f8aa8;
+  --line: rgb(255 255 255 / 0.1);
+  --card: rgb(255 255 255 / 0.045);
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-lg: 0 24px 60px rgb(0 0 0 / 0.45);
+  --page-width: 1180px;
+  --gutter: clamp(20px, 5vw, 48px);
+  --font-display: 'Avenir Next', var(--font-nunito), 'Nunito', ui-rounded, system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--abyss);
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(90% 900px at 20% 0%, rgb(15 61 107 / 0.55) 0%, transparent 70%),
+    var(--abyss);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.55;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--orange);
+}
+
+a:focus-visible,
+button:focus-visible {
+  border-radius: 8px;
+  outline: 3px solid var(--orange);
+  outline-offset: 3px;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--orange);
+  color: var(--abyss);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

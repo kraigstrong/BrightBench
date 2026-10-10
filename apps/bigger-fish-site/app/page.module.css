@@ -1,0 +1,321 @@
+/* Hero: the copy on open water at the left, the game swimming in from the right. */
+.hero {
+  align-items: center;
+  display: flex;
+  isolation: isolate;
+  min-height: min(90vh, 800px);
+  overflow: hidden;
+  position: relative;
+}
+
+.heroMedia {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 62%;
+  z-index: -1;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 0.35) 22%, #000 42%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 0.35) 22%, #000 42%);
+}
+
+.heroMedia::after {
+  /* Settle the bottom into the page and keep the header legible over the water's bright surface. */
+  background:
+    linear-gradient(180deg, rgb(7 21 48 / 0.55) 0%, transparent 18%),
+    linear-gradient(0deg, var(--abyss) 0%, transparent 26%);
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+
+.heroVideo {
+  height: 100%;
+  object-fit: cover;
+  object-position: 0% 50%;
+  width: 100%;
+}
+
+.heroCopy {
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: 120px var(--gutter) 72px;
+  width: 100%;
+}
+
+.heroCopy > * {
+  max-width: 500px;
+}
+
+.eyebrow {
+  color: var(--teal);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.wordmark {
+  font-size: clamp(60px, 8.4vw, 112px);
+  max-width: none;
+  white-space: nowrap;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-shadow: 0 6px 30px rgb(0 0 0 / 0.35);
+}
+
+.tagline {
+  color: var(--orange);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin-top: 14px;
+}
+
+.pitch {
+  color: var(--ink-muted);
+  font-size: clamp(18px, 1.6vw, 21px);
+  margin-top: 18px;
+}
+
+.pitch span {
+  display: block;
+}
+
+.ctaRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 30px;
+}
+
+.trailerButton {
+  align-items: center;
+  background: var(--orange);
+  border-radius: 999px;
+  color: var(--abyss);
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 900;
+  gap: 9px;
+  height: 50px;
+  padding: 0 24px;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.trailerButton:hover,
+.trailerButton:focus-visible {
+  box-shadow: 0 8px 24px rgb(255 166 48 / 0.35);
+  transform: translateY(-1px);
+}
+
+/* Sections */
+.section {
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: clamp(56px, 9vw, 110px) var(--gutter) 0;
+}
+
+.sectionHead {
+  display: grid;
+  gap: 12px;
+  margin-bottom: clamp(28px, 4vw, 44px);
+  max-width: 640px;
+}
+
+.sectionTitle {
+  font-size: clamp(36px, 5vw, 56px);
+}
+
+.sectionLede {
+  color: var(--ink-muted);
+  font-size: clamp(18px, 1.6vw, 21px);
+}
+
+.visuallyHidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* How it plays: three beats. */
+.beats {
+  display: grid;
+  gap: clamp(28px, 3vw, 40px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.beat {
+  display: grid;
+  gap: 12px;
+  grid-template-rows: auto auto 1fr;
+}
+
+.shot {
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.shot img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.beatTitle {
+  align-items: center;
+  display: flex;
+  font-size: clamp(28px, 2.6vw, 34px);
+  gap: 12px;
+}
+
+.beatNumber {
+  align-items: center;
+  background: var(--orange);
+  border-radius: 999px;
+  color: var(--abyss);
+  display: inline-flex;
+  flex: none;
+  font-size: 15px;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  width: 28px;
+}
+
+.beatBody {
+  color: var(--ink-muted);
+}
+
+/* Worlds */
+.worlds {
+  display: grid;
+  gap: clamp(18px, 2vw, 26px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.world {
+  --accent: var(--teal);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.shallow-reef {
+  --accent: #6fd3ff;
+}
+
+.jelly-bloom {
+  --accent: #cfa6ff;
+}
+
+.kelp-forest {
+  --accent: #a6e37f;
+}
+
+.midnight-zone {
+  --accent: #7ff0ff;
+}
+
+.worldMedia {
+  aspect-ratio: 2622 / 1206;
+  background: var(--abyss);
+}
+
+.worldVideo {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.worldCopy {
+  display: grid;
+  gap: 6px;
+  padding: 22px 26px 26px;
+}
+
+.worldName {
+  font-size: clamp(26px, 2.4vw, 32px);
+}
+
+.worldMotto {
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.worldLine {
+  color: var(--ink-muted);
+}
+
+/* Closing call to action */
+.closing {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-bottom: clamp(64px, 9vw, 110px);
+  text-align: center;
+}
+
+.closingTitle {
+  font-size: clamp(40px, 6vw, 68px);
+}
+
+.promise {
+  color: var(--ink-faint);
+  font-weight: 800;
+}
+
+@media (max-width: 860px) {
+  .hero {
+    display: block;
+    min-height: 0;
+  }
+
+  .heroMedia {
+    aspect-ratio: 16 / 11;
+    position: relative;
+    width: 100%;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .heroCopy {
+    margin-top: -24px;
+    padding-bottom: 8px;
+    padding-top: 0;
+    position: relative;
+  }
+
+  .beats,
+  .worlds {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 861px) and (max-width: 1100px) {
+  .beats {
+    gap: 22px;
+  }
+}

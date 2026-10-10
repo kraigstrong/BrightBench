@@ -1,0 +1,83 @@
+.header {
+  align-items: center;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: 20px var(--gutter);
+  position: relative;
+  z-index: 3;
+}
+
+.overlay {
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.brand {
+  align-items: center;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 19px;
+  font-weight: 900;
+  gap: 10px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.icon {
+  border-radius: 22%;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+}
+
+.nav,
+.footerNav {
+  display: flex;
+  gap: 22px;
+}
+
+.nav a,
+.footerNav a {
+  color: var(--ink-muted);
+  font-weight: 800;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.nav a:hover,
+.nav a:focus-visible,
+.footerNav a:hover,
+.footerNav a:focus-visible {
+  color: var(--ink);
+}
+
+.footer {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: 36px var(--gutter) 48px;
+}
+
+.footerRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 32px;
+  justify-content: space-between;
+}
+
+.footerNav {
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
+.legal {
+  color: var(--ink-faint);
+  font-size: 14px;
+  margin: 0;
+}

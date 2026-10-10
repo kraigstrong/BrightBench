@@ -1,0 +1,30 @@
+{
+  "name": "bigger-fish-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "predev": "npm run press-kit",
+    "dev": "next dev",
+    "prebuild": "npm run press-kit",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test ./test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build",
+    "press-kit": "node --experimental-strip-types --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-press-kit.ts"
+  },
+  "dependencies": {
+    "next": "^16.2.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@education/eslint-config": "0.0.0",
+    "@education/typescript-config": "0.0.0",
+    "@types/node": "^25.5.2",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.3",
+    "eslint-config-next": "^16.2.2"
+  }
+}

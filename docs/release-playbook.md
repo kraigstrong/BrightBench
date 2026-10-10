@@ -18,7 +18,8 @@ CI enforces typechecking, warning-free lint, tests, the marketing build, affecte
 - For Vercel monorepo projects, set the Root Directory per project instead of deploying the repo root as one site
 
 ### Current Root Directories
-- `apps/marketing` → Next.js marketing site
+- `apps/marketing` → Next.js marketing site (brightbench.app)
+- `apps/bigger-fish-site` → Next.js site for Bigger Fish (biggerfish.app)
 - `apps/fraction-finder` → Expo static web export
 - `apps/time-tutor` → Expo static web export
 
@@ -26,6 +27,10 @@ CI enforces typechecking, warning-free lint, tests, the marketing build, affecte
 - `marketing`
   - Framework preset: Next.js
   - Build command: default Next.js build
+- `bigger-fish-site`
+  - Framework preset: Next.js
+  - Build command: default (`npm run build`, whose `prebuild` packs the press kit zip)
+  - Domain: `biggerfish.app`
 - `fraction-finder`
   - Build command: `npm run web:export -w fraction-finder`
   - Output directory: `apps/fraction-finder/dist`
@@ -77,6 +82,10 @@ Shared code should not force every app to release together.
   - Optional override for Time Tutor support/privacy links
 - `NEXT_PUBLIC_SUPPORT_EMAIL`
   - Optional override for the marketing site support email
+- Bigger Fish site (`apps/bigger-fish-site/.env.example` has the full list)
+  - `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL` and `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_ID`: set at launch to show Apple's badge and the Smart App Banner
+  - `NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL`: optional public beta link
+  - `NEXT_PUBLIC_BIGGER_FISH_CONTACT_EMAIL`: optional; falls back to `support@brightbench.app`
 
 ## Release Flow Per App
 
@@ -94,3 +103,7 @@ Shared code should not force every app to release together.
 2. `npm run lint -w marketing`
 3. `npm run build -w marketing`
 4. Deploy the `marketing` workspace as its own Vercel project with Root Directory set to `apps/marketing`
+
+### Bigger Fish Site
+1. `npm run verify -w bigger-fish-site`
+2. Deploy the `bigger-fish-site` workspace as its own Vercel project (named `bigger-fish-site`) with Root Directory set to `apps/bigger-fish-site`, and add the `biggerfish.app` domain to it
