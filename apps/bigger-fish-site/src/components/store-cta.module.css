@@ -1,0 +1,64 @@
+.badge {
+  display: inline-flex;
+  line-height: 0;
+  /* Apple asks for a quarter of the badge's height clear around it. */
+  margin: 14px;
+  margin-left: 0;
+}
+
+.soon {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chip,
+.pill {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 800;
+  gap: 8px;
+  height: 50px;
+  padding: 0 22px;
+  white-space: nowrap;
+}
+
+/* A status, not a button: there's nothing to tap until the game is on the App Store. */
+.chip {
+  color: var(--ink-muted);
+  height: auto;
+  padding: 0;
+}
+
+.chip::before {
+  background: var(--teal);
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px rgb(42 179 201 / 0.22);
+  content: '';
+  height: 9px;
+  width: 9px;
+}
+
+.pill {
+  background: var(--orange);
+  color: var(--abyss);
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  box-shadow: 0 8px 24px rgb(255 166 48 / 0.35);
+  transform: translateY(-1px);
+}
+
+.notice {
+  color: var(--ink-faint);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 640px;
+}

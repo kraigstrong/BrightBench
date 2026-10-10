@@ -1,0 +1,281 @@
+.page {
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: 24px var(--gutter) clamp(64px, 9vw, 110px);
+}
+
+.intro {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+  padding: clamp(24px, 5vw, 56px) 0 clamp(36px, 5vw, 56px);
+}
+
+.eyebrow {
+  color: var(--teal);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(52px, 7vw, 84px);
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  color: var(--ink-muted);
+  font-size: clamp(19px, 1.8vw, 22px);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 12px;
+}
+
+.primary,
+.secondary {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 900;
+  gap: 10px;
+  height: 52px;
+  padding: 0 24px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.primary {
+  background: var(--orange);
+  color: var(--abyss);
+}
+
+.primary span {
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.secondary {
+  border: 1px solid rgb(255 255 255 / 0.28);
+  color: var(--ink);
+}
+
+.primary:hover,
+.primary:focus-visible {
+  box-shadow: 0 8px 24px rgb(255 166 48 / 0.35);
+}
+
+.secondary:hover,
+.secondary:focus-visible {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.layout {
+  align-items: start;
+  display: grid;
+  gap: clamp(28px, 4vw, 56px);
+  grid-template-columns: 300px minmax(0, 1fr);
+}
+
+.facts {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  position: sticky;
+  top: 24px;
+}
+
+.factsTitle {
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+
+.facts dl,
+.credits {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.facts dt,
+.credits dt {
+  color: var(--ink-faint);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.facts dd,
+.credits dd {
+  font-size: 16px;
+  margin: 2px 0 0;
+}
+
+.facts a {
+  overflow-wrap: anywhere;
+}
+
+.content {
+  display: grid;
+  gap: clamp(44px, 5vw, 64px);
+}
+
+.block {
+  display: grid;
+  gap: 14px;
+}
+
+.block h2 {
+  font-size: clamp(30px, 3.4vw, 40px);
+  margin-bottom: 4px;
+}
+
+.block h3 {
+  color: var(--ink-faint);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.block p {
+  color: var(--ink-muted);
+  max-width: 68ch;
+}
+
+.features {
+  color: var(--ink-muted);
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.features li::marker {
+  color: var(--orange);
+}
+
+.note {
+  margin-top: 12px;
+}
+
+.grid {
+  display: grid;
+  gap: 22px 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.figure {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.thumb {
+  aspect-ratio: 2622 / 1206;
+  background: var(--abyss);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.thumb img {
+  object-fit: cover;
+}
+
+.brandThumb {
+  aspect-ratio: 16 / 9;
+  background:
+    radial-gradient(120% 100% at 30% 0%, rgb(42 179 201 / 0.25), transparent 60%),
+    var(--deep);
+}
+
+.lightThumb {
+  background: #f2f8ff;
+}
+
+.thumb .contain {
+  object-fit: contain;
+  padding: 8%;
+}
+
+.caption {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.caption div {
+  display: grid;
+  min-width: 0;
+}
+
+.caption strong {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.caption div span {
+  color: var(--ink-faint);
+  font-size: 14px;
+}
+
+.download {
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+  color: var(--ink);
+  display: inline-flex;
+  flex: none;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 8px;
+  padding: 7px 14px;
+  text-decoration: none;
+}
+
+.download span {
+  color: var(--ink-faint);
+  font-weight: 700;
+}
+
+.download:hover,
+.download:focus-visible {
+  background: rgb(255 255 255 / 0.08);
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .facts {
+    position: static;
+  }
+
+  .facts dl {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .primary,
+  .secondary {
+    font-size: 15px;
+    padding: 0 20px;
+  }
+}

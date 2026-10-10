@@ -1,0 +1,23 @@
+.email {
+  align-items: center;
+  background: var(--orange);
+  border-radius: 999px;
+  color: var(--abyss);
+  display: inline-flex;
+  font-size: 17px;
+  font-weight: 900;
+  height: 52px;
+  padding: 0 24px;
+  text-decoration: none;
+}
+
+.email:hover,
+.email:focus-visible {
+  box-shadow: 0 8px 24px rgb(255 166 48 / 0.35);
+}
+
+.footnote {
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  padding-top: 26px;
+}
