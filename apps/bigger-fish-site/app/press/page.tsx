@@ -203,7 +203,7 @@ export default function PressPage() {
                 </div>
                 <div>
                   <dt>Music</dt>
-                  <dd>Pixabay</dd>
+                  <dd>“Aquarium Fish” by Magiksolo and “Tidal Groove” by tideblue, via Pixabay</dd>
                 </div>
               </dl>
             </section>
