@@ -7,9 +7,9 @@ export const game = {
   tagline: 'Eat fast. Stay alive.',
   /** One sentence, for previews and the press kit's one-liner. */
   oneLiner:
-    'A one-touch arcade game about eating smaller fish, dodging bigger ones, and racing the fish you leave behind.',
-  /** The home page's line under the logo. */
-  pitch: 'Eat smaller fish. Dodge bigger ones. And hurry: the fish you pass keep eating too.',
+    'A one-touch arcade game: eat smaller fish, dodge bigger ones, and outgrow them all.',
+  /** The home page's lines under the logo. */
+  pitch: ['Eat smaller fish. Dodge bigger ones.', 'They grow too. Outgrow them to survive.'],
   developer: 'Kraig Strong',
   platform: 'iPhone',
   requirements: 'iPhone with iOS 17 or later. Plays in landscape.',
@@ -49,7 +49,7 @@ export const beats = [
   },
   {
     title: 'They grow too.',
-    body: 'Skip a fish and it keeps feeding behind you. Eat it on the first pass.',
+    body: 'Every fish is eating. Outgrow them before they outgrow you.',
     image: '/media/beats/they-grow-too.jpg',
     alt: 'The player fish face to face with a school of fish that have grown bigger than it.',
   },
@@ -102,17 +102,17 @@ export const worlds: World[] = [
 /** Press kit descriptions, from short to long. */
 export const descriptions = {
   short:
-    'Bigger Fish is a one-touch arcade game for iPhone. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: the fish you pass keep eating too. Skip a meal and it grows behind you, until it is big enough to come back for you.',
+    'Bigger Fish is a one-touch arcade game for iPhone. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
   long: [
     'Bigger Fish is a one-touch arcade game for iPhone about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
-    'But you are not the only one eating. Every fish you pass keeps feeding behind you, and a meal you skip can grow into the fish that ends your run. Eat fast, and eat on the first pass.',
+    'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead.',
     'Across four worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, read the shadows in Kelp Forest, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
   ],
 } as const;
 
 export const features = [
   'One-touch controls: hold anywhere to rise, let go to fall.',
-  'A living food chain: the fish you pass keep eating and growing.',
+  'A living food chain: every fish is eating and growing, just like you.',
   'Four worlds, each with its own twist: jellyfish, kelp, and the dark.',
   `${totalLevels} levels, including a five-level Deep End in every world.`,
   'Short runs built for one more try.',

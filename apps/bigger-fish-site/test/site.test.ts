@@ -50,7 +50,7 @@ test('the facts match the game: four worlds of ten levels and a five-level Deep 
   );
   assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 4 worlds`)));
   // Apple asks marketing to say "iPhone", not "iOS", except for system requirements.
-  assert.ok(!game.pitch.includes('iOS') && !game.oneLiner.includes('iOS'));
+  assert.ok(!game.pitch.join(' ').includes('iOS') && !game.oneLiner.includes('iOS'));
 });
 
 test('every image and video the pages use is in public/', () => {

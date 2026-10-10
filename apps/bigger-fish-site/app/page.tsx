@@ -59,7 +59,11 @@ export default function HomePage() {
             <p className={styles.eyebrow}>A one-touch arcade game for iPhone</p>
             <h1 className={styles.wordmark}>{game.name}</h1>
             <p className={styles.tagline}>{game.tagline}</p>
-            <p className={styles.pitch}>{game.pitch}</p>
+            <p className={styles.pitch}>
+              {game.pitch.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </p>
             <div className={styles.ctaRow}>
               <StoreCta />
               <a className={styles.trailerButton} href="#trailer">

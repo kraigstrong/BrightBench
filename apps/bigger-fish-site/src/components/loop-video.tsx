@@ -23,20 +23,21 @@ export function LoopVideo({ className, eager = false, poster, src }: LoopVideoPr
     // Autoplay is allowed only for muted, inline video; set it on the element itself, not just the attribute.
     video.muted = true;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let visible = false;
+    // Unknown until the first report: an above-the-fold loop that's already autoplaying is left alone till then.
+    let onScreen: boolean | undefined;
     const sync = () => {
-      if (visible && !reduceMotion.matches) {
+      if (reduceMotion.matches || onScreen === false) {
+        video.pause();
+      } else if (onScreen && document.visibilityState === 'visible' && video.paused) {
         video.play().catch(() => {
           // Low Power Mode and some browsers refuse; the poster stays up.
         });
-      } else {
-        video.pause();
       }
     };
     const observer = new IntersectionObserver(
       (entries) => {
         // Several changes can arrive at once while the layout settles: the last one is current.
-        visible = entries[entries.length - 1]?.isIntersecting ?? visible;
+        onScreen = entries[entries.length - 1]?.isIntersecting ?? onScreen;
         sync();
       },
       { threshold: 0.25 },
@@ -44,10 +45,13 @@ export function LoopVideo({ className, eager = false, poster, src }: LoopVideoPr
     observer.observe(video);
     reduceMotion.addEventListener('change', sync);
     video.addEventListener('loadeddata', sync);
+    // Browsers pause video in a hidden tab; pick it up again on return.
+    document.addEventListener('visibilitychange', sync);
     return () => {
       observer.disconnect();
       reduceMotion.removeEventListener('change', sync);
       video.removeEventListener('loadeddata', sync);
+      document.removeEventListener('visibilitychange', sync);
     };
   }, []);
 

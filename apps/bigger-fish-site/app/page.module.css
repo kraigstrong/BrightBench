@@ -80,6 +80,10 @@
   margin-top: 18px;
 }
 
+.pitch span {
+  display: block;
+}
+
 .ctaRow {
   align-items: center;
   display: flex;

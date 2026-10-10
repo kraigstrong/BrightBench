@@ -23,9 +23,8 @@ const faqs: { question: string; answer: string }[] = [
       'Touch and hold anywhere to swim up, and let go to sink. Swim into fish smaller than you to eat them and grow, and keep away from anything bigger.',
   },
   {
-    question: 'Why did a fish I passed get so big?',
-    answer:
-      "Every fish keeps eating, not just you. A fish you swim past can eat the smaller fish behind you and grow, so it's best to eat what you can on your first pass.",
+    question: 'Why do the other fish get bigger?',
+    answer: "They're eating too. Grow faster than they do: eat what you can, while you can.",
   },
   {
     question: 'How do new worlds open?',
