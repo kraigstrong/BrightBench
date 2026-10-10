@@ -27,6 +27,10 @@ const faqs: { question: string; answer: string }[] = [
     answer: "They're eating too. Grow faster than they do: eat what you can, while you can.",
   },
   {
+    question: 'What does it cost?',
+    answer: 'Bigger Fish is free to try. $4.99 unlocks all worlds and challenge levels.',
+  },
+  {
     question: 'How do new worlds open?',
     answer:
       "Beat a world's tenth level to open the next world. After the tenth level comes the Deep End: five harder levels, each opening when you clear the one before.",

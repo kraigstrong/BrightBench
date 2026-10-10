@@ -84,6 +84,10 @@
   display: block;
 }
 
+.heroCopy > .ctaRow {
+  max-width: 640px;
+}
+
 .ctaRow {
   align-items: center;
   display: flex;
@@ -92,25 +96,34 @@
   margin-top: 30px;
 }
 
+/* The store or beta link is the main action; the trailer sits beside it. */
 .trailerButton {
   align-items: center;
-  background: var(--orange);
+  border: 1px solid rgb(255 255 255 / 0.28);
   border-radius: 999px;
-  color: var(--abyss);
+  color: var(--ink);
   display: inline-flex;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 800;
   gap: 9px;
   height: 50px;
-  padding: 0 24px;
+  padding: 0 22px;
   text-decoration: none;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition: background 150ms ease, border-color 150ms ease;
 }
 
 .trailerButton:hover,
 .trailerButton:focus-visible {
-  box-shadow: 0 8px 24px rgb(255 166 48 / 0.35);
-  transform: translateY(-1px);
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.5);
+}
+
+.offer {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 800;
+  margin-top: 16px;
+  opacity: 0.85;
 }
 
 /* Sections */
@@ -280,6 +293,10 @@
 .promise {
   color: var(--ink-faint);
   font-weight: 800;
+}
+
+.closing .offer {
+  margin-top: 0;
 }
 
 @media (max-width: 860px) {

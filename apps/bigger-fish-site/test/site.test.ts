@@ -7,7 +7,7 @@ import { buildPressKit, factSheet } from '../scripts/build-press-kit.ts';
 import { createZip, zipEntryNames } from '../scripts/zip.ts';
 import { beats, facts, game, totalLevels, worlds } from '../src/lib/game.ts';
 import { pressKitFiles, zipPath } from '../src/lib/press-assets.ts';
-import { appStoreId, contactEmail, productionOrigin, siteOrigin, storeCta } from '../src/lib/site.ts';
+import { appStoreId, contactEmail, productionOrigin, readEnv, siteOrigin, storeCta } from '../src/lib/site.ts';
 
 const publicDir = join(import.meta.dirname, '..', 'public');
 
@@ -20,6 +20,8 @@ test('the canonical origin is the configured one, then biggerfish.app in product
 
 test('before launch it says coming soon, offering the beta only for a real https link', () => {
   assert.deepEqual(storeCta({}), { betaHref: undefined, kind: 'comingSoon' });
+  // By default, the public TestFlight group.
+  assert.match((storeCta(readEnv()) as { betaHref?: string }).betaHref ?? '', /^https:\/\/testflight\.apple\.com\/join\//);
   assert.deepEqual(storeCta({ testFlightUrl: 'https://testflight.apple.com/join/abc' }), {
     betaHref: 'https://testflight.apple.com/join/abc',
     kind: 'comingSoon',

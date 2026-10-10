@@ -3,6 +3,9 @@ export const productionOrigin = 'https://biggerfish.app';
 
 const defaultContactEmail = 'support@brightbench.app';
 
+/** The public TestFlight group for players who find the site (limited to 1,000). An empty setting hides it. */
+const defaultTestFlightUrl = 'https://testflight.apple.com/join/qQ2FCuPa';
+
 /** Apple's official App Store badge, used unmodified (developer.apple.com/app-store/marketing/guidelines). */
 export const appStoreBadgeSrc = 'https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg';
 
@@ -25,7 +28,7 @@ export function readEnv(): SiteEnv {
     contactEmail: process.env.NEXT_PUBLIC_BIGGER_FISH_CONTACT_EMAIL,
     preorder: process.env.NEXT_PUBLIC_BIGGER_FISH_PREORDER,
     siteOrigin: process.env.NEXT_PUBLIC_SITE_ORIGIN,
-    testFlightUrl: process.env.NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL,
+    testFlightUrl: process.env.NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL ?? defaultTestFlightUrl,
     vercelEnv: process.env.VERCEL_ENV,
     vercelUrl: process.env.VERCEL_URL,
   };
