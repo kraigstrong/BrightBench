@@ -30,12 +30,12 @@ test('store receives only counters, not individual run bodies; success rates sta
 test('report rows sort by world in campaign order, then level, then newest build',()=>{
   const row=(world:string,level:number,build:string)=>({day:'2026-10-04',build,counts:{[`${Buffer.from(JSON.stringify([world,'campaign',level,level,'1','r1'])).toString('base64url')}|outcome.win`]:1}});
   const rows=report([row('kelp-forest',1,'testflight:0.2:3'),row('future-world',1,'testflight:0.2:3'),row('shallow-reef',10,'testflight:0.2:3'),
-    row('shallow-reef',2,'testflight:0.1:2'),row('jelly-bloom',1,'testflight:0.2:3'),row('shallow-reef',2,'testflight:0.2:10'),row('shallow-reef',2,'testflight:0.2:3'),
+    row('shallow-reef',2,'testflight:0.1:2'),row('midnight-zone',1,'testflight:0.2:3'),row('jelly-bloom',1,'testflight:0.2:3'),row('shallow-reef',2,'testflight:0.2:10'),row('shallow-reef',2,'testflight:0.2:3'),
     row('shallow-reef',3,'testflight:1.2:10'),row('shallow-reef',3,'testflight:1.2.1:1')]);
   assert.deepEqual(rows.map(r=>{const c=r.context as {world:string;level:number};return `${c.world} ${c.level} ${r.build}`;}),[
     'shallow-reef 2 testflight:0.2:10','shallow-reef 2 testflight:0.2:3','shallow-reef 2 testflight:0.1:2',
     'shallow-reef 3 testflight:1.2.1:1','shallow-reef 3 testflight:1.2:10','shallow-reef 10 testflight:0.2:3',
-    'jelly-bloom 1 testflight:0.2:3','kelp-forest 1 testflight:0.2:3','future-world 1 testflight:0.2:3']);
+    'jelly-bloom 1 testflight:0.2:3','kelp-forest 1 testflight:0.2:3','midnight-zone 1 testflight:0.2:3','future-world 1 testflight:0.2:3']);
 });
 test('ingestion fails closed without keys and rejects oversized/unvalidated payloads',async()=>{
   const req=(body:unknown,key='key')=>new Request('https://example.test/events',{method:'POST',headers:{'X-App-Key':key},body:JSON.stringify(body)});
