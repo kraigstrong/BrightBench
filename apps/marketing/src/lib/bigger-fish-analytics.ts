@@ -140,7 +140,7 @@ export async function handleEvents(request: Request, deps: { store: ArcadeStore;
   } catch { return status(503); } // Never log errors or requests that may contain bodies/network metadata.
 }
 // Display order only, not a registry: worlds not listed here sort after these, alphabetically.
-const worldOrder = ['shallow-reef', 'jelly-bloom', 'kelp-forest'];
+const worldOrder = ['shallow-reef', 'jelly-bloom', 'kelp-forest', 'midnight-zone'];
 const worldRank = (world: string) => { const i = worldOrder.indexOf(world); return i < 0 ? worldOrder.length : i; };
 // Builds are `channel:version:build`; newer versions first (1.2 = 1.2.0), then newer build numbers.
 function newerBuildFirst(a: string, b: string) {
