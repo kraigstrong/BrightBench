@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { offerSources, purchaseOutcomes, restoreOutcomes, restoreSources, type OfferSource, type PurchaseOutcome, type RestoreOutcome, type RestoreSource } from './bigger-fish-paywall.ts';
 
 // Content identity only: no user/install/session IDs or client wall-clock timestamps.
 // Keep in sync with BiggerFish/ArcadeAnalytics.swift and ArcadeMetrics.swift.
@@ -12,8 +13,13 @@ export type Summary = {
 };
 export type Event =
   | { kind: 'milestone'; name: string; context?: Context }
-  | { kind: 'run'; context: Context; outcome: 'win' | 'death' | 'quit' | 'abandoned'; cause: string; replay: boolean; attempt: number; summary: Summary }
-  | { kind: 'decision'; name: 'retry' | 'next' | 'leave' | 'unknown'; context: Context; outcome: 'win' | 'death' };
+  // `unlocked`: whether the player had the unlock, sent only while it is on sale.
+  | { kind: 'run'; context: Context; outcome: 'win' | 'death' | 'quit' | 'abandoned'; cause: string; replay: boolean; attempt: number; summary: Summary; unlocked?: boolean }
+  | { kind: 'decision'; name: 'retry' | 'next' | 'leave' | 'unknown'; context: Context; outcome: 'win' | 'death' }
+  // Every showing of the unlock's screen; `first` marks the install's first.
+  | { kind: 'offer'; source: OfferSource; first: boolean }
+  | { kind: 'purchase'; outcome: PurchaseOutcome; source: OfferSource }
+  | { kind: 'restore'; outcome: RestoreOutcome; source: RestoreSource };
 export type Batch = { schema: 1; appVersion: string; build: string; channel: 'debug' | 'testflight' | 'appstore'; events: Event[] };
 export const maxBodyBytes = 64 * 1024;
 export const retentionDays = 90;
@@ -27,6 +33,7 @@ const record = (x: unknown): x is Record<string, unknown> => typeof x === 'objec
 function keys(x: Record<string, unknown>, required: string[], optional: string[] = []) {
   return required.every(k => Object.hasOwn(x, k)) && Object.keys(x).every(k => [...required, ...optional].includes(k));
 }
+const oneOf = (x: unknown, values: readonly string[]) => typeof x === 'string' && values.includes(x);
 const number = (x: unknown, max: number, integer = false): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x <= max && (!integer || Number.isInteger(x));
 function context(x: unknown): x is Context {
   return record(x) && keys(x, ['world','level','setup','seed','mode','revision'])
@@ -59,11 +66,16 @@ export function validateBatch(x: unknown): x is Batch {
     if (!record(e)) return false;
     if (e.kind === 'milestone') {
       return keys(e, ['kind','name'], ['context']) && (e.name === 'first_launch' ? !Object.hasOwn(e, 'context')
-        : ['level_started','world_started','level_cleared','world_cleared'].includes(String(e.name)) && context(e.context));
+        : ['level_started','world_started','level_cleared','world_cleared','world_conquered'].includes(String(e.name)) && context(e.context));
     }
     if (e.kind === 'decision') return keys(e, ['kind','name','context','outcome']) && context(e.context)
       && ['retry','next','leave','unknown'].includes(String(e.name)) && ['win','death'].includes(String(e.outcome));
-    if (e.kind !== 'run' || !keys(e, ['kind','context','outcome','cause','replay','attempt','summary']) || !context(e.context) || !summary(e.summary)) return false;
+    // The paywall funnel carries no context: install-level counts only.
+    if (e.kind === 'offer') return keys(e, ['kind','source','first']) && oneOf(e.source, offerSources) && typeof e.first === 'boolean';
+    if (e.kind === 'purchase') return keys(e, ['kind','outcome','source']) && oneOf(e.outcome, purchaseOutcomes) && oneOf(e.source, offerSources);
+    if (e.kind === 'restore') return keys(e, ['kind','outcome','source']) && oneOf(e.outcome, restoreOutcomes) && oneOf(e.source, restoreSources);
+    if (e.kind !== 'run' || !keys(e, ['kind','context','outcome','cause','replay','attempt','summary'], ['unlocked']) || !context(e.context) || !summary(e.summary)) return false;
+    if (Object.hasOwn(e, 'unlocked') && typeof e.unlocked !== 'boolean') return false;
     return ['win','death','quit','abandoned'].includes(String(e.outcome)) && typeof e.replay === 'boolean'
       && number(e.attempt, 1000, true) && (e.replay ? e.attempt === 0 : e.attempt > 0)
       && (e.outcome === 'death' ? ['predator','tentacles','urchin'].includes(String(e.cause)) : e.cause === 'none')
@@ -83,10 +95,15 @@ export function counterUpdates(batch: Batch): Update[] {
   const totals = new Map<string, number>();
   function add(c: string, metric: string, by = 1) { const field = `${c}|${metric}`; totals.set(field, (totals.get(field) ?? 0) + by); }
   for (const e of batch.events) {
+    if (e.kind === 'offer') {
+      add('install', `offer.shown.${e.source}`); if (e.first) add('install', `offer.first.${e.source}`); continue;
+    }
+    if (e.kind === 'purchase' || e.kind === 'restore') { add('install', `${e.kind}.${e.outcome}.${e.source}`); continue; }
     const c = contentToken(e.context);
     if (e.kind === 'milestone') { add(c, `milestone.${e.name}`); continue; }
     if (e.kind === 'decision') { add(c, `decision.${e.outcome}.${e.name}`); continue; }
     add(c, `outcome.${e.outcome}`); add(c, `${e.replay ? 'replay' : 'learning'}.${e.outcome}`);
+    if (e.unlocked !== undefined) add(c, `${e.unlocked ? 'unlocked' : 'free'}.${e.outcome}`);
     const s = e.summary;
     if (e.outcome === 'win' && !e.replay) add(c, `attempt.${bucket(e.attempt,buckets.attempt)}`);
     if (e.outcome === 'death') {
@@ -135,7 +152,7 @@ export async function handleEvents(request: Request, deps: { store: ArcadeStore;
   const build = `${value.channel}:${value.appVersion}:${value.build}`;
   const day = (deps.now?.() ?? new Date()).toISOString().slice(0,10);
   try {
-    const ok = await deps.store.write(day, build, [...new Set(value.events.map(e => contentToken(e.context)))], counterUpdates(value));
+    const ok = await deps.store.write(day, build, [...new Set(value.events.map(e => contentToken('context' in e ? e.context : undefined)))], counterUpdates(value));
     return status(ok ? 204 : 429);
   } catch { return status(503); } // Never log errors or requests that may contain bodies/network metadata.
 }
@@ -196,6 +213,6 @@ export async function handleStats(request: Request, deps: {store: ArcadeStore; s
       const [channel,version,build] = r.build.split(':');
       return (url.searchParams.get('channel') ?? 'testflight') === channel && (!url.searchParams.has('appVersion') || url.searchParams.get('appVersion') === version) && (!url.searchParams.has('build') || url.searchParams.get('build') === build);
     });
-    return Response.json({from,to, notes: ['Anonymous aggregate attempts, not unique people.', 'Growth paths are optimistic size budgets, not proven winnability.', 'Histograms use upper bucket bounds; sums are thousandths of displayed units.', 'First-clear distributions exclude installs that have not cleared; consult starts and quits too.', 'Failed deliveries are dropped; receive-day is not play-day.'], rows: report(selected)}, {headers});
+    return Response.json({from,to, notes: ['Anonymous aggregate attempts, not unique people.', 'Growth paths are optimistic size budgets, not proven winnability.', 'Histograms use upper bucket bounds; sums are thousandths of displayed units.', 'First-clear distributions exclude installs that have not cleared; consult starts and quits too.', 'Failed deliveries are dropped; receive-day is not play-day.', 'Unlock offers count every showing; first offers count installs. Purchases and restores count attempts, not people.'], rows: report(selected)}, {headers});
   } catch { return status(503); }
 }

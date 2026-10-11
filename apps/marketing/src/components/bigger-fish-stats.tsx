@@ -1,6 +1,7 @@
 'use client';
 import { useState, type FormEvent } from 'react';
 import { difficultyRamp, tryGroups, type RampWorld } from '@/lib/bigger-fish-ramp';
+import { paywallFunnel, purchaseOutcomes, restoreOutcomes, type PaywallFunnel } from '@/lib/bigger-fish-paywall';
 type Row = {build:string;context:{world:string;mode:string;level:number;setup:number;seed:string;revision:string}|null;counts:Record<string,number>;attempts:number;completedAttempts:number;successRate:number|null;allEndedSuccessRate:number|null;deathsWithGrowthPathRate:number|null};
 type Report = {from:string;to:string;notes:string[];rows:Row[]};
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
@@ -73,6 +74,40 @@ function FunnelChart({worlds}:{worlds:RampWorld[]}) {
     </figure>)}
   </section>;
 }
+const sourceNames: Record<string,string> = {padlocked_level:'Padlocked level',next_level:'Next level onto a padlock',unlock_all:'Unlock all (world map)',
+  locked_world:'Locked world (world map)',conquered:'A world conquered',settings:'Settings (restore only)'};
+const outcomeNames: Record<string,string> = {unlocked:'Unlocked',pending:'Pending',cancelled:'Cancelled',failed:'Failed',restored:'Restored',not_found:'Nothing found'};
+function PaywallChart({funnel}:{funnel:PaywallFunnel}) {
+  const anyRuns=funnel.runs.some(w=>w.free.runs+w.unlocked.runs>0);
+  return <section aria-labelledby="paywall-heading">
+    <h2 id="paywall-heading">The unlock</h2>
+    <p><small>Every build in this selection pooled. Shown counts every time the unlock&rsquo;s screen opened; first counts installs seeing it for the first time, by where that was. Purchases and restores count attempts on each screen, not people.</small></p>
+    <div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
+      <caption>Where the unlock&rsquo;s screen opened, and what happened there</caption>
+      <thead><tr>{['Opened from','Shown','First',...purchaseOutcomes.map(o=>outcomeNames[o]!),...restoreOutcomes.map(o=>`Restore: ${outcomeNames[o]}`)].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+      <tbody>{funnel.sources.map(s=><tr key={s.source}>
+        <th scope="row">{sourceNames[s.source]??s.source}</th>
+        <td>{s.source==='settings'?'—':s.shown}</td><td>{s.source==='settings'?'—':s.first}</td>
+        {purchaseOutcomes.map(o=><td key={o}>{s.source==='settings'?'—':s.purchases[o]}</td>)}
+        {restoreOutcomes.map(o=><td key={o}>{s.restores[o]}</td>)}
+      </tr>)}</tbody>
+    </table></div>
+    <div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
+      <caption>Installs that conquered each world (its ten main levels beaten)</caption>
+      <thead><tr><th scope="col">World</th><th scope="col">Conquered</th></tr></thead>
+      <tbody>{funnel.conquered.map(c=><tr key={c.world}><th scope="row">{c.world}</th><td>{c.installs}</td></tr>)}</tbody>
+    </table></div>
+    {anyRuns&&<div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
+      <caption>Campaign runs with and without the unlock (only runs from builds that sell it; replays included)</caption>
+      <thead><tr>{['World','Free: runs','Free: win rate','Unlocked: runs','Unlocked: win rate'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+      <tbody>{funnel.runs.map(w=><tr key={w.world}>
+        <th scope="row">{w.world}</th>
+        <td>{w.free.runs}</td><td>{percentage(w.free.rate)} ({w.free.wins+w.free.deaths} finished)</td>
+        <td>{w.unlocked.runs}</td><td>{percentage(w.unlocked.rate)} ({w.unlocked.wins+w.unlocked.deaths} finished)</td>
+      </tr>)}</tbody>
+    </table></div>}
+  </section>;
+}
 export default function BiggerFishStats() {
   const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
@@ -89,6 +124,7 @@ export default function BiggerFishStats() {
   const rows=(data?.rows??[]).filter(r=>r.context&&(!world||r.context.world===world));
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?[r.context.world]:[]))];
   const perLevel=difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})));
+  const funnel=paywallFunnel(data?.rows??[]);
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
@@ -106,6 +142,7 @@ export default function BiggerFishStats() {
       <FunnelChart worlds={perLevel}/>
       <TriesChart worlds={perLevel}/>
       <RampChart worlds={perLevel}/>
+      <PaywallChart funnel={funnel}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
         <caption>Per-level success and death diagnostics</caption>

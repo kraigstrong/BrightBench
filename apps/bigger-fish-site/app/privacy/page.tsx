@@ -22,20 +22,21 @@ const sections: { title: string; body: string[] }[] = [
       'To learn which levels are too hard or too easy, the game sends a short anonymous summary of each level played to BrightBench. It says which world, level, game mode, and version of that level it was; whether you had already cleared it; and how the run ended: cleared, quit, left unfinished, or lost, and if lost, whether to a bigger fish or a hazard such as jellyfish tentacles.',
       'The summary also includes how long the run lasted and how many laps of the level you swam; how many fish you and the other fish ate; how many of your catches were close in size; how many jellyfish bounces there were; the longest stretch between your meals; how long only fish you could eat were left; and how long the remaining fish were too big for you to grow into, when that first happened, and whether it changed back. At the end of the run it records your size, how many fish were left, how many of them you could eat, how big the largest was compared to you, and whether eating the rest could still have grown you enough. If a fish ate you, it records how much bigger that fish was.',
       'It also says how many tries it took to clear a level the first time, and whether you chose to play again, go to the next level, or leave after a win or loss.',
-      'A few reports are sent only once per device, such as the first launch and the first time each level or world is started or cleared, so the totals can show how many players reach each level. Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
+      'Bigger Fish is free to try, with a one-time purchase that unlocks every world. To learn whether the free levels and the price are right, the game reports each time the screen offering that purchase appears, what opened it (a locked level or world, going on to a locked next level, the Unlock all button, or conquering a world), and whether it was the first time on that device. It reports how each attempt to buy or restore the purchase ended (unlocked, waiting for approval such as Ask to Buy, cancelled, failed, restored, or nothing found to restore) and where it was made, and each level summary says whether the game was unlocked.',
+      "A few reports are sent only once per device, such as the first launch, the first time each level or world is started or cleared, and the first time all ten of a world's main levels are cleared, so the totals can show how many players reach each level. Each report also says which version of the game sent it and whether it is a test build or the App Store version.",
     ],
   },
   {
     title: 'What Is Never Sent',
     body: [
-      "No name, account, contact details, photo, or location. No device, advertising, session, or other identifier, and nothing that could tell one player's or device's reports apart from another's. No dates or times, device model, system version, or language. No touches or swimming paths.",
+      "No name, account, contact details, photo, or location. No payment details, receipts, or Apple Account information: Apple handles the purchase itself. No device, advertising, session, or other identifier, and nothing that could tell one player's or device's reports apart from another's. No dates or times, device model, system version, or language. No touches or swimming paths.",
     ],
   },
   {
     title: 'How the Summaries Are Kept and Used',
     body: [
       'Each summary is checked and immediately added to running totals for each day, grouped by level and game version. Individual summaries are not stored, and the totals cannot be traced back to a player or a device. Daily totals are deleted after 90 days.',
-      "The totals are used only to improve Bigger Fish's levels and difficulty. They are never used for advertising or tracking, and never sold or shared.",
+      "The totals are used only to improve Bigger Fish's levels and difficulty, and to decide how much of it is free to try and what the unlock costs. They are never used for advertising or tracking, and never sold or shared.",
       'Bigger Fish works without an internet connection. Summaries wait on the device until they can be sent, and a report that fails to send is discarded rather than retried.',
     ],
   },
@@ -75,7 +76,7 @@ const sections: { title: string; body: string[] }[] = [
 export default function PrivacyPage() {
   const email = contactEmail();
   return (
-    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 5, 2026</p>} title="Bigger Fish Privacy Policy">
+    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 10, 2026</p>} title="Bigger Fish Privacy Policy">
       {sections.map((section) => (
         <ProseSection key={section.title} title={section.title}>
           {section.body.map((paragraph) => (

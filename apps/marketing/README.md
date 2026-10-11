@@ -79,6 +79,13 @@ metrics beyond those caps are dropped. Build, content revision, slot, setup and 
 New optional diagnostic fields should be allowlisted server-first; schema-1 old clients remain
 accepted. Use a new schema version for incompatible meanings; do not permit arbitrary metadata.
 
+The paywall funnel (bigger-fish#123, behind the app's `ArcadeAnalytics.sendsPaywallEvents`) adds
+three context-free kinds counted under the `install` token: `offer` (`source`, `first`), `purchase`
+(`outcome`, `source`) and `restore` (`outcome`, `source`, which may also be `settings`). Sources and
+outcomes are fixed lists in `src/lib/bigger-fish-paywall.ts`. It also adds the `world_conquered`
+milestone (a world's tenth level first cleared) and an optional `unlocked` boolean on runs, counted
+as `free.<outcome>` / `unlocked.<outcome>` per level. The report's "The unlock" section pools them.
+
 The report defaults to TestFlight and the last 30 receive-days. Optional query parameters:
 `from`, `to` (up to 90 days), `channel`, `appVersion`, `build`. Read credentials use only the
 Authorization header; the web report holds its key in component memory, not a URL/local storage.
