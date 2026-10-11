@@ -124,7 +124,7 @@ export default function BiggerFishStats() {
   const rows=(data?.rows??[]).filter(r=>r.context&&(!world||r.context.world===world));
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?[r.context.world]:[]))];
   const perLevel=difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})));
-  const funnel=paywallFunnel(data?.rows??[]);
+  const funnel=paywallFunnel(data?.rows??[],world);
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>

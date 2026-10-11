@@ -29,8 +29,9 @@ export type PaywallFunnel = {
   runs: { world: string; free: FunnelRuns; unlocked: FunnelRuns }[];
 };
 const runs = (): FunnelRuns => ({ runs: 0, wins: 0, deaths: 0, rate: null });
-// Every build in the selection pooled. Worlds keep the order of `rows` (the report's sort).
-export function paywallFunnel(rows: FunnelRow[]): PaywallFunnel {
+// Every build in the selection pooled. Worlds keep the order of `rows` (the report's sort). With `onlyWorld`, conquests
+// and runs are that world's only; offers, purchases and restores belong to no world, so they stay whole.
+export function paywallFunnel(rows: FunnelRow[], onlyWorld?: string): PaywallFunnel {
   const sources = restoreSources.map((source): FunnelSource => ({
     source, shown: 0, first: 0,
     purchases: Object.fromEntries(purchaseOutcomes.map(o => [o, 0])) as Record<PurchaseOutcome, number>,
@@ -47,7 +48,7 @@ export function paywallFunnel(rows: FunnelRow[]): PaywallFunnel {
       }
       continue;
     }
-    if (context.mode !== 'campaign') continue;
+    if (context.mode !== 'campaign' || (onlyWorld && context.world !== onlyWorld)) continue;
     conquered.set(context.world, (conquered.get(context.world) ?? 0) + (counts['milestone.world_conquered'] ?? 0));
     const world = split.get(context.world) ?? { free: runs(), unlocked: runs() }; split.set(context.world, world);
     for (const access of ['free', 'unlocked'] as const) {

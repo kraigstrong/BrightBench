@@ -24,3 +24,17 @@ test('conquests and runs with and without the unlock add up per world, campaign 
   assert.deepEqual(funnel.runs[0], {world: 'shallow-reef', free: {runs: 6, wins: 3, deaths: 1, rate: .75}, unlocked: {runs: 2, wins: 1, deaths: 1, rate: .5}});
   assert.deepEqual(funnel.runs[1], {world: 'jelly-bloom', free: {runs: 4, wins: 0, deaths: 4, rate: 0}, unlocked: {runs: 0, wins: 0, deaths: 0, rate: null}});
 });
+
+test('a selected world narrows conquests and runs, but not the offers, which belong to no world', () => {
+  const rows = [
+    {context: null, counts: {'offer.shown.unlock_all': 4, 'purchase.unlocked.unlock_all': 1}},
+    level('shallow-reef', {'milestone.world_conquered': 2, 'free.win': 3}),
+    level('jelly-bloom', {'milestone.world_conquered': 5, 'unlocked.win': 9}),
+  ];
+  const funnel = paywallFunnel(rows, 'jelly-bloom');
+  assert.deepEqual(funnel.conquered, [{world: 'jelly-bloom', installs: 5}]);
+  assert.deepEqual(funnel.runs.map(r => r.world), ['jelly-bloom']);
+  const all = funnel.sources.find(s => s.source === 'unlock_all')!;
+  assert.equal(all.shown, 4);
+  assert.equal(all.purchases.unlocked, 1);
+});
