@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import {validateBatch,counterUpdates,handleEvents,handleStats,report,type Batch,type ArcadeStore} from '../src/lib/bigger-fish-analytics.ts';
+import {offerSources,purchaseOutcomes,restoreOutcomes,restoreSources} from '../src/lib/bigger-fish-paywall.ts';
 const sample = (): Batch => ({schema:1,appVersion:'0.1',build:'2',channel:'testflight',events:[{kind:'run',context:{world:'future-world',level:1000,setup:1000,mode:'campaign',seed:'20261477',revision:'future.1'},outcome:'death',cause:'predator',replay:false,attempt:2,summary:{seconds:12,circuits:.5,playerMeals:3,aiMeals:2,closeMeals:2,nearEqualMeals:1,bounces:0,cleanupSeconds:0,longestMealGap:4,noPathSeconds:0,pathRecovered:false,snapshot:{path:'available',playerRadius:25,remaining:3,edible:1,largestRatio:1.5},fatalRatio:1.2}}]});
 const store = (): ArcadeStore => ({write:async()=>true,read:async()=>[]});
 test('strict anonymous schema supports future worlds, large campaigns and endless mode',()=>{
   const b=sample();assert.equal(validateBatch(b),true);
-  b.events[0]!.context!.mode='endless';assert.equal(validateBatch(b),true);
+  const run=b.events[0]!;if(run.kind==='run')run.context.mode='endless';assert.equal(validateBatch(b),true);
   for(const key of ['playerID','installID','sessionID','timestamp','device','trajectory']){
     assert.equal(validateBatch({...b,[key]:'private'}),false);
     assert.equal(validateBatch({...b,events:[{...b.events[0],[key]:'private'}]}),false);
@@ -61,4 +62,55 @@ test('accept the real Swift-encoded client contract fixture',()=>{
   const payload=JSON.parse(readFileSync(new URL('./fixtures/bigger-fish-swift.json',import.meta.url),'utf8'));
   assert.equal(validateBatch(payload),true);
   assert.equal(payload.events.find((e:{kind:string})=>e.kind==='run').context.seed,'20261477');
+});
+
+// The paywall funnel (bigger-fish#123): sent only once the app's sendsPaywallEvents is on.
+const paywall = (): Batch => ({schema:1,appVersion:'0.4',build:'7',channel:'testflight',events:[
+  {kind:'offer',source:'padlocked_level',first:true},{kind:'offer',source:'padlocked_level',first:false},
+  {kind:'purchase',outcome:'pending',source:'padlocked_level'},{kind:'purchase',outcome:'unlocked',source:'conquered'},
+  {kind:'restore',outcome:'not_found',source:'settings'},{kind:'restore',outcome:'restored',source:'unlock_all'},
+  {kind:'milestone',name:'world_conquered',context:{world:'shallow-reef',level:10,setup:10,mode:'campaign',seed:'1',revision:'r1'}},
+  {...sample().events[0]!,unlocked:true} as Batch['events'][number],
+]});
+test('paywall funnel events are accepted and counted per install; conquests and unlocked runs per level',()=>{
+  const b=paywall();assert.equal(validateBatch(b),true);
+  const counts=Object.fromEntries(counterUpdates(b).map(u=>[u.field,u.by]));
+  assert.equal(counts['install|offer.shown.padlocked_level'],2);assert.equal(counts['install|offer.first.padlocked_level'],1);
+  assert.equal(counts['install|purchase.pending.padlocked_level'],1);assert.equal(counts['install|purchase.unlocked.conquered'],1);
+  assert.equal(counts['install|restore.not_found.settings'],1);assert.equal(counts['install|restore.restored.unlock_all'],1);
+  const conquered=Object.keys(counts).find(k=>k.endsWith('|milestone.world_conquered'))!;
+  assert.notEqual(conquered.split('|')[0],'install');
+  const run=Object.keys(counts).find(k=>k.endsWith('|unlocked.death'))!;
+  assert.equal(counts[run],1);assert.equal(counts[run.replace('unlocked.death','outcome.death')],1);
+  // A run without the field (before the funnel, or while the unlock isn't on sale) is in neither split.
+  assert.equal(counterUpdates(sample()).some(u=>/\|(free|unlocked)\./.test(u.field)),false);
+});
+test('paywall funnel events stay strict: one unknown field or value rejects the batch',()=>{
+  const context={world:'shallow-reef',level:10,setup:10,mode:'campaign',seed:'1',revision:'r1'};
+  for(const event of [
+    {kind:'offer',source:'padlocked_level',first:true,context},{kind:'offer',source:'padlocked_level',first:true,world:'shallow-reef'},
+    {kind:'offer',source:'settings',first:true},{kind:'offer',source:'padlocked_level'},{kind:'offer',source:'padlocked_level',first:'yes'},
+    {kind:'offer',source:'padlocked_level',first:true,installID:'x'},
+    {kind:'purchase',outcome:'unlocked',source:'settings'},{kind:'purchase',outcome:'refunded',source:'conquered'},
+    {kind:'purchase',outcome:'unlocked',source:'conquered',price:4.99},{kind:'purchase',outcome:'unlocked'},
+    {kind:'restore',outcome:'failed',source:'settings'},{kind:'restore',outcome:'restored',source:'elsewhere'},
+    {kind:'milestone',name:'world_conquered'},{kind:'paywall',name:'offer',source:'conquered'},
+    {...sample().events[0]!,unlocked:'yes'},{...sample().events[0]!,unlocked:null},
+  ]){
+    assert.equal(validateBatch({...paywall(),events:[event]}),false,JSON.stringify(event));
+    assert.equal(validateBatch({...paywall(),events:[...paywall().events,event]}),false,JSON.stringify(event));
+  }
+});
+test('accept the real Swift-encoded paywall funnel fixture, which sends every source and outcome',()=>{
+  // Written by the app's ArcadeMetricsTests.payloadPinsTheApprovedGameplaySummaryKeys to /private/tmp/arcade-paywall-contract.json.
+  const payload=JSON.parse(readFileSync(new URL('./fixtures/bigger-fish-swift-paywall.json',import.meta.url),'utf8'));
+  assert.equal(validateBatch(payload),true);
+  type Sent={kind:string;name?:string;source?:string;outcome?:string;unlocked?:boolean};
+  const values=(kind:string,key:'source'|'outcome')=>new Set((payload.events as Sent[]).filter(e=>e.kind===kind).map(e=>e[key]));
+  assert.deepEqual(values('offer','source'),new Set(offerSources));
+  assert.deepEqual(values('purchase','outcome'),new Set(purchaseOutcomes));
+  assert.deepEqual(values('restore','outcome'),new Set(restoreOutcomes));
+  assert.deepEqual(values('restore','source'),new Set(restoreSources));
+  assert.equal((payload.events as Sent[]).some(e=>e.name==='world_conquered'),true);
+  assert.equal((payload.events as Sent[]).find(e=>e.kind==='run')!.unlocked,false);
 });
