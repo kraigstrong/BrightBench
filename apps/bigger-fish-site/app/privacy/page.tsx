@@ -50,7 +50,7 @@ const sections: { title: string; body: string[] }[] = [
     title: 'Information Stored on Your Device',
     body: [
       'Bigger Fish saves which levels you have cleared, your best times, and whether you have seen the jellyfish lesson, so you can pick up where you left off. To send the once-per-device reports and try counts described above, it also keeps a few markers and counters on the device. None of these are sent to us; only the anonymous summaries are.',
-      'Deleting the app removes this information. Like other app data, it may be included in your own device backups, which we cannot access.',
+      "If you use iCloud, Bigger Fish also keeps a copy of your progress (cleared levels, best times, and which lessons and screens you have seen) in your own iCloud account, through Apple, so it comes back if you reinstall the game and follows you to your other devices. We cannot access that copy, and deleting the app doesn't remove it. Otherwise, deleting the app removes this information. Like other app data, it may be included in your own device backups, which we cannot access.",
     ],
   },
   {
@@ -76,7 +76,7 @@ const sections: { title: string; body: string[] }[] = [
 export default function PrivacyPage() {
   const email = contactEmail();
   return (
-    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 10, 2026</p>} title="Bigger Fish Privacy Policy">
+    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 11, 2026</p>} title="Bigger Fish Privacy Policy">
       {sections.map((section) => (
         <ProseSection key={section.title} title={section.title}>
           {section.body.map((paragraph) => (
