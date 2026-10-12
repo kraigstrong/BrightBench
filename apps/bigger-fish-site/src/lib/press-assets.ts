@@ -25,19 +25,21 @@ export const trailer: PressAsset = {
   title: 'Trailer',
 };
 
-const loop = (slug: string, title: string): PressAsset => ({
-  detail: 'MP4, 1280 × 588, 0:06, silent, no interface',
+const loop = (slug: string, title: string, detail: string): PressAsset => ({
+  detail,
   file: `media/worlds/${slug}.mp4`,
   folder: 'Video/Gameplay loops',
   poster: `/media/worlds/${slug}-poster.jpg`,
   title,
 });
 
+// Shallow Reef and Kelp Forest are rendered from the game; Jelly Bloom and Midnight Zone are cut from the trailer's
+// gameplay, cropped clear of its captions and the game's buttons.
 export const loops: PressAsset[] = [
-  loop('shallow-reef', 'Shallow Reef'),
-  loop('jelly-bloom', 'Jelly Bloom'),
-  loop('kelp-forest', 'Kelp Forest'),
-  loop('midnight-zone', 'Midnight Zone'),
+  loop('shallow-reef', 'Shallow Reef', 'MP4, 1280 × 588, 0:05, silent, no interface'),
+  loop('jelly-bloom', 'Jelly Bloom', 'MP4, 956 × 440, 0:04, silent, no interface'),
+  loop('kelp-forest', 'Kelp Forest', 'MP4, 1280 × 588, 0:06, silent, no interface'),
+  loop('midnight-zone', 'Midnight Zone', 'MP4, 956 × 440, 0:04, silent, no interface'),
 ];
 
 const screenshot = (slug: string, title: string): PressAsset => ({
