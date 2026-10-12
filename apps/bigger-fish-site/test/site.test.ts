@@ -71,6 +71,7 @@ test('the facts match the game: five worlds of ten levels and a five-level Deep 
   );
   assert.equal(worlds.length, game.worldCount);
   assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 5 worlds`)));
+  assert.ok(facts.some((fact) => fact.label === 'Release' && fact.value.startsWith('November 3, 2026')));
   // Apple asks marketing to say "iPhone", not "iOS", except for system requirements.
   assert.ok(!game.pitch.join(' ').includes('iOS') && !game.oneLiner.includes('iOS'));
 });

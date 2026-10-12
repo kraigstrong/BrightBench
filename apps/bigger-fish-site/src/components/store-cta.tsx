@@ -1,12 +1,13 @@
 import Image from 'next/image';
 
+import { game } from '@/lib/game';
 import { appStoreBadgeSrc, storeCta } from '@/lib/site';
 
 import styles from './store-cta.module.css';
 
 /**
  * Where to get the game. On the App Store: Apple's badge, unmodified, at least 40pt tall with a quarter of its
- * height clear around it. Before that: "Coming soon", and a beta invitation when there's a public TestFlight link.
+ * height clear around it. Before that: its release day, and a beta invitation when there's a public TestFlight link.
  */
 export function StoreCta() {
   const cta = storeCta();
@@ -28,7 +29,7 @@ export function StoreCta() {
       return (
         <div className={styles.soon}>
           <span className={styles.chip}>
-            Coming soon to iPhone
+            Coming to iPhone {game.releaseDay}
           </span>
           {cta.betaHref ? (
             <a className={styles.pill} href={cta.betaHref} rel="noreferrer" target="_blank">

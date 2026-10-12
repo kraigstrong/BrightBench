@@ -13,6 +13,9 @@ export const game = {
   /** The home page's lines under the logo. */
   pitch: ['Eat smaller fish. Dodge bigger ones.', 'They grow too. Outgrow them to survive.'],
   developer: 'Kraig Strong',
+  /** The App Store release day, announced before launch. */
+  releaseDay: 'November 3',
+  releaseYear: 2026,
   platform: 'iPhone',
   requirements: 'iPhone with iOS 17 or later. Plays in landscape.',
   worldCount: 5,
@@ -25,7 +28,7 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, independent` },
-  { label: 'Release', value: 'Coming soon (in beta on TestFlight)' },
+  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear} (in beta on TestFlight until then)` },
   { label: 'Platform', value: 'iPhone, iOS 17 or later' },
   { label: 'Price', value: 'Free to try; $4.99 unlocks all worlds and challenge levels' },
   { label: 'Genre', value: 'Arcade' },
