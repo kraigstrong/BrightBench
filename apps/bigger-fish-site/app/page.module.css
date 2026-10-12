@@ -219,15 +219,21 @@
 .worlds {
   display: grid;
   gap: clamp(18px, 2vw, 26px);
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+/* Two to a row; an odd world out sits centred under the rest. */
 .world {
   --accent: var(--teal);
+  grid-column: span 2;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   overflow: hidden;
+}
+
+.world:last-child:nth-child(odd) {
+  grid-column: 2 / span 2;
 }
 
 .shallow-reef {
@@ -240,6 +246,10 @@
 
 .kelp-forest {
   --accent: #a6e37f;
+}
+
+.sunset-cove {
+  --accent: #ffa3ad;
 }
 
 .midnight-zone {
@@ -328,6 +338,11 @@
   .beats,
   .worlds {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .world,
+  .world:last-child:nth-child(odd) {
+    grid-column: auto;
   }
 }
 

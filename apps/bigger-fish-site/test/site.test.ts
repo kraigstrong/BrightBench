@@ -63,13 +63,14 @@ test('the Smart App Banner takes only a numeric App Store ID, and contact falls 
   assert.equal(contactEmail({ contactEmail: 'not an email' }), 'support@brightbench.app');
 });
 
-test('the facts match the game: four worlds of ten levels and a five-level Deep End', () => {
-  assert.equal(totalLevels, 60);
+test('the facts match the game: five worlds of ten levels and a five-level Deep End', () => {
+  assert.equal(totalLevels, 75);
   assert.deepEqual(
     worlds.map((world) => world.name),
-    ['Shallow Reef', 'Jelly Bloom', 'Kelp Forest', 'Midnight Zone'],
+    ['Shallow Reef', 'Jelly Bloom', 'Kelp Forest', 'Sunset Cove', 'Midnight Zone'],
   );
-  assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 4 worlds`)));
+  assert.equal(worlds.length, game.worldCount);
+  assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 5 worlds`)));
   // Apple asks marketing to say "iPhone", not "iOS", except for system requirements.
   assert.ok(!game.pitch.join(' ').includes('iOS') && !game.oneLiner.includes('iOS'));
 });

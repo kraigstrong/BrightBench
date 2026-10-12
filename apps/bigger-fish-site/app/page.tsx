@@ -102,7 +102,7 @@ export default function HomePage() {
         <section aria-labelledby="worlds" className={styles.section}>
           <div className={styles.sectionHead}>
             <h2 className={styles.sectionTitle} id="worlds">
-              Four worlds. {totalLevels} levels.
+              Five worlds. {totalLevels} levels.
             </h2>
             <p className={styles.sectionLede}>
               Each world changes the hunt. Clear its ten levels, then dive into the Deep End.

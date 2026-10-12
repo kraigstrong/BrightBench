@@ -33,13 +33,14 @@ const loop = (slug: string, title: string, detail: string): PressAsset => ({
   title,
 });
 
-// Shallow Reef and Kelp Forest are rendered from the game; Jelly Bloom and Midnight Zone are cut from the trailer's
-// gameplay, cropped clear of its captions and the game's buttons.
+// Shallow Reef and Kelp Forest are rendered from the game. Jelly Bloom, Sunset Cove and Midnight Zone are cut from
+// screen recordings of real play on an iPhone, cropped clear of the pause button with the level's name blended out.
 export const loops: PressAsset[] = [
   loop('shallow-reef', 'Shallow Reef', 'MP4, 1280 × 588, 0:05, silent, no interface'),
-  loop('jelly-bloom', 'Jelly Bloom', 'MP4, 956 × 440, 0:04, silent, no interface'),
+  loop('jelly-bloom', 'Jelly Bloom', 'MP4, 1280 × 588, 0:03, silent, no interface'),
   loop('kelp-forest', 'Kelp Forest', 'MP4, 1280 × 588, 0:06, silent, no interface'),
-  loop('midnight-zone', 'Midnight Zone', 'MP4, 956 × 440, 0:04, silent, no interface'),
+  loop('sunset-cove', 'Sunset Cove', 'MP4, 1280 × 588, 0:04, silent, no interface'),
+  loop('midnight-zone', 'Midnight Zone', 'MP4, 1280 × 588, 0:05, silent, no interface'),
 ];
 
 const screenshot = (slug: string, title: string): PressAsset => ({
@@ -53,10 +54,12 @@ export const screenshots: PressAsset[] = [
   screenshot('shallow-reef', 'Shallow Reef'),
   screenshot('jelly-bloom', 'Jelly Bloom'),
   screenshot('kelp-forest', 'Kelp Forest'),
+  screenshot('sunset-cove', 'Sunset Cove'),
   screenshot('midnight-zone', 'Midnight Zone'),
   screenshot('shallow-reef-big-fish', 'Shallow Reef, a bigger fish'),
   screenshot('jelly-bloom-school', 'Jelly Bloom, a school'),
   screenshot('kelp-forest-clearing', 'Kelp Forest, a clearing'),
+  screenshot('sunset-cove-hooks', 'Sunset Cove, a baited hook'),
   screenshot('midnight-zone-lures', 'Midnight Zone, lures'),
 ];
 

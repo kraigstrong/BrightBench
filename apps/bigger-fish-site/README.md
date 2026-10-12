@@ -5,7 +5,7 @@ itself is a native iOS app in its own repository (`kraigstrong/bigger-fish`); th
 
 | Page | What it's for |
 | --- | --- |
-| `/` | The pitch: a gameplay loop, the three beats of the game, its four worlds, the trailer |
+| `/` | The pitch: a gameplay loop, the three beats of the game, its five worlds, the trailer |
 | `/press` | The press kit: fact sheet, descriptions, trailer and gameplay loops, screenshots, logos, key art, and a zip of everything. This is the link for Apple featuring nominations. |
 | `/support` | FAQ and the support email (the App Store listing's Support URL) |
 | `/privacy` | The privacy policy (the App Store listing's Privacy Policy URL) |
