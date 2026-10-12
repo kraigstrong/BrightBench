@@ -13,9 +13,12 @@ export const game = {
   /** The home page's lines under the logo. */
   pitch: ['Eat smaller fish. Dodge bigger ones.', 'They grow too. Outgrow them to survive.'],
   developer: 'Kraig Strong',
-  platform: 'iPhone',
-  requirements: 'iPhone with iOS 17 or later. Plays in landscape.',
-  worldCount: 4,
+  /** The App Store release day, announced before launch. */
+  releaseDay: 'November 3',
+  releaseYear: 2026,
+  platform: 'iPhone and iPad',
+  requirements: 'iPhone with iOS 17 or later, or iPad with iPadOS 17 or later. Plays in landscape.',
+  worldCount: 5,
   levelsPerWorld: 10,
   deepEndLevels: 5,
 } as const;
@@ -25,8 +28,8 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, independent` },
-  { label: 'Release', value: 'Coming soon (in beta on TestFlight)' },
-  { label: 'Platform', value: 'iPhone, iOS 17 or later' },
+  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear} (in beta on TestFlight until then)` },
+  { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later' },
   { label: 'Price', value: 'Free to try; $4.99 unlocks all worlds and challenge levels' },
   { label: 'Genre', value: 'Arcade' },
   { label: 'Players', value: 'Single player' },
@@ -92,6 +95,14 @@ export const worlds: World[] = [
     screenshotAlt: 'Kelp Forest: dark fish silhouettes hidden in tall kelp, one big fish revealed.',
   },
   {
+    name: 'Sunset Cove',
+    motto: 'Watch the boats. Leave the bait.',
+    line: 'Boats pass overhead trailing baited hooks. The easiest meal in the water is a trap.',
+    slug: 'sunset-cove',
+    screenshot: '/screenshots/sunset-cove.png',
+    screenshotAlt: 'Sunset Cove: pink evening water under three boats, their baited hooks hanging among the fish.',
+  },
+  {
     name: 'Midnight Zone',
     motto: 'Light the way. Mind the dark.',
     line: 'Your headlamp only reaches so far. Every glowing lure could belong to something bigger.',
@@ -104,18 +115,18 @@ export const worlds: World[] = [
 /** Press kit descriptions, from short to long. */
 export const descriptions = {
   short:
-    'Bigger Fish is a one-touch arcade game for iPhone. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
+    'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
   long: [
-    'Bigger Fish is a one-touch arcade game for iPhone about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
+    'Bigger Fish is a one-touch arcade game for iPhone and iPad about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
     'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead.',
-    'Across four worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, read the shadows in Kelp Forest, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
+    'Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, read the shadows in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
   ],
 } as const;
 
 export const features = [
   'One-touch controls: hold anywhere to rise, let go to fall.',
   'A living food chain: every fish is eating and growing, just like you.',
-  'Four worlds, each with its own twist: jellyfish, kelp, and the dark.',
+  'Five worlds, each with its own twist: jellyfish, kelp, fishing hooks, and the dark.',
   `${totalLevels} levels, including a five-level Deep End in every world.`,
   'Short runs built for one more try.',
   'No ads, no accounts, and it plays offline.',

@@ -22,12 +22,12 @@ function structuredData() {
     applicationCategory: 'GameApplication',
     author: { '@type': 'Person', name: game.developer },
     description: game.oneLiner,
-    gamePlatform: game.platform,
+    gamePlatform: ['iPhone', 'iPad'],
     genre: 'Arcade',
     image: `${siteOrigin()}/press/bigger-fish-key-art.png`,
     name: game.name,
     numberOfPlayers: { '@type': 'QuantitativeValue', value: 1 },
-    operatingSystem: 'iOS 17 or later',
+    operatingSystem: 'iOS 17 or later, iPadOS 17 or later',
     playMode: 'SinglePlayer',
     trailer: {
       '@type': 'VideoObject',
@@ -56,7 +56,7 @@ export default function HomePage() {
             <LoopVideo className={styles.heroVideo} eager poster="/media/hero-poster.jpg" src="/media/hero.mp4" />
           </div>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>A one-touch arcade game for iPhone</p>
+            <p className={styles.eyebrow}>A one-touch arcade game for iPhone and iPad</p>
             <h1 className={styles.wordmark}>{game.name}</h1>
             <p className={styles.tagline}>{game.tagline}</p>
             <p className={styles.pitch}>
@@ -102,7 +102,7 @@ export default function HomePage() {
         <section aria-labelledby="worlds" className={styles.section}>
           <div className={styles.sectionHead}>
             <h2 className={styles.sectionTitle} id="worlds">
-              Four worlds. {totalLevels} levels.
+              Five worlds. {totalLevels} levels.
             </h2>
             <p className={styles.sectionLede}>
               Each world changes the hunt. Clear its ten levels, then dive into the Deep End.

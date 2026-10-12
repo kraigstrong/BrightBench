@@ -12,7 +12,7 @@ import styles from './support.module.css';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/support' },
-  description: `Help with ${game.name}, a one-touch arcade game for iPhone.`,
+  description: `Help with ${game.name}, a one-touch arcade game for iPhone and iPad.`,
   title: 'Support',
 };
 
@@ -45,8 +45,9 @@ const faqs: { question: string; answer: string }[] = [
       'No. Bigger Fish plays offline. When a connection is available, it sends anonymous gameplay summaries, described in the privacy policy.',
   },
   {
-    question: 'How do I start over?',
-    answer: 'Progress is saved only on your iPhone. To start over, delete the app and install it again.',
+    question: 'Is my progress saved?',
+    answer:
+      'Yes. Progress is saved on your device and backed up to your iCloud account, so it carries over to your other iPhone or iPad, and to a new one.',
   },
   {
     question: 'What does it run on?',

@@ -51,7 +51,7 @@ function httpsUrl(value: string | undefined): string | undefined {
 /**
  * What the site offers players. Apple's Download badge is licensed only for an app that's on the App Store, so a
  * pre-order gets a plain link instead (Apple doesn't host its pre-order badge), and before either the site says
- * "Coming soon" and, when there's a public TestFlight link, invites players into the beta.
+ * its release day and, when there's a public TestFlight link, invites players into the beta.
  */
 export type StoreCta =
   | { href: string; kind: 'download'; label: string }
