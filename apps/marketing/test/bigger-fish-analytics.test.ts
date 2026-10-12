@@ -13,6 +13,15 @@ test('strict anonymous schema supports future worlds, large campaigns and endles
     assert.equal(validateBatch({...b,events:[{...b.events[0],[key]:'private'}]}),false);
   }
 });
+test('a run lost to a baited hook (Sunset Cove, 1.0) is accepted; an unknown cause still rejects the batch',()=>{
+  const hooked=sample();const run=hooked.events[0]!;
+  if(run.kind==='run'){run.context.world='sunset-cove';run.cause='hook';delete (run.summary as {fatalRatio?:number}).fatalRatio;}
+  assert.equal(validateBatch(hooked),true);
+  const withRatio=sample();const r2=withRatio.events[0]!;if(r2.kind==='run')r2.cause='hook';
+  assert.equal(validateBatch(withRatio),false,'only a death to a bigger fish carries fatalRatio');
+  const unknown=sample();const r3=unknown.events[0]!;if(r3.kind==='run'){r3.cause='shark';delete (r3.summary as {fatalRatio?:number}).fatalRatio;}
+  assert.equal(validateBatch(unknown),false);
+});
 test('reject inconsistent counts, fatal metadata and nonfinite/out-of-range metrics',()=>{
   for(const change of [{seconds:-1},{nearEqualMeals:4},{cleanupSeconds:13},{fatalRatio:Infinity},{firstNoPathSeconds:5}]){
     const b=sample();if(b.events[0]!.kind==='run')Object.assign(b.events[0]!.summary,change);
@@ -31,12 +40,12 @@ test('store receives only counters, not individual run bodies; success rates sta
 test('report rows sort by world in campaign order, then level, then newest build',()=>{
   const row=(world:string,level:number,build:string)=>({day:'2026-10-04',build,counts:{[`${Buffer.from(JSON.stringify([world,'campaign',level,level,'1','r1'])).toString('base64url')}|outcome.win`]:1}});
   const rows=report([row('kelp-forest',1,'testflight:0.2:3'),row('future-world',1,'testflight:0.2:3'),row('shallow-reef',10,'testflight:0.2:3'),
-    row('shallow-reef',2,'testflight:0.1:2'),row('midnight-zone',1,'testflight:0.2:3'),row('jelly-bloom',1,'testflight:0.2:3'),row('shallow-reef',2,'testflight:0.2:10'),row('shallow-reef',2,'testflight:0.2:3'),
+    row('shallow-reef',2,'testflight:0.1:2'),row('midnight-zone',1,'testflight:0.2:3'),row('sunset-cove',1,'testflight:0.2:3'),row('jelly-bloom',1,'testflight:0.2:3'),row('shallow-reef',2,'testflight:0.2:10'),row('shallow-reef',2,'testflight:0.2:3'),
     row('shallow-reef',3,'testflight:1.2:10'),row('shallow-reef',3,'testflight:1.2.1:1')]);
   assert.deepEqual(rows.map(r=>{const c=r.context as {world:string;level:number};return `${c.world} ${c.level} ${r.build}`;}),[
     'shallow-reef 2 testflight:0.2:10','shallow-reef 2 testflight:0.2:3','shallow-reef 2 testflight:0.1:2',
     'shallow-reef 3 testflight:1.2.1:1','shallow-reef 3 testflight:1.2:10','shallow-reef 10 testflight:0.2:3',
-    'jelly-bloom 1 testflight:0.2:3','kelp-forest 1 testflight:0.2:3','midnight-zone 1 testflight:0.2:3','future-world 1 testflight:0.2:3']);
+    'jelly-bloom 1 testflight:0.2:3','kelp-forest 1 testflight:0.2:3','sunset-cove 1 testflight:0.2:3','midnight-zone 1 testflight:0.2:3','future-world 1 testflight:0.2:3']);
 });
 test('ingestion fails closed without keys and rejects oversized/unvalidated payloads',async()=>{
   const req=(body:unknown,key='key')=>new Request('https://example.test/events',{method:'POST',headers:{'X-App-Key':key},body:JSON.stringify(body)});
