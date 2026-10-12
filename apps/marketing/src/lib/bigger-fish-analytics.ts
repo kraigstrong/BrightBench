@@ -58,6 +58,9 @@ function summary(x: unknown): x is Summary {
     && ['available','no_path_in_snapshot','unknown'].includes(String(s.path)) && number(s.playerRadius, 100000)
     && number(s.remaining, 10000, true) && number(s.edible, s.remaining as number, true) && number(s.largestRatio, 1000);
 }
+/** How a run can be lost: eaten by a bigger fish, stung by jellyfish tentacles, an urchin (retired), or caught on a
+ * baited hook (Sunset Cove, from 1.0). A batch with any other cause is rejected whole. */
+const deathCauses = ['predator', 'tentacles', 'urchin', 'hook'];
 export function validateBatch(x: unknown): x is Batch {
   if (!record(x) || !keys(x, ['schema','appVersion','build','channel','events']) || x.schema !== 1) return false;
   if (typeof x.appVersion !== 'string' || !/^\d{1,3}\.\d{1,3}(\.\d{1,3})?$/.test(x.appVersion) || typeof x.build !== 'string' || !/^\d{1,9}$/.test(x.build)) return false;
@@ -78,7 +81,7 @@ export function validateBatch(x: unknown): x is Batch {
     if (Object.hasOwn(e, 'unlocked') && typeof e.unlocked !== 'boolean') return false;
     return ['win','death','quit','abandoned'].includes(String(e.outcome)) && typeof e.replay === 'boolean'
       && number(e.attempt, 1000, true) && (e.replay ? e.attempt === 0 : e.attempt > 0)
-      && (e.outcome === 'death' ? ['predator','tentacles','urchin'].includes(String(e.cause)) : e.cause === 'none')
+      && (e.outcome === 'death' ? deathCauses.includes(String(e.cause)) : e.cause === 'none')
       && (e.outcome === 'death' && e.cause === 'predator' ? number(e.summary.fatalRatio, 1000) : !Object.hasOwn(e.summary, 'fatalRatio'));
   });
 }
@@ -157,7 +160,7 @@ export async function handleEvents(request: Request, deps: { store: ArcadeStore;
   } catch { return status(503); } // Never log errors or requests that may contain bodies/network metadata.
 }
 // Display order only, not a registry: worlds not listed here sort after these, alphabetically.
-const worldOrder = ['shallow-reef', 'jelly-bloom', 'kelp-forest', 'midnight-zone'];
+const worldOrder = ['shallow-reef', 'jelly-bloom', 'kelp-forest', 'sunset-cove', 'midnight-zone'];
 const worldRank = (world: string) => { const i = worldOrder.indexOf(world); return i < 0 ? worldOrder.length : i; };
 // Builds are `channel:version:build`; newer versions first (1.2 = 1.2.0), then newer build numbers.
 function newerBuildFirst(a: string, b: string) {
