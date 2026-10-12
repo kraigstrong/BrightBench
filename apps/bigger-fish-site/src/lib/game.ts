@@ -8,6 +8,8 @@ export const game = {
   /** One sentence, for previews and the press kit's one-liner. */
   oneLiner:
     'A one-touch arcade game: eat smaller fish, dodge bigger ones, and outgrow them all.',
+  /** What it costs. */
+  offer: 'Free to try. $4.99 unlocks all worlds and challenge levels.',
   /** The home page's lines under the logo. */
   pitch: ['Eat smaller fish. Dodge bigger ones.', 'They grow too. Outgrow them to survive.'],
   developer: 'Kraig Strong',
@@ -25,7 +27,7 @@ export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, independent` },
   { label: 'Release', value: 'Coming soon (in beta on TestFlight)' },
   { label: 'Platform', value: 'iPhone, iOS 17 or later' },
-  { label: 'Price', value: 'To be announced' },
+  { label: 'Price', value: 'Free to try; $4.99 unlocks all worlds and challenge levels' },
   { label: 'Genre', value: 'Arcade' },
   { label: 'Players', value: 'Single player' },
   { label: 'Controls', value: 'One touch, landscape' },
