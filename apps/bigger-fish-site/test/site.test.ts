@@ -7,9 +7,24 @@ import { buildPressKit, factSheet } from '../scripts/build-press-kit.ts';
 import { createZip, zipEntryNames } from '../scripts/zip.ts';
 import { beats, facts, game, totalLevels, worlds } from '../src/lib/game.ts';
 import { pressKitFiles, zipPath } from '../src/lib/press-assets.ts';
-import { appStoreId, contactEmail, productionOrigin, siteOrigin, storeCta } from '../src/lib/site.ts';
+import { appStoreId, contactEmail, productionOrigin, readEnv, siteOrigin, storeCta } from '../src/lib/site.ts';
 
 const publicDir = join(import.meta.dirname, '..', 'public');
+
+/** Runs `body` with these environment variables unset, then puts them back, so a test of the defaults doesn't depend on
+ * the deployment it runs in. */
+function withoutEnv<T>(names: string[], body: () => T): T {
+  const saved = names.map((name) => [name, process.env[name]] as const);
+  for (const name of names) delete process.env[name];
+  try {
+    return body();
+  } finally {
+    for (const [name, value] of saved) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+}
 
 test('the canonical origin is the configured one, then biggerfish.app in production, then the preview URL', () => {
   assert.equal(siteOrigin({ siteOrigin: 'https://example.com/' }), 'https://example.com');
@@ -20,6 +35,12 @@ test('the canonical origin is the configured one, then biggerfish.app in product
 
 test('before launch it says coming soon, offering the beta only for a real https link', () => {
   assert.deepEqual(storeCta({}), { betaHref: undefined, kind: 'comingSoon' });
+  // By default, the public TestFlight group, whatever this deployment sets.
+  const defaults = withoutEnv(
+    ['NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL', 'NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL', 'NEXT_PUBLIC_BIGGER_FISH_PREORDER'],
+    readEnv,
+  );
+  assert.match((storeCta(defaults) as { betaHref?: string }).betaHref ?? '', /^https:\/\/testflight\.apple\.com\/join\//);
   assert.deepEqual(storeCta({ testFlightUrl: 'https://testflight.apple.com/join/abc' }), {
     betaHref: 'https://testflight.apple.com/join/abc',
     kind: 'comingSoon',

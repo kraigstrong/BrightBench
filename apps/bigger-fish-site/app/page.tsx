@@ -73,6 +73,7 @@ export default function HomePage() {
                 Watch the trailer
               </a>
             </div>
+            <p className={styles.offer}>{game.offer}</p>
           </div>
         </section>
 
@@ -145,6 +146,7 @@ export default function HomePage() {
             How big can you get?
           </h2>
           <StoreCta />
+          <p className={styles.offer}>{game.offer}</p>
           <p className={styles.promise}>No ads. No accounts. Plays offline.</p>
         </section>
       </main>
