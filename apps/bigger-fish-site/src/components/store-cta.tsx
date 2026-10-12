@@ -29,7 +29,7 @@ export function StoreCta() {
       return (
         <div className={styles.soon}>
           <span className={styles.chip}>
-            Coming to iPhone {game.releaseDay}
+            Coming to iPhone and iPad {game.releaseDay}
           </span>
           {cta.betaHref ? (
             <a className={styles.pill} href={cta.betaHref} rel="noreferrer" target="_blank">

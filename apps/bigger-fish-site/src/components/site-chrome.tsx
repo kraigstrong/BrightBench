@@ -39,7 +39,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <p className={styles.legal}>
-        © {new Date().getFullYear()} {game.developer}. A one-touch arcade game for iPhone.
+        © {new Date().getFullYear()} {game.developer}. A one-touch arcade game for iPhone and iPad.
       </p>
       <AppleTrademarkNotice />
     </footer>

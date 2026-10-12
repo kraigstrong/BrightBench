@@ -1,6 +1,6 @@
 # Bigger Fish site
 
-The marketing site for **Bigger Fish**, a one-touch arcade game for iPhone, served at **biggerfish.app**. The game
+The marketing site for **Bigger Fish**, a one-touch arcade game for iPhone and iPad, served at **biggerfish.app**. The game
 itself is a native iOS app in its own repository (`kraigstrong/bigger-fish`); this is only its website.
 
 | Page | What it's for |
@@ -24,7 +24,7 @@ from the files listed in `src/lib/press-assets.ts`. The zip is generated, never 
 
 Everything that changes at launch is an environment variable (see `.env.example`):
 
-- `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL` swaps "Coming soon to iPhone" for Apple's App Store badge (and adds
+- `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL` swaps "Coming to iPhone and iPad <release day>" for Apple's App Store badge (and adds
   Apple's trademark line to the footer). With `NEXT_PUBLIC_BIGGER_FISH_PREORDER=true` it shows a pre-order link
   instead, since Apple doesn't host its pre-order badge.
 - `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_ID` adds Safari's Smart App Banner.

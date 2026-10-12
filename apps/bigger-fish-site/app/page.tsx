@@ -22,12 +22,12 @@ function structuredData() {
     applicationCategory: 'GameApplication',
     author: { '@type': 'Person', name: game.developer },
     description: game.oneLiner,
-    gamePlatform: game.platform,
+    gamePlatform: ['iPhone', 'iPad'],
     genre: 'Arcade',
     image: `${siteOrigin()}/press/bigger-fish-key-art.png`,
     name: game.name,
     numberOfPlayers: { '@type': 'QuantitativeValue', value: 1 },
-    operatingSystem: 'iOS 17 or later',
+    operatingSystem: 'iOS 17 or later, iPadOS 17 or later',
     playMode: 'SinglePlayer',
     trailer: {
       '@type': 'VideoObject',
@@ -56,7 +56,7 @@ export default function HomePage() {
             <LoopVideo className={styles.heroVideo} eager poster="/media/hero-poster.jpg" src="/media/hero.mp4" />
           </div>
           <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>A one-touch arcade game for iPhone</p>
+            <p className={styles.eyebrow}>A one-touch arcade game for iPhone and iPad</p>
             <h1 className={styles.wordmark}>{game.name}</h1>
             <p className={styles.tagline}>{game.tagline}</p>
             <p className={styles.pitch}>

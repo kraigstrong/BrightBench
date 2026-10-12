@@ -16,8 +16,8 @@ export const game = {
   /** The App Store release day, announced before launch. */
   releaseDay: 'November 3',
   releaseYear: 2026,
-  platform: 'iPhone',
-  requirements: 'iPhone with iOS 17 or later. Plays in landscape.',
+  platform: 'iPhone and iPad',
+  requirements: 'iPhone with iOS 17 or later, or iPad with iPadOS 17 or later. Plays in landscape.',
   worldCount: 5,
   levelsPerWorld: 10,
   deepEndLevels: 5,
@@ -29,7 +29,7 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, independent` },
   { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear} (in beta on TestFlight until then)` },
-  { label: 'Platform', value: 'iPhone, iOS 17 or later' },
+  { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later' },
   { label: 'Price', value: 'Free to try; $4.99 unlocks all worlds and challenge levels' },
   { label: 'Genre', value: 'Arcade' },
   { label: 'Players', value: 'Single player' },
@@ -115,9 +115,9 @@ export const worlds: World[] = [
 /** Press kit descriptions, from short to long. */
 export const descriptions = {
   short:
-    'Bigger Fish is a one-touch arcade game for iPhone. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
+    'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
   long: [
-    'Bigger Fish is a one-touch arcade game for iPhone about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
+    'Bigger Fish is a one-touch arcade game for iPhone and iPad about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
     'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead.',
     'Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, read the shadows in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
   ],
