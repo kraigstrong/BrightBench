@@ -18,7 +18,7 @@ export type PressAsset = {
 export const pressKitZip = 'press/bigger-fish-press-kit.zip';
 
 export const trailer: PressAsset = {
-  detail: 'MP4, 1600 × 620, 0:25, with sound',
+  detail: 'MP4, 1920 × 886, 0:30, with sound',
   file: 'media/bigger-fish-trailer.mp4',
   folder: 'Video',
   poster: '/media/trailer-poster.jpg',

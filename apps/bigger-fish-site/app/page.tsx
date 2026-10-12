@@ -35,7 +35,7 @@ function structuredData() {
       description: game.oneLiner,
       name: `${game.name} trailer`,
       thumbnailUrl: `${siteOrigin()}/media/trailer-poster.jpg`,
-      uploadDate: '2026-10-09',
+      uploadDate: '2026-10-12',
     },
     url: siteOrigin(),
     ...(cta.kind === 'comingSoon' ? {} : { installUrl: cta.href }),

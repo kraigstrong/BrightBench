@@ -41,7 +41,7 @@ export function TrailerPlayer({ poster, src, title }: TrailerPlayerProps) {
           <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
         </svg>
       </span>
-      <span className={styles.label}>Play the trailer · 0:25</span>
+      <span className={styles.label}>Play the trailer · 0:30</span>
     </button>
   );
 }

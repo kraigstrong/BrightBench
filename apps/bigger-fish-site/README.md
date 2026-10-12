@@ -32,8 +32,10 @@ Everything that changes at launch is an environment variable (see `.env.example`
 
 ## Media
 
-- `public/media/bigger-fish-trailer.mp4`: the gameplay trailer (1600 × 620, with sound). Its 0:06–0:11 is Sunset
-  Cove, cut from a screen recording to match the rest of the trailer's framing.
+- `public/media/bigger-fish-trailer.mp4`: the trailer (1920 × 886, 60 fps, 0:30, with the game's music). Every shot
+  is real play, recorded from the game a frame at a time with the interface hidden
+  (`scripts/bigger-fish-footage.sh` in kraigstrong/bigger-fish), with captions in Avenir Next. The same cut at 30 fps,
+  without the release date, is the App Store preview. `trailer-poster.jpg` is its frame at 0:06.
 - `public/media/hero.mp4`, `public/media/worlds/shallow-reef.mp4`, `public/media/worlds/kelp-forest.mp4`, and
   `public/screenshots/*.png` other than Sunset Cove's: rendered straight from the game's SpriteKit scenes at iPhone 17 Pro
   resolution (2622 × 1206) with the interface hidden, by a scratch Xcode test that plays each level with a simple
