@@ -4,8 +4,10 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 //
 // Three things are stored, all per board (a circuit at one revision, driven with one physics version):
 // - every finished lap, as anonymous daily counters (lap-time and wall-hit histograms), never as raw records;
-// - each Game Center player's best lap and its ghost, keyed by a salted hash of their team player ID (never the ID);
+// - each Game Center player's best lap and its ghost, keyed by a salted hash of their team player ID (never the ID),
+//   and a quarter-second histogram of those bests for standings;
 // - nothing else: no IPs, devices, sessions or timestamps.
+// Only the boards in `apexBoards` are accepted, so no client can make the service store anything for other boards.
 export type Board = { track: string; revision: number; physics: number };
 export type Lap = Board & { ms: number; splits: number[]; walls: number };
 export type LapBatch = { schema: 1; appVersion: string; build: string; channel: 'debug' | 'testflight' | 'appstore'; laps: Lap[] };
@@ -24,22 +26,28 @@ export const limits = {
 };
 export const retentionDays = 90;
 /** A rival beats your best by between `nearestMs` and `farthestMs`, as close to `gapMs` as there is. */
-export const rivalPick = { gapMs: 400, nearestMs: 150, farthestMs: 800 };
+export const rivalPick = { gapMs: 400, nearestMs: 150, farthestMs: 800, perSide: 25 };
+/** Bests are counted into buckets this wide (ms) for standings. */
+export const bucketMs = 250;
+
+/** The boards the service accepts: each circuit at its current revision and physics version. Add a board here, and
+ * deploy, before an app version that races it ships. Keep in sync with `TrackLayout.all` in the app. */
+export const apexBoards: readonly string[] = ['harbour_park.r1.p1', 'old_town.r1.p1', 'ridgeway.r1.p1'];
 
 export interface ApexStore {
   /** Atomic daily counters; false when the day's board cap is reached. */
   countLaps(day: string, boards: string[], updates: Update[]): Promise<boolean>;
-  /** Keeps the player's faster lap and, when this one is faster, its ghost. */
+  /** Keeps the player's faster lap and, when this one is faster, its ghost and the board's histogram, atomically. */
   saveBest(board: string, player: string, ms: number, ghost: StoredGhost): Promise<void>;
-  /** Players whose best on the board is within [fromMs, toMs]. */
-  near(board: string, fromMs: number, toMs: number): Promise<{ player: string; ms: number }[]>;
+  /** Up to `perSide` players' bests on each side of `targetMs` (nearest first), all within [fromMs, toMs]. */
+  near(board: string, targetMs: number, fromMs: number, toMs: number, perSide: number): Promise<{ player: string; ms: number }[]>;
   ghost(board: string, player: string): Promise<StoredGhost | null>;
   /** How many players' bests beat `ms` (strictly), and how many players there are. */
   rank(board: string, ms: number): Promise<{ faster: number; players: number }>;
   /** One player's best, or null. */
   best(board: string, player: string): Promise<number | null>;
-  /** Up to `limit` players' bests, fastest first. */
-  bests(board: string, limit: number): Promise<{ player: string; ms: number }[]>;
+  /** Every player's best on the board, counted by `bucketMs` bucket (keyed by the bucket's first millisecond). */
+  distribution(board: string): Promise<Map<number, number>>;
 }
 
 const record = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -54,6 +62,7 @@ function board(x: Record<string, unknown>): boolean {
     && integer(x.revision, 1, 1000) && integer(x.physics, 1, 1000);
 }
 export const boardKey = (b: Board) => `${b.track}.r${b.revision}.p${b.physics}`;
+const knownBoard = (x: Record<string, unknown>) => board(x) && apexBoards.includes(boardKey(x as Board));
 
 function lapTime(ms: unknown, splits: unknown): boolean {
   if (!integer(ms, limits.minMs, limits.maxMs) || !Array.isArray(splits) || splits.length > 4) return false;
@@ -72,7 +81,7 @@ export function validateLaps(x: unknown): x is LapBatch {
   if (!['debug', 'testflight', 'appstore'].includes(String(x.channel))) return false;
   if (!Array.isArray(x.laps) || x.laps.length < 1 || x.laps.length > limits.lapsPerBatch) return false;
   return x.laps.every((lap: unknown) => record(lap) && keys(lap, ['track', 'revision', 'physics', 'ms', 'splits', 'walls'])
-    && board(lap) && lapTime(lap.ms, lap.splits) && integer(lap.walls, 0, 10_000));
+    && knownBoard(lap) && lapTime(lap.ms, lap.splits) && integer(lap.walls, 0, 10_000));
 }
 
 function ghost(x: unknown, ms: number): x is Ghost {
@@ -92,7 +101,7 @@ function ghost(x: unknown, ms: number): x is Ghost {
 
 export function validateGhost(x: unknown): x is GhostUpload {
   if (!record(x) || !keys(x, ['schema', 'track', 'revision', 'physics', 'ms', 'splits', 'player', 'identity', 'ghost'])) return false;
-  if (x.schema !== 1 || !board(x) || !lapTime(x.ms, x.splits)) return false;
+  if (x.schema !== 1 || !knownBoard(x) || !lapTime(x.ms, x.splits)) return false;
   const {player, identity} = x;
   if (!record(player) || !keys(player, ['id', 'alias']) || typeof player.id !== 'string' || !/^[A-Za-z0-9:_.-]{1,80}$/.test(player.id)) return false;
   if (typeof player.alias !== 'string' || player.alias.length < 1 || player.alias.length > 40 || /\p{C}/u.test(player.alias)) return false;
@@ -121,10 +130,16 @@ export function lapUpdates(batch: LapBatch): Update[] {
   return [...totals].map(([field, by]) => ({field, by}));
 }
 
-/** Stored in place of a Game Center ID, so the store never holds one. */
-export function playerKey(id: string, salt: string) {
-  return createHash('sha256').update(`${salt}:${id}`).digest('base64url').slice(0, 32);
+/** How the app names a player outside a ghost upload: SHA-256 of "apex:" and their team player ID, in hex. It travels
+ * in the X-Apex-Player header, so a raw ID never appears in a URL. */
+export const playerToken = (id: string) => createHash('sha256').update(`apex:${id}`).digest('hex');
+const validToken = (x: string | null): x is string => x !== null && /^[0-9a-f]{64}$/.test(x);
+
+/** Stored in place of a player, so the store never holds an ID or the app's token, only a salted hash of the token. */
+export function playerKey(token: string, salt: string) {
+  return createHash('sha256').update(`${salt}:${token}`).digest('base64url').slice(0, 32);
 }
+export const bucketOf = (ms: number) => Math.floor(ms / bucketMs) * bucketMs;
 
 /** The rival to offer someone whose best is `ms`: the nearest to `gapMs` faster, within the window, never themselves. */
 export function pickRival(candidates: { player: string; ms: number }[], ms: number, self?: string) {
@@ -136,19 +151,26 @@ export function pickRival(candidates: { player: string; ms: number }[], ms: numb
 
 export type Histogram = { fromMs: number; widthMs: number; counts: number[] };
 export type Standing = { faster: number; players: number; histogram: Histogram };
-export const standingLimits = { maxBuckets: 40, sampled: 5000 };
+export const standingLimits = { maxBuckets: 40 };
 
-/** Players' bests in at most 40 buckets of whole quarter-seconds. The slowest 2% fold into the last bucket, so one
- * very slow lap doesn't squash everyone else into a few bars. */
-export function histogram(times: number[]): Histogram {
-  if (!times.length) return {fromMs: 0, widthMs: 250, counts: []};
-  const sorted = [...times].sort((a, b) => a - b);
-  const low = sorted[0]!, high = sorted[Math.max(0, Math.ceil(sorted.length * 0.98) - 1)]!;
-  let widthMs = 250;
-  while ((high - low) / widthMs + 1 > standingLimits.maxBuckets) widthMs += 250;
+/** Players' bests (counted per quarter-second bucket) in at most 40 bars of whole quarter-seconds. The slowest 2% fold
+ * into the last bar, so one very slow lap doesn't squash everyone else into a few. */
+export function histogram(buckets: Map<number, number>): Histogram {
+  const filled = [...buckets].filter(([, count]) => count > 0).sort((a, b) => a[0] - b[0]);
+  const total = filled.reduce((sum, [, count]) => sum + count, 0);
+  if (!total) return {fromMs: 0, widthMs: bucketMs, counts: []};
+  const low = filled[0]![0];
+  let high = low, seen = 0;
+  for (const [start, count] of filled) {
+    high = start;
+    seen += count;
+    if (seen >= Math.ceil(total * 0.98)) break;
+  }
+  let widthMs = bucketMs;
+  while ((high - low) / widthMs + 1 > standingLimits.maxBuckets) widthMs += bucketMs;
   const fromMs = Math.floor(low / widthMs) * widthMs;
   const counts = Array<number>(Math.floor((high - fromMs) / widthMs) + 1).fill(0);
-  for (const t of sorted) counts[Math.min(counts.length - 1, Math.floor((t - fromMs) / widthMs))]! += 1;
+  for (const [start, count] of filled) counts[Math.min(counts.length - 1, Math.floor((start - fromMs) / widthMs))]! += count;
   return {fromMs, widthMs, counts};
 }
 
@@ -203,31 +225,36 @@ export async function handleGhost(request: Request, deps: {
   const upload = body.value;
   try {
     if (!await deps.verify(upload.identity, upload.player.id, deps.bundleID)) return status(401);
-    await deps.store.saveBest(boardKey(upload), playerKey(upload.player.id, deps.playerSalt), upload.ms,
+    await deps.store.saveBest(boardKey(upload), playerKey(playerToken(upload.player.id), deps.playerSalt), upload.ms,
       {alias: upload.player.alias, ms: upload.ms, splits: upload.splits, ghost: upload.ghost});
     return status(204);
   } catch { return status(503); }
 }
 
-/** Where a lap falls among other players' bests on its board: how many beat it, of how many, and their spread. */
-export async function handleStanding(request: Request, deps: { store: ApexStore; appKey: string; playerSalt: string }) {
-  if (!authorized(request.headers.get('x-app-key') ?? '', deps.appKey)) return status(401);
+/** The board and lap time a GET asks about, and who's asking (from the X-Apex-Player header), or null if invalid. */
+function lookup(request: Request, salt: string) {
   const params = new URL(request.url).searchParams;
   const query = {track: params.get('track'), revision: Number(params.get('revision')), physics: Number(params.get('physics'))};
   const ms = Number(params.get('ms'));
-  const player = params.get('player');
-  if (!board(query) || !integer(ms, limits.minMs, limits.maxMs)) return status(400);
-  if (player !== null && !/^[A-Za-z0-9:_.-]{1,80}$/.test(player)) return status(400);
+  const token = request.headers.get('x-apex-player');
+  if (!knownBoard(query) || !integer(ms, limits.minMs, limits.maxMs) || (token !== null && !validToken(token))) return null;
+  return {board: boardKey(query as Board), ms, self: validToken(token) && salt ? playerKey(token, salt) : undefined};
+}
+
+/** Where a lap falls among other players' bests on its board: how many beat it, of how many, and their spread. */
+export async function handleStanding(request: Request, deps: { store: ApexStore; appKey: string; playerSalt: string }) {
+  if (!authorized(request.headers.get('x-app-key') ?? '', deps.appKey)) return status(401);
+  const ask = lookup(request, deps.playerSalt);
+  if (!ask) return status(400);
   try {
-    const b = boardKey(query as Board);
-    const self = player && deps.playerSalt ? playerKey(player, deps.playerSalt) : undefined;
-    const [rank, own, bests] = await Promise.all([deps.store.rank(b, ms), self ? deps.store.best(b, self) : null,
-      deps.store.bests(b, standingLimits.sampled)]);
+    const [rank, own, buckets] = await Promise.all([deps.store.rank(ask.board, ask.ms),
+      ask.self ? deps.store.best(ask.board, ask.self) : null, deps.store.distribution(ask.board)]);
     // Against everyone else: the asker's own best doesn't count.
+    if (own !== null) buckets.set(bucketOf(own), (buckets.get(bucketOf(own)) ?? 1) - 1);
     const standing: Standing = {
-      faster: rank.faster - (own !== null && own < ms ? 1 : 0),
+      faster: rank.faster - (own !== null && own < ask.ms ? 1 : 0),
       players: rank.players - (own !== null ? 1 : 0),
-      histogram: histogram(bests.filter(row => row.player !== self).map(row => row.ms)),
+      histogram: histogram(buckets),
     };
     return Response.json(standing, {headers});
   } catch { return status(503); }
@@ -235,18 +262,14 @@ export async function handleStanding(request: Request, deps: { store: ApexStore;
 
 export async function handleRival(request: Request, deps: { store: ApexStore; appKey: string; playerSalt: string }) {
   if (!authorized(request.headers.get('x-app-key') ?? '', deps.appKey)) return status(401);
-  const params = new URL(request.url).searchParams;
-  const query = {track: params.get('track'), revision: Number(params.get('revision')), physics: Number(params.get('physics'))};
-  const ms = Number(params.get('ms'));
-  const player = params.get('player');
-  if (!board(query) || !integer(ms, limits.minMs, limits.maxMs)) return status(400);
-  if (player !== null && !/^[A-Za-z0-9:_.-]{1,80}$/.test(player)) return status(400);
+  const ask = lookup(request, deps.playerSalt);
+  if (!ask) return status(400);
   try {
-    const b = boardKey(query as Board);
-    const candidates = await deps.store.near(b, ms - rivalPick.farthestMs, ms - rivalPick.nearestMs);
-    const self = player && deps.playerSalt ? playerKey(player, deps.playerSalt) : undefined;
-    const pick = pickRival(candidates, ms, self);
-    const found = pick ? await deps.store.ghost(b, pick.player) : null;
+    // The nearest bests on both sides of the ideal gap, so a crowded board can't hide the best match.
+    const candidates = await deps.store.near(ask.board, ask.ms - rivalPick.gapMs, ask.ms - rivalPick.farthestMs,
+      ask.ms - rivalPick.nearestMs, rivalPick.perSide);
+    const pick = pickRival(candidates, ask.ms, ask.self);
+    const found = pick ? await deps.store.ghost(ask.board, pick.player) : null;
     return found ? Response.json(found, {headers}) : status(204);
   } catch { return status(503); }
 }

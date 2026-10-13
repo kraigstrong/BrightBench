@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis';
-import { limits, retentionDays, type ApexStore, type StoredGhost } from './apex-laps.ts';
+import { bucketMs, limits, retentionDays, type ApexStore, type StoredGhost } from './apex-laps.ts';
 
 let redis: Redis | undefined;
 function client() {
@@ -14,6 +14,7 @@ const boardsKey = (day: string) => `apex:v1:boards:${day}`;
 const countsKey = (day: string) => `apex:v1:laps:${day}`;
 const bestKey = (board: string) => `apex:v1:best:${board}`;
 const ghostKey = (board: string, player: string) => `apex:v1:ghost:${board}:${player}`;
+const histogramKey = (board: string) => `apex:v1:histogram:${board}`;
 
 // A bounded number of boards a day, enforced atomically; each board's fields are bounded by its histogram buckets.
 export const countScript = `
@@ -33,10 +34,17 @@ redis.call('EXPIRE', boards, ttl)
 redis.call('EXPIRE', counts, ttl)
 return 1`;
 
-// Keeps a player's lowest time (LT), and replaces their ghost only when the time improved (CH counts the change).
+// Keeps a player's lowest time (LT). When it improved (CH counts the change), replaces their ghost and moves them to
+// their new bucket in the board's histogram, so standings always count every player.
 export const bestScript = `
+local width = tonumber(ARGV[4])
+local old = redis.call('ZSCORE', KEYS[1], ARGV[2])
 local changed = redis.call('ZADD', KEYS[1], 'LT', 'CH', ARGV[1], ARGV[2])
-if changed == 1 then redis.call('SET', KEYS[2], ARGV[3]) end
+if changed == 1 then
+  redis.call('SET', KEYS[2], ARGV[3])
+  if old then redis.call('HINCRBY', KEYS[3], tostring(math.floor(tonumber(old) / width) * width), -1) end
+  redis.call('HINCRBY', KEYS[3], tostring(math.floor(tonumber(ARGV[1]) / width) * width), 1)
+end
 return changed`;
 
 export const apexStore: ApexStore = {
@@ -46,13 +54,20 @@ export const apexStore: ApexStore = {
     return await client().eval(countScript, [boardsKey(day), countsKey(day)], args) === 1;
   },
   async saveBest(board, player, ms, ghost) {
-    await client().eval(bestScript, [bestKey(board), ghostKey(board, player)], [String(ms), player, JSON.stringify(ghost)]);
+    await client().eval(bestScript, [bestKey(board), ghostKey(board, player), histogramKey(board)],
+      [String(ms), player, JSON.stringify(ghost), String(bucketMs)]);
   },
-  async near(board, fromMs, toMs) {
-    const flat = await client().zrange<(string | number)[]>(bestKey(board), fromMs, toMs,
-      {byScore: true, withScores: true, offset: 0, count: 50});
+  async near(board, targetMs, fromMs, toMs, perSide) {
+    const [slower, faster] = await Promise.all([
+      client().zrange<(string | number)[]>(bestKey(board), targetMs, toMs,
+        {byScore: true, withScores: true, offset: 0, count: perSide}),
+      client().zrange<(string | number)[]>(bestKey(board), targetMs, fromMs,
+        {byScore: true, rev: true, withScores: true, offset: 0, count: perSide}),
+    ]);
     const rows: { player: string; ms: number }[] = [];
-    for (let i = 0; i + 1 < flat.length; i += 2) rows.push({player: String(flat[i]), ms: Number(flat[i + 1])});
+    for (const flat of [slower, faster]) {
+      for (let i = 0; i + 1 < flat.length; i += 2) rows.push({player: String(flat[i]), ms: Number(flat[i + 1])});
+    }
     return rows;
   },
   async ghost(board, player) {
@@ -67,10 +82,8 @@ export const apexStore: ApexStore = {
     const ms = await client().zscore(bestKey(board), player);
     return ms === null ? null : Number(ms);
   },
-  async bests(board, limit) {
-    const flat = await client().zrange<(string | number)[]>(bestKey(board), 0, limit - 1, {withScores: true});
-    const rows: { player: string; ms: number }[] = [];
-    for (let i = 0; i + 1 < flat.length; i += 2) rows.push({player: String(flat[i]), ms: Number(flat[i + 1])});
-    return rows;
+  async distribution(board) {
+    const counts = await client().hgetall<Record<string, number>>(histogramKey(board)) ?? {};
+    return new Map(Object.entries(counts).map(([bucket, count]) => [Number(bucket), Number(count)]));
   },
 };

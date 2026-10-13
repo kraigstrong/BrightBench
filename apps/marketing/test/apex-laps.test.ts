@@ -3,8 +3,8 @@ import { sign } from 'node:crypto';
 import test from 'node:test';
 import { signedPayload, verifyGameCenterIdentity } from '../src/lib/apex-identity.ts';
 import {
-  handleGhost, handleLaps, handleRival, handleStanding, histogram, lapUpdates, pickRival, playerKey, validateGhost,
-  validateLaps, type ApexStore, type GhostUpload, type LapBatch, type Standing, type StoredGhost,
+  bucketOf, handleGhost, handleLaps, handleRival, handleStanding, histogram, lapUpdates, pickRival, playerKey, playerToken,
+  rivalPick, validateGhost, validateLaps, type ApexStore, type GhostUpload, type LapBatch, type Standing, type StoredGhost,
 } from '../src/lib/apex-laps.ts';
 
 // A throwaway self-signed key and certificate standing in for Game Center's, for these tests only.
@@ -69,9 +69,12 @@ function memoryStore() {
       times.set(player, ms);
       ghosts.set(`${board}:${player}`, ghost);
     },
-    async near(board, fromMs, toMs) {
-      return [...(bests.get(board) ?? new Map<string, number>())].filter(([, ms]) => ms >= fromMs && ms <= toMs)
+    async near(board, targetMs, fromMs, toMs, perSide) {
+      const rows = [...(bests.get(board) ?? new Map<string, number>())].filter(([, ms]) => ms >= fromMs && ms <= toMs)
         .map(([player, ms]) => ({player, ms}));
+      const slower = rows.filter(r => r.ms >= targetMs).sort((a, b) => a.ms - b.ms).slice(0, perSide);
+      const faster = rows.filter(r => r.ms <= targetMs).sort((a, b) => b.ms - a.ms).slice(0, perSide);
+      return [...slower, ...faster];
     },
     async ghost(board, player) { return ghosts.get(`${board}:${player}`) ?? null; },
     async rank(board, ms) {
@@ -79,9 +82,10 @@ function memoryStore() {
       return {faster: times.filter(t => t < ms).length, players: times.length};
     },
     async best(board, player) { return bests.get(board)?.get(player) ?? null; },
-    async bests(board, limit) {
-      return [...(bests.get(board) ?? new Map<string, number>())].sort((a, b) => a[1] - b[1]).slice(0, limit)
-        .map(([player, ms]) => ({player, ms}));
+    async distribution(board) {
+      const counts = new Map<number, number>();
+      for (const ms of (bests.get(board) ?? new Map<string, number>()).values()) counts.set(bucketOf(ms), (counts.get(bucketOf(ms)) ?? 0) + 1);
+      return counts;
     },
   };
   return {store, bests, counted};
@@ -155,9 +159,11 @@ test('the ghosts route keeps each player\'s best under a salted key, never their
   assert.equal((await handleGhost(post('ghosts', upload(28_598)), deps)).status, 204);
   assert.equal((await handleGhost(post('ghosts', upload(29_100)), deps)).status, 204);
   const times = bests.get('harbour_park.r1.p1')!;
-  assert.deepEqual([...times.keys()], [playerKey('T:_racer1', 'salt')]);
-  assert.equal(times.get(playerKey('T:_racer1', 'salt')), 28_598);
+  const key = playerKey(playerToken('T:_racer1'), 'salt');
+  assert.deepEqual([...times.keys()], [key]);
+  assert.equal(times.get(key), 28_598);
   assert.equal(JSON.stringify([...times.keys()]).includes('racer1'), false);
+  assert.equal(JSON.stringify([...times.keys()]).includes(playerToken('T:_racer1')), false);
 });
 
 test('rivals beat you by a little, as close to 0.4 s as there is, and are never you', () => {
@@ -173,24 +179,31 @@ test('the rival route answers with a ghost, or nothing', async () => {
   const {store} = memoryStore();
   const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
   await handleGhost(post('ghosts', upload(28_150, 'T:_rival')), deps);
-  const get = (query: string) => new Request(`https://example.test/api/apex/rival?${query}`, {headers: {'X-App-Key': 'key'}});
-  const found = await handleRival(get('track=harbour_park&revision=1&physics=1&ms=28598&player=T:_me'), deps);
+  const get = (query: string, player?: string) => new Request(`https://example.test/api/apex/rival?${query}`,
+    {headers: {'X-App-Key': 'key', ...(player ? {'X-Apex-Player': playerToken(player)} : {})}});
+  const found = await handleRival(get('track=harbour_park&revision=1&physics=1&ms=28598', 'T:_me'), deps);
   assert.equal(found.status, 200);
   const ghost = await found.json() as StoredGhost;
   assert.equal(ghost.alias, 'Racer One');
   assert.equal(ghost.ms, 28_150);
   // The rival's own best isn't offered back to them.
-  assert.equal((await handleRival(get('track=harbour_park&revision=1&physics=1&ms=28598&player=T:_rival'), deps)).status, 204);
+  assert.equal((await handleRival(get('track=harbour_park&revision=1&physics=1&ms=28598', 'T:_rival'), deps)).status, 204);
   assert.equal((await handleRival(get('track=harbour_park&revision=1&physics=1&ms=40000'), deps)).status, 204);
   assert.equal((await handleRival(get('track=../etc&revision=1&physics=1&ms=28598'), deps)).status, 400);
 });
 
+const bucketsOf = (times: number[]) => {
+  const counts = new Map<number, number>();
+  for (const t of times) counts.set(bucketOf(t), (counts.get(bucketOf(t)) ?? 0) + 1);
+  return counts;
+};
+
 test('histograms use whole quarter-seconds, at most 40 bars, with slow outliers folded into the last', () => {
-  assert.deepEqual(histogram([]), {fromMs: 0, widthMs: 250, counts: []});
-  assert.deepEqual(histogram([28_100, 28_300, 28_310, 29_000]), {fromMs: 28_000, widthMs: 250, counts: [1, 2, 0, 0, 1]});
+  assert.deepEqual(histogram(new Map()), {fromMs: 0, widthMs: 250, counts: []});
+  assert.deepEqual(histogram(bucketsOf([28_100, 28_300, 28_310, 29_000])), {fromMs: 28_000, widthMs: 250, counts: [1, 2, 0, 0, 1]});
   const field = Array.from({length: 100}, (_, i) => 26_000 + i * 100);
   field.push(115_000);
-  const spread = histogram(field);
+  const spread = histogram(bucketsOf(field));
   assert.ok(spread.counts.length <= 40);
   assert.equal(spread.widthMs % 250, 0);
   assert.equal(spread.counts.reduce((a, b) => a + b, 0), 101);
@@ -204,8 +217,9 @@ test('standing ranks a lap among other players\' bests, leaving out the asker\'s
   for (const [player, ms] of [['T:_a', 27_400], ['T:_b', 28_100], ['T:_c', 29_900], ['T:_d', 31_500], ['T:_me', 28_400]] as const) {
     await handleGhost(post('ghosts', upload(ms, player)), deps);
   }
-  const get = (query: string) => new Request(`https://example.test/api/apex/standing?${query}`, {headers: {'X-App-Key': 'key'}});
-  const mine = await handleStanding(get('track=harbour_park&revision=1&physics=1&ms=28598&player=T:_me'), deps);
+  const get = (query: string, player?: string) => new Request(`https://example.test/api/apex/standing?${query}`,
+    {headers: {'X-App-Key': 'key', ...(player ? {'X-Apex-Player': playerToken(player)} : {})}});
+  const mine = await handleStanding(get('track=harbour_park&revision=1&physics=1&ms=28598', 'T:_me'), deps);
   assert.equal(mine.status, 200);
   const standing = await mine.json() as Standing;
   // Of the four others, two are faster than 28.598; the asker's own 28.400 isn't counted.
@@ -217,4 +231,61 @@ test('standing ranks a lap among other players\' bests, leaving out the asker\'s
   assert.equal(anonymous.players, 5);
   assert.equal((await handleStanding(get('track=harbour_park&revision=1&physics=1&ms=28598'), {...deps, appKey: ''})).status, 401);
   assert.equal((await handleStanding(get('track=harbour_park&revision=1&physics=1&ms=abc'), deps)).status, 400);
+});
+
+test('only known boards are accepted, so nobody can make the store grow with made-up ones', async () => {
+  const {store, bests, counted} = memoryStore();
+  const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
+  const madeUp = upload(); madeUp.track = 'made_up_circuit';
+  assert.equal((await handleGhost(post('ghosts', madeUp), deps)).status, 400);
+  const futurePhysics = upload(); futurePhysics.physics = 2;
+  assert.equal((await handleGhost(post('ghosts', futurePhysics), deps)).status, 400);
+  assert.equal(bests.size, 0);
+  assert.equal((await handleLaps(post('laps', {...lapBatch(), laps: [{...lapBatch().laps[0], track: 'made_up_circuit'}]}),
+    {store, appKey: 'key'})).status, 400);
+  assert.equal(counted.length, 0);
+  for (const track of ['old_town', 'ridgeway']) assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track}]}), true);
+  const get = (path: string) => new Request(`https://example.test/api/apex/${path}?track=made_up_circuit&revision=1&physics=1&ms=28598`,
+    {headers: {'X-App-Key': 'key'}});
+  assert.equal((await handleRival(get('rival'), deps)).status, 400);
+  assert.equal((await handleStanding(get('standing'), deps)).status, 400);
+});
+
+test('players are named by a header token, never a raw ID in the URL', async () => {
+  const {store} = memoryStore();
+  const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
+  await handleGhost(post('ghosts', upload(28_150, 'T:_rival')), deps);
+  const ask = (headers: Record<string, string>, query = '') => handleRival(new Request(
+    `https://example.test/api/apex/rival?track=harbour_park&revision=1&physics=1&ms=28598${query}`,
+    {headers: {'X-App-Key': 'key', ...headers}}), deps);
+  // The token excludes the player's own ghost; a raw ID anywhere doesn't identify them.
+  assert.equal((await ask({'X-Apex-Player': playerToken('T:_rival')})).status, 204);
+  assert.equal((await ask({}, '&player=T:_rival')).status, 200);
+  assert.equal((await ask({'X-Apex-Player': 'T:_rival'})).status, 400);
+});
+
+test('a crowded board still offers the rival nearest the ideal gap', async () => {
+  const {store} = memoryStore();
+  const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
+  // Far more players just inside the window's fast end than one query side holds, and one right on the target.
+  for (let i = 0; i < rivalPick.perSide * 3; i++) {
+    await store.saveBest('harbour_park.r1.p1', `fast-${i}`, 27_800 + (i % 10), {alias: `Fast ${i}`, ms: 27_800, splits: [], ghost: trace(27_800)});
+  }
+  await store.saveBest('harbour_park.r1.p1', 'ideal', 28_198, {alias: 'Ideal', ms: 28_198, splits: [], ghost: trace(28_198)});
+  const found = await handleRival(new Request('https://example.test/api/apex/rival?track=harbour_park&revision=1&physics=1&ms=28598',
+    {headers: {'X-App-Key': 'key'}}), deps);
+  assert.equal(((await found.json()) as StoredGhost).alias, 'Ideal');
+});
+
+test('standings count every player, however many there are', async () => {
+  const {store} = memoryStore();
+  const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
+  for (let i = 0; i < 6_000; i++) {
+    await store.saveBest('harbour_park.r1.p1', `p${i}`, 26_000 + (i % 80) * 100, {alias: 'P', ms: 0, splits: [], ghost: trace(28_000)});
+  }
+  const response = await handleStanding(new Request('https://example.test/api/apex/standing?track=harbour_park&revision=1&physics=1&ms=30000',
+    {headers: {'X-App-Key': 'key'}}), deps);
+  const standing = await response.json() as Standing;
+  assert.equal(standing.players, 6_000);
+  assert.equal(standing.histogram.counts.reduce((a, b) => a + b, 0), 6_000);
 });
