@@ -32,7 +32,9 @@ export const bucketMs = 250;
 
 /** The boards the service accepts: each circuit at its current revision and physics version. Add a board here, and
  * deploy, before an app version that races it ships. Keep in sync with `TrackLayout.all` in the app. */
-export const apexBoards: readonly string[] = ['harbour_park.r1.p1', 'old_town.r1.p1', 'ridgeway.r1.p1'];
+export const apexBoards: readonly string[] = [
+  'ardennes.r1.p1', 'swirl.r1.p1', 'snake.r1.p1', 'mirage.r1.p1', 'island.r1.p1', 'harbour.r1.p1',
+];
 
 export interface ApexStore {
   /** Atomic daily counters; false when the day's board cap is reached. */

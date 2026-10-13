@@ -112,7 +112,7 @@ This checks script behavior; live Upstash validation remains a release check.
 Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses four routes. Logic and validation live in
 `src/lib/apex-laps.ts`, Game Center identity checks in `src/lib/apex-identity.ts`, storage in `src/lib/apex-redis.ts`,
 tests in `test/apex-laps.test.ts`. Everything is per **board**: a circuit at one revision, driven with one physics
-version (`harbour_park.r1.p1`), because lap times only compare within one. Only the boards in `apexBoards`
+version (`ardennes.r1.p1`), because lap times only compare within one. Only the boards in `apexBoards`
 (`src/lib/apex-laps.ts`) are accepted, so no client can make the service store anything for others: **when Apex adds
 a circuit, or bumps a circuit's revision or its physics version, add the board here and deploy before that app
 version ships.**
