@@ -106,3 +106,47 @@ Storage limiter regressions execute the production Lua script against an in-memo
 shim: `node test/run-bigger-fish-redis.mjs` from `apps/marketing`. The runner uses a temporary
 Fengari interpreter through npm exec and does not modify dependencies or connect to Redis.
 This checks script behavior; live Upstash validation remains a release check.
+
+## Apex lap service
+
+Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses four routes. Logic and validation live in
+`src/lib/apex-laps.ts`, Game Center identity checks in `src/lib/apex-identity.ts`, storage in `src/lib/apex-redis.ts`,
+tests in `test/apex-laps.test.ts`. Everything is per **board**: a circuit at one revision, driven with one physics
+version (`ardennes.r1.p1`), because lap times only compare within one. Only the boards in `apexBoards`
+(`src/lib/apex-laps.ts`) are accepted, so no client can make the service store anything for others: **when Apex adds
+a circuit, or bumps a circuit's revision or its physics version, add the board here and deploy before that app
+version ships.**
+
+- `POST /api/apex/laps`: every finished lap, in batches of up to 25. Stored only as daily counters per board (laps,
+  a 250 ms lap-time histogram, wall-hit buckets), never as raw records, for 90 days. At most 50 boards a day.
+- `POST /api/apex/ghosts`: a player's personal best and its ghost (~15 KB). The upload carries Game Center's identity
+  verification signature, checked against Apple's certificate (`*.apple.com` over HTTPS, signed within 15 minutes;
+  Apple doesn't document the timestamp's unit, so seconds are accepted as well as the milliseconds it sends),
+  so nobody can post as someone else. The store keeps only a salted hash of the player, the player's public Game
+  Center alias, their best time and its ghost: one per player per board, replaced only by a faster lap, along with a
+  quarter-second histogram of the board's bests, updated in the same atomic script. These are the leaderboard
+  itself, so they don't expire.
+- `GET /api/apex/rival?track=&revision=&physics=&ms=`: a ghost that beats `ms` by 0.15–0.8 s, as close to 0.4 s as
+  there is (searching outward from 0.4 s on both sides, so a crowded board can't hide the best match), never the
+  asking player's own. On a board with only a few players, when nobody is in that window, the nearest player who beats
+  `ms` at all, up to 3 s ahead. 204 when there's none; the app then races a bot instead.
+
+- `GET /api/apex/standing?track=&revision=&physics=&ms=`: where a lap falls among other players' bests: how many
+  beat it, of how many (the asking player's own best left out), and their spread as a histogram of at most 40 bars,
+  built from the board's histogram so it counts every player. The app shows this when a session ends.
+
+The two GETs learn who's asking (to leave out their own best) from the `X-Apex-Player` header: SHA-256 of `apex:`
+and the team player ID, so a raw ID never appears in a URL; the store only ever sees that token salted again.
+
+Rankings themselves live in Game Center (`apex.<track>.r<revision>.p<physics>` leaderboards); this service holds what
+Game Center can't: lap-time distributions and ghosts.
+
+Configuration:
+
+- Existing `KV_REST_API_URL` / `KV_REST_API_TOKEN`.
+- `APEX_APP_KEY`: match `ApexOnline.appKey` in the app (`apex-laps-v1`). A bot filter, not authentication.
+- `APEX_PLAYER_SALT`: a real secret for hashing player IDs. Never change it once live (players' bests would split),
+  and never put it in an app. Without it, ghost uploads return 503.
+
+Configure Vercel rate limiting on all four routes before the app turns the service on (`ApexOnline.isEnabled`). No
+request or error logging in these routes.
