@@ -11,7 +11,7 @@ export const game = {
   /** What it costs. */
   offer: 'The first world is free. One $4.99 purchase unlocks every level.',
   /** The home page's lines under the logo. */
-  pitch: ['Eat smaller fish. Dodge bigger ones.', 'They grow too. Outgrow them to survive.'],
+  pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
   developer: 'Kraig Strong',
   /** The App Store release day, announced before launch. */
   releaseDay: 'November 3',
@@ -53,9 +53,9 @@ export const beats = [
     alt: 'The player fish, grown bigger, swallowing a spotted green fish nearly its own size.',
   },
   {
-    title: 'They grow too.',
+    title: 'Win the food race.',
     body: 'Every fish is eating. Outgrow them before they outgrow you.',
-    image: '/media/beats/they-grow-too.jpg',
+    image: '/media/beats/win-the-food-race.jpg',
     alt: 'The player fish face to face with a school of fish that have grown bigger than it.',
   },
 ] as const;
