@@ -255,7 +255,7 @@ test('only known boards are accepted, so nobody can make the store grow with mad
   assert.equal((await handleLaps(post('laps', {...lapBatch(), laps: [{...lapBatch().laps[0], track: 'made_up_circuit'}]}),
     {store, appKey: 'key'})).status, 400);
   assert.equal(counted.length, 0);
-  for (const track of ['swirl', 'snake', 'mirage', 'island', 'harbour']) assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track}]}), true);
+  for (const track of ['swirl', 'snake', 'mirage', 'island', 'harbor']) assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track}]}), true);
   const get = (path: string) => new Request(`https://example.test/api/apex/${path}?track=made_up_circuit&revision=1&physics=1&ms=28598`,
     {headers: {'X-App-Key': 'key'}});
   assert.equal((await handleRival(get('rival'), deps)).status, 400);
