@@ -25,8 +25,10 @@ export const limits = {
   boardsPerDay: 50, ghostSamplesPerSecond: 30,
 };
 export const retentionDays = 90;
-/** A rival beats your best by between `nearestMs` and `farthestMs`, as close to `gapMs` as there is. */
-export const rivalPick = { gapMs: 400, nearestMs: 150, farthestMs: 800, perSide: 25 };
+/** A rival beats your best by between `nearestMs` and `farthestMs`, as close to `gapMs` as there is. When nobody does
+ * (a board with only a few players, like a group of friends), the nearest player who beats you at all, up to
+ * `fallbackMs` ahead, is better to chase than a bot. */
+export const rivalPick = { gapMs: 400, nearestMs: 150, farthestMs: 800, fallbackMs: 3000, perSide: 25 };
 /** Bests are counted into buckets this wide (ms) for standings. */
 export const bucketMs = 250;
 
@@ -143,12 +145,15 @@ export function playerKey(token: string, salt: string) {
 }
 export const bucketOf = (ms: number) => Math.floor(ms / bucketMs) * bucketMs;
 
-/** The rival to offer someone whose best is `ms`: the nearest to `gapMs` faster, within the window, never themselves. */
+/** The rival to offer someone whose best is `ms`, never themselves: the nearest to `gapMs` faster within the window,
+ * or else the nearest faster player up to `fallbackMs` ahead. */
 export function pickRival(candidates: { player: string; ms: number }[], ms: number, self?: string) {
   const target = ms - rivalPick.gapMs;
-  return candidates
-    .filter(c => c.player !== self && c.ms <= ms - rivalPick.nearestMs && c.ms >= ms - rivalPick.farthestMs)
+  const faster = candidates.filter(c => c.player !== self && c.ms < ms && c.ms >= ms - rivalPick.fallbackMs);
+  const inWindow = faster
+    .filter(c => c.ms <= ms - rivalPick.nearestMs && c.ms >= ms - rivalPick.farthestMs)
     .sort((a, b) => Math.abs(a.ms - target) - Math.abs(b.ms - target) || a.ms - b.ms)[0];
+  return inWindow ?? faster.sort((a, b) => b.ms - a.ms)[0];
 }
 
 export type Histogram = { fromMs: number; widthMs: number; counts: number[] };
@@ -268,8 +273,8 @@ export async function handleRival(request: Request, deps: { store: ApexStore; ap
   if (!ask) return status(400);
   try {
     // The nearest bests on both sides of the ideal gap, so a crowded board can't hide the best match.
-    const candidates = await deps.store.near(ask.board, ask.ms - rivalPick.gapMs, ask.ms - rivalPick.farthestMs,
-      ask.ms - rivalPick.nearestMs, rivalPick.perSide);
+    const candidates = await deps.store.near(ask.board, ask.ms - rivalPick.gapMs, ask.ms - rivalPick.fallbackMs,
+      ask.ms - 1, rivalPick.perSide);
     const pick = pickRival(candidates, ask.ms, ask.self);
     const found = pick ? await deps.store.ghost(ask.board, pick.player) : null;
     return found ? Response.json(found, {headers}) : status(204);

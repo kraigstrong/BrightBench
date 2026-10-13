@@ -148,6 +148,9 @@ test('Game Center identity: a genuine signature passes; anything else fails', as
     'com.kraigstrong.apex'), false);
   const stale = identity('T:_racer1', 'com.kraigstrong.apex', now - 60 * 60 * 1000);
   assert.equal(await verifyWithTestCertificate(stale, 'T:_racer1', 'com.kraigstrong.apex'), false);
+  // Apple doesn't document the timestamp's unit: a signature stamped in seconds verifies too.
+  const inSeconds = identity('T:_racer1', 'com.kraigstrong.apex', Math.floor(now / 1000));
+  assert.equal(await verifyWithTestCertificate(inSeconds, 'T:_racer1', 'com.kraigstrong.apex'), true);
 });
 
 test('the ghosts route keeps each player\'s best under a salted key, never their ID', async () => {
@@ -171,8 +174,16 @@ test('rivals beat you by a little, as close to 0.4 s as there is, and are never 
   const field = [{player: 'way-ahead', ms: 27_000}, {player: 'just-ahead', ms: 28_500}, {player: 'right', ms: 28_150},
     {player: 'near', ms: 28_300}, {player: me, ms: 28_190}];
   assert.equal(pickRival(field, 28_598, me)?.player, 'right');
-  assert.equal(pickRival([{player: 'just-ahead', ms: 28_500}], 28_598), undefined);
-  assert.equal(pickRival([{player: 'way-ahead', ms: 27_000}], 28_598), undefined);
+});
+
+test('with only a few players, the nearest one who beats you at all is the rival, up to 3 s ahead', () => {
+  // Nobody 0.15-0.8 s ahead: the nearest faster player, whether a hair or seconds ahead.
+  assert.equal(pickRival([{player: 'just-ahead', ms: 28_500}, {player: 'way-ahead', ms: 27_000}], 28_598)?.player, 'just-ahead');
+  assert.equal(pickRival([{player: 'way-ahead', ms: 27_000}], 28_598)?.player, 'way-ahead');
+  // Too far ahead to chase, or slower: a bot instead.
+  assert.equal(pickRival([{player: 'gone', ms: 25_000}], 28_598), undefined);
+  assert.equal(pickRival([{player: 'slower', ms: 29_000}, {player: 'tied', ms: 28_598}], 28_598), undefined);
+  assert.equal(pickRival([{player: 'me', ms: 27_500}], 28_598, 'me'), undefined);
 });
 
 test('the rival route answers with a ghost, or nothing', async () => {

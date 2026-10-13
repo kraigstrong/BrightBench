@@ -9,6 +9,11 @@ export type FetchCertificate = (url: URL) => Promise<Buffer>;
 /** How old (or how far in the future) a signature may be. */
 export const maxSignatureAgeMs = 15 * 60 * 1000;
 
+/** Apple doesn't document the timestamp's unit. It's milliseconds in practice; a value too small to be milliseconds
+ * since 2001 is read as seconds, so freshness can't silently fail either way. The signed payload always uses it as
+ * sent. */
+export const timestampMs = (timestamp: number) => (timestamp < 1e12 ? timestamp * 1000 : timestamp);
+
 /** What Game Center signs: team player ID and bundle ID (UTF-8), timestamp (big-endian UInt64), then the salt. */
 export function signedPayload(playerID: string, bundleID: string, timestamp: number, salt: Buffer) {
   const time = Buffer.alloc(8);
@@ -38,7 +43,7 @@ export async function verifyGameCenterIdentity(identity: Identity, playerID: str
   try { url = new URL(identity.publicKeyURL); } catch { return false; }
   if (url.protocol !== 'https:' || !url.hostname.endsWith('.apple.com')) return false;
   const now = deps.now?.() ?? Date.now();
-  if (Math.abs(now - identity.timestamp) > maxSignatureAgeMs) return false;
+  if (Math.abs(now - timestampMs(identity.timestamp)) > maxSignatureAgeMs) return false;
   try {
     const certificate = new X509Certificate(await (deps.fetchCertificate ?? fetchAppleCertificate)(url));
     if (now < Date.parse(certificate.validFrom) || now > Date.parse(certificate.validTo)) return false;

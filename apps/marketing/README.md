@@ -120,14 +120,16 @@ version ships.**
 - `POST /api/apex/laps`: every finished lap, in batches of up to 25. Stored only as daily counters per board (laps,
   a 250 ms lap-time histogram, wall-hit buckets), never as raw records, for 90 days. At most 50 boards a day.
 - `POST /api/apex/ghosts`: a player's personal best and its ghost (~15 KB). The upload carries Game Center's identity
-  verification signature, checked against Apple's certificate (`*.apple.com` over HTTPS, signed within 15 minutes),
+  verification signature, checked against Apple's certificate (`*.apple.com` over HTTPS, signed within 15 minutes;
+  Apple doesn't document the timestamp's unit, so seconds are accepted as well as the milliseconds it sends),
   so nobody can post as someone else. The store keeps only a salted hash of the player, the player's public Game
   Center alias, their best time and its ghost: one per player per board, replaced only by a faster lap, along with a
   quarter-second histogram of the board's bests, updated in the same atomic script. These are the leaderboard
   itself, so they don't expire.
 - `GET /api/apex/rival?track=&revision=&physics=&ms=`: a ghost that beats `ms` by 0.15–0.8 s, as close to 0.4 s as
   there is (searching outward from 0.4 s on both sides, so a crowded board can't hide the best match), never the
-  asking player's own. 204 when there's none; the app then races a bot instead.
+  asking player's own. On a board with only a few players, when nobody is in that window, the nearest player who beats
+  `ms` at all, up to 3 s ahead. 204 when there's none; the app then races a bot instead.
 
 - `GET /api/apex/standing?track=&revision=&physics=&ms=`: where a lap falls among other players' bests: how many
   beat it, of how many (the asking player's own best left out), and their spread as a histogram of at most 40 bars,
