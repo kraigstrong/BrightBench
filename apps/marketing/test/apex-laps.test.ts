@@ -102,7 +102,7 @@ test('lap batches are strict, anonymous and bounded', () => {
     assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], [key]: 'private'}]}), false);
   }
   for (const change of [{ms: 9_999}, {ms: 120_001}, {ms: 28_598.5}, {splits: [19_877, 10_204]}, {splits: [10_204, 30_000]},
-    {walls: -1}, {track: 'Harbour Park'}, {revision: 0}]) {
+    {walls: -1}, {track: 'Harbor Park'}, {revision: 0}]) {
     assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], ...change}]}), false, JSON.stringify(change));
   }
   assert.equal(validateLaps({...lapBatch(), laps: Array(26).fill(lapBatch().laps[0])}), false);
