@@ -28,12 +28,13 @@ const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'What does it cost?',
-    answer: 'Bigger Fish is free to try. $4.99 unlocks all worlds and challenge levels.',
+    answer:
+      'The first world is free, and so are the first two levels of every other world. One $4.99 purchase unlocks the rest, including every Deep End.',
   },
   {
     question: 'How do new worlds open?',
     answer:
-      "Beat a world's tenth level to open the next world. After the tenth level comes the Deep End: five harder levels, each opening when you clear the one before.",
+      "Every world is open from the start, so you can try each one. Beat a world's tenth level to open its Deep End: five harder levels, each opening when you clear the one before.",
   },
   {
     question: 'How do I turn off the music or sound effects?',
