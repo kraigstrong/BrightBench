@@ -82,6 +82,10 @@ export const apexStore: ApexStore = {
     const ms = await client().zscore(bestKey(board), player);
     return ms === null ? null : Number(ms);
   },
+  async bests(board, players) {
+    const times = await client().zmscore(bestKey(board), players) ?? [];
+    return players.map((_, i) => times[i] == null ? null : Number(times[i]));
+  },
   async distribution(board) {
     const counts = await client().hgetall<Record<string, number>>(histogramKey(board)) ?? {};
     return new Map(Object.entries(counts).map(([bucket, count]) => [Number(bucket), Number(count)]));
