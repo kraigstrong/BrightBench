@@ -18,6 +18,9 @@ export type GhostUpload = Board & {
   schema: 1; ms: number; splits: number[]; player: { id: string; alias: string }; identity: Identity; ghost: Ghost;
 };
 export type StoredGhost = { alias: string; ms: number; splits: number[]; ghost: Ghost };
+/** Which of a player's Game Center friends have a best on a board: the app sends their tokens (`playerToken`). */
+export type FriendsQuery = Board & { schema: 1; players: string[] };
+export type FriendTime = { player: string; ms: number };
 export type Update = { field: string; by: number };
 
 export const limits = {
@@ -25,6 +28,8 @@ export const limits = {
   boardsPerDay: 50, ghostSamplesPerSecond: 30,
 };
 export const retentionDays = 90;
+/** A friends query names at most this many players (Game Center friend lists are small). */
+export const friendLimits = { players: 100, bodyBytes: 8 * 1024 };
 /** A rival beats your best by between `nearestMs` and `farthestMs`, as close to `gapMs` as there is. When nobody does
  * (a board with only a few players, like a group of friends), the nearest player who beats you at all, up to
  * `fallbackMs` ahead, is better to chase than a bot. */
@@ -50,6 +55,8 @@ export interface ApexStore {
   rank(board: string, ms: number): Promise<{ faster: number; players: number }>;
   /** One player's best, or null. */
   best(board: string, player: string): Promise<number | null>;
+  /** Each player's best, or null, in the order asked. */
+  bests(board: string, players: string[]): Promise<(number | null)[]>;
   /** Every player's best on the board, counted by `bucketMs` bucket (keyed by the bucket's first millisecond). */
   distribution(board: string): Promise<Map<number, number>>;
 }
@@ -115,6 +122,13 @@ export function validateGhost(x: unknown): x is GhostUpload {
   if (typeof identity.salt !== 'string' || !/^[A-Za-z0-9+/=]{1,256}$/.test(identity.salt)) return false;
   if (!integer(identity.timestamp, 0, Number.MAX_SAFE_INTEGER)) return false;
   return ghost(x.ghost, x.ms as number);
+}
+
+export function validateFriends(x: unknown): x is FriendsQuery {
+  if (!record(x) || !keys(x, ['schema', 'track', 'revision', 'physics', 'players']) || x.schema !== 1 || !knownBoard(x)) return false;
+  const {players} = x;
+  return Array.isArray(players) && players.length >= 1 && players.length <= friendLimits.players
+    && players.every(p => typeof p === 'string' && validToken(p)) && new Set(players).size === players.length;
 }
 
 const msBucket = (ms: number) => Math.floor(ms / 250) * 250;
@@ -238,6 +252,13 @@ export async function handleGhost(request: Request, deps: {
   } catch { return status(503); }
 }
 
+/** The board a GET asks about, or null if it isn't one the service accepts. */
+function boardOf(request: Request): string | null {
+  const params = new URL(request.url).searchParams;
+  const query = {track: params.get('track'), revision: Number(params.get('revision')), physics: Number(params.get('physics'))};
+  return knownBoard(query) ? boardKey(query as Board) : null;
+}
+
 /** The board and lap time a GET asks about, and who's asking (from the X-Apex-Player header), or null if invalid. */
 function lookup(request: Request, salt: string) {
   const params = new URL(request.url).searchParams;
@@ -277,6 +298,36 @@ export async function handleRival(request: Request, deps: { store: ApexStore; ap
       ask.ms - 1, rivalPick.perSide);
     const pick = pickRival(candidates, ask.ms, ask.self);
     const found = pick ? await deps.store.ghost(ask.board, pick.player) : null;
+    return found ? Response.json(found, {headers}) : status(204);
+  } catch { return status(503); }
+}
+
+/** Which of the asker's Game Center friends have a best on the board, fastest first. The app sends each friend's token
+ * in the body, so no ID or token appears in a URL. Nothing is stored. */
+export async function handleFriends(request: Request, deps: { store: ApexStore; appKey: string; playerSalt: string }) {
+  if (!authorized(request.headers.get('x-app-key') ?? '', deps.appKey)) return status(401);
+  if (!deps.playerSalt) return status(503);
+  const body = await readJSON(request, friendLimits.bodyBytes);
+  if (body instanceof Response) return body;
+  if (!validateFriends(body.value)) return status(400);
+  const {players} = body.value;
+  try {
+    const bests = await deps.store.bests(boardKey(body.value), players.map(p => playerKey(p, deps.playerSalt)));
+    const friends: FriendTime[] = players.flatMap((player, i) => bests[i] == null ? [] : [{player, ms: bests[i]!}])
+      .sort((a, b) => a.ms - b.ms);
+    return Response.json({friends}, {headers});
+  } catch { return status(503); }
+}
+
+/** One friend's best lap and ghost on the board, named by their token in the X-Apex-Friend header, or 204. */
+export async function handleFriendGhost(request: Request, deps: { store: ApexStore; appKey: string; playerSalt: string }) {
+  if (!authorized(request.headers.get('x-app-key') ?? '', deps.appKey)) return status(401);
+  if (!deps.playerSalt) return status(503);
+  const board = boardOf(request);
+  const token = request.headers.get('x-apex-friend');
+  if (!board || !validToken(token)) return status(400);
+  try {
+    const found = await deps.store.ghost(board, playerKey(token, deps.playerSalt));
     return found ? Response.json(found, {headers}) : status(204);
   } catch { return status(503); }
 }

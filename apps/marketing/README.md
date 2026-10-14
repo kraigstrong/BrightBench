@@ -109,7 +109,7 @@ This checks script behavior; live Upstash validation remains a release check.
 
 ## Apex lap service
 
-Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses four routes. Logic and validation live in
+Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses six routes. Logic and validation live in
 `src/lib/apex-laps.ts`, Game Center identity checks in `src/lib/apex-identity.ts`, storage in `src/lib/apex-redis.ts`,
 tests in `test/apex-laps.test.ts`. Everything is per **board**: a circuit at one revision, driven with one physics
 version (`ardennes.r1.p1`), because lap times only compare within one. Only the boards in `apexBoards`
@@ -134,9 +134,18 @@ version ships.**
 - `GET /api/apex/standing?track=&revision=&physics=&ms=`: where a lap falls among other players' bests: how many
   beat it, of how many (the asking player's own best left out), and their spread as a histogram of at most 40 bars,
   built from the board's histogram so it counts every player. The app shows this when a session ends.
+- `POST /api/apex/friends`: which of a player's Game Center friends have a best on a board, fastest first: a body of
+  `{schema: 1, track, revision, physics, players}`, where `players` is up to 100 friends' tokens (below), answered with
+  `{friends: [{player, ms}]}` for those who have one. The app names them from Game Center, so no alias is returned.
+  Nothing is stored.
+- `GET /api/apex/ghosts?track=&revision=&physics=`: one friend's best lap and ghost, named by their token in the
+  `X-Apex-Friend` header, for racing them; 204 when they have none. Nothing is stored.
 
-The two GETs learn who's asking (to leave out their own best) from the `X-Apex-Player` header: SHA-256 of `apex:`
-and the team player ID, so a raw ID never appears in a URL; the store only ever sees that token salted again.
+The rival and standing GETs learn who's asking (to leave out their own best) from the `X-Apex-Player` header: SHA-256
+of `apex:` and the team player ID, so a raw ID never appears in a URL; the store only ever sees that token salted
+again. Friends are named by the same token, in the friends body or the `X-Apex-Friend` header. A token only comes
+from a team player ID, which Game Center shares only with this team's apps, so the friend routes answer for the
+asker's Game Center friends: they show nothing that a rival or a friend's leaderboard doesn't.
 
 Rankings themselves live in Game Center (`apex.<track>.r<revision>.p<physics>` leaderboards); this service holds what
 Game Center can't: lap-time distributions and ghosts.
@@ -148,5 +157,5 @@ Configuration:
 - `APEX_PLAYER_SALT`: a real secret for hashing player IDs. Never change it once live (players' bests would split),
   and never put it in an app. Without it, ghost uploads return 503.
 
-Configure Vercel rate limiting on all four routes before the app turns the service on (`ApexOnline.isEnabled`). No
+Configure Vercel rate limiting on all of `/api/apex/*` before the app turns the service on (`ApexOnline.isEnabled`). No
 request or error logging in these routes.

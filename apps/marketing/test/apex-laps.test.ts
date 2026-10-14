@@ -3,8 +3,9 @@ import { sign } from 'node:crypto';
 import test from 'node:test';
 import { signedPayload, verifyGameCenterIdentity } from '../src/lib/apex-identity.ts';
 import {
-  bucketOf, handleGhost, handleLaps, handleRival, handleStanding, histogram, lapUpdates, pickRival, playerKey, playerToken,
-  rivalPick, validateGhost, validateLaps, type ApexStore, type GhostUpload, type LapBatch, type Standing, type StoredGhost,
+  bucketOf, friendLimits, handleFriendGhost, handleFriends, handleGhost, handleLaps, handleRival, handleStanding, histogram,
+  lapUpdates, pickRival, playerKey, playerToken, rivalPick, validateFriends, validateGhost, validateLaps, type ApexStore,
+  type FriendTime, type GhostUpload, type LapBatch, type Standing, type StoredGhost,
 } from '../src/lib/apex-laps.ts';
 
 // A throwaway self-signed key and certificate standing in for Game Center's, for these tests only.
@@ -82,6 +83,7 @@ function memoryStore() {
       return {faster: times.filter(t => t < ms).length, players: times.length};
     },
     async best(board, player) { return bests.get(board)?.get(player) ?? null; },
+    async bests(board, players) { return players.map(p => bests.get(board)?.get(p) ?? null); },
     async distribution(board) {
       const counts = new Map<number, number>();
       for (const ms of (bests.get(board) ?? new Map<string, number>()).values()) counts.set(bucketOf(ms), (counts.get(bucketOf(ms)) ?? 0) + 1);
@@ -299,4 +301,55 @@ test('standings count every player, however many there are', async () => {
   const standing = await response.json() as Standing;
   assert.equal(standing.players, 6_000);
   assert.equal(standing.histogram.counts.reduce((a, b) => a + b, 0), 6_000);
+});
+
+const friendsQuery = (players: string[], track = 'ardennes') => ({schema: 1, track, revision: 1, physics: 1, players});
+
+test('a friends query names friends by token, a bounded few at a time, on a known board', () => {
+  const tokens = ['T:_a', 'T:_b'].map(playerToken);
+  assert.equal(validateFriends(friendsQuery(tokens)), true);
+  assert.equal(validateFriends(friendsQuery(['T:_a'])), false);
+  assert.equal(validateFriends(friendsQuery([tokens[0]!, tokens[0]!])), false);
+  assert.equal(validateFriends(friendsQuery([])), false);
+  const many = Array.from({length: friendLimits.players + 1}, (_, i) => playerToken(`T:_${i}`));
+  assert.equal(validateFriends(friendsQuery(many)), false);
+  assert.equal(validateFriends(friendsQuery(tokens, 'made_up_circuit')), false);
+  assert.equal(validateFriends({...friendsQuery(tokens), ms: 28_000}), false);
+});
+
+test('the friends route says which friends have a best, fastest first, and stores nothing', async () => {
+  const {store, bests} = memoryStore();
+  const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
+  await handleGhost(post('ghosts', upload(29_200, 'T:_slow')), deps);
+  await handleGhost(post('ghosts', upload(28_150, 'T:_quick')), deps);
+  await handleGhost(post('ghosts', upload(27_000, 'T:_stranger')), deps);
+  const before = JSON.stringify([...bests.get('ardennes.r1.p1')!]);
+  const query = friendsQuery(['T:_slow', 'T:_never', 'T:_quick'].map(playerToken));
+  const response = await handleFriends(post('friends', query), deps);
+  assert.equal(response.status, 200);
+  const {friends} = await response.json() as {friends: FriendTime[]};
+  assert.deepEqual(friends, [{player: playerToken('T:_quick'), ms: 28_150}, {player: playerToken('T:_slow'), ms: 29_200}]);
+  assert.equal(JSON.stringify([...bests.get('ardennes.r1.p1')!]), before);
+  assert.equal((await handleFriends(post('friends', query, 'wrong'), deps)).status, 401);
+  assert.equal((await handleFriends(post('friends', query), {...deps, playerSalt: ''})).status, 503);
+  assert.equal((await handleFriends(post('friends', friendsQuery(['T:_quick'])), deps)).status, 400);
+  assert.equal((await handleFriends(post('friends', 'x'.repeat(10_000)), deps)).status, 413);
+});
+
+test('a friend\'s ghost is fetched by their token in a header, never an ID in the URL', async () => {
+  const {store} = memoryStore();
+  const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
+  await handleGhost(post('ghosts', upload(28_150, 'T:_friend')), deps);
+  const get = (friend: string | null, track = 'ardennes') => handleFriendGhost(new Request(
+    `https://example.test/api/apex/ghosts?track=${track}&revision=1&physics=1`,
+    {headers: {'X-App-Key': 'key', ...(friend ? {'X-Apex-Friend': friend} : {})}}), deps);
+  const found = await get(playerToken('T:_friend'));
+  assert.equal(found.status, 200);
+  const ghost = await found.json() as StoredGhost;
+  assert.equal(ghost.alias, 'Racer One');
+  assert.equal(ghost.ms, 28_150);
+  assert.equal((await get(playerToken('T:_nobody'))).status, 204);
+  assert.equal((await get('T:_friend')).status, 400);
+  assert.equal((await get(null)).status, 400);
+  assert.equal((await get(playerToken('T:_friend'), 'made_up_circuit')).status, 400);
 });
