@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import {validateBatch,counterUpdates,contentToken,handleEvents,handleStats,report,medals,type Batch,type Event,type DoublePuttStore} from '../src/lib/double-putt-analytics.ts';
 type PairEvent = Extract<Event,{kind:'pair'}>;
 const context = () => ({course:'midway',pair:2,slug:'springboard',revision:'2026-10-15.1'});
@@ -225,4 +226,15 @@ test('stats authentication, invalid dates and default TestFlight-only filtering'
   assert.equal(debug.pairs[0].attempts,1);
   const down=store();down.read=async()=>{throw new Error('down');};
   assert.equal((await handleStats(req(''),{store:down,secret:'secret'})).status,503);
+});
+
+test('accept the real Swift-encoded client contract fixture, which sends every kind, outcome and round action',()=>{
+  // Encoded with the app's own AnalyticsEvent and AnalyticsBatch types (kraigstrong/double-putt, MiniGolf/Game/Analytics.swift).
+  const payload=JSON.parse(readFileSync(new URL('./fixtures/double-putt-swift.json',import.meta.url),'utf8'));
+  assert.equal(validateBatch(payload),true);
+  type Sent={kind:string;name?:string;outcome?:string;action?:string};
+  const values=(key:'name'|'outcome'|'action')=>new Set((payload.events as Sent[]).flatMap(e=>e[key]?[e[key]]:[]));
+  assert.deepEqual(values('name'),new Set(['first_launch','course_unlocked','pair_finished','trophy_won']));
+  assert.deepEqual(values('outcome'),new Set(['finished','quit','abandoned']));
+  assert.deepEqual(values('action'),new Set(['started','left','finished']));
 });
