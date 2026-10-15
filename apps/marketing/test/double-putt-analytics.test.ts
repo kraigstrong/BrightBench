@@ -42,7 +42,9 @@ test('accepts the edges of every range, future courses, and each mode, outcome a
     attempt({replay:true,attempt:0}),attempt({attempt:1000}),attempt({par:2}),attempt({par:12}),
     attempt({strokes:[1,1],aces:2,doubleAce:true}),attempt({replay:true,attempt:0,strokes:[1,1],aces:2,doubleAce:true}),
     // A double ace is only reported as one when the pair was finished: [1, 1] on a quit is two swings that missed.
+    // Unfinished, a 1 in `strokes` is an ace only if that ball went in: one hole made in one, the other still out.
     attempt({outcome:'quit',strokes:[1,1]}),
+    attempt({outcome:'quit',strokes:[1,3],aces:1}),attempt({outcome:'abandoned',strokes:[1,0],aces:1}),attempt({strokes:[1,2],aces:1}),
     {kind:'milestone',name:'course_unlocked',course:'fireworks',revision:'1'},
     {kind:'round',action:'started',course:'future-course',revision:'2027-01-01.3',first:false},
     {kind:'round',action:'left',course:'daybreak',revision:'1',pair:1},{kind:'round',action:'left',course:'daybreak',revision:'1',pair:9},
@@ -95,6 +97,9 @@ test('rejects every out-of-range, malformed or inconsistent value, and the whole
       {swings:2,mirrorSwings:3},{mirrorSwings:-1},{water:-1},{water:201},{aces:-1},{aces:3},{aces:1.5},
       {doubleAce:'yes'},{doubleAce:1},{doubleAce:true},{strokes:[1,2],doubleAce:true},{strokes:[2,1],doubleAce:true},
       {outcome:'quit',strokes:[1,1],doubleAce:true},{outcome:'abandoned',strokes:[1,1],doubleAce:true},
+      // Aces must match the strokes: every 1 on a finish, at most the 1s otherwise; a double ace exactly on [1, 1].
+      {strokes:[2,3],aces:2},{strokes:[2,3],aces:1},{strokes:[1,1],aces:2,doubleAce:false},{strokes:[1,1],aces:1,doubleAce:true},
+      {strokes:[1,2],aces:0},{strokes:[1,2],aces:2},{outcome:'quit',strokes:[1,3],aces:2},{outcome:'abandoned',strokes:[0,0],aces:1},
       {seconds:-1},{seconds:3601},{seconds:1.5},{seconds:Infinity},{seconds:NaN},{seconds:null}] as unknown as Partial<PairEvent>[]).map(change=>attempt(change)),
     // Rounds and course milestones.
     {kind:'round',action:'paused',course:'daybreak',revision:'1'},{kind:'round',action:'started',course:'Daybreak',revision:'1',first:true},

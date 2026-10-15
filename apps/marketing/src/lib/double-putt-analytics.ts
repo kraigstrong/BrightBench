@@ -43,10 +43,12 @@ function pair(e: Record<string, unknown>) {
   if (!context(e.context) || !oneOf(e.mode, modes) || !oneOf(e.outcome, outcomes) || typeof e.replay !== 'boolean') return false;
   const finished = e.outcome === 'finished', strokes = e.strokes;
   if (!Array.isArray(strokes) || strokes.length !== 2 || !strokes.every(s => integer(s, finished ? 1 : 0, 99))) return false;
+  // An ace is a hole made in one stroke: on a finish every 1 in `strokes` is one; unfinished, a 1 may still be out.
+  const ones = strokes.filter(s => s === 1).length;
   return integer(e.attempt, 0, 1000) && (e.replay ? e.attempt === 0 : e.attempt > 0)
     && integer(e.par, 2, 12) && integer(e.swings, 0, 200) && integer(e.mirrorSwings, 0, e.swings as number)
-    && integer(e.water, 0, 200) && integer(e.aces, 0, 2)
-    && typeof e.doubleAce === 'boolean' && (!e.doubleAce || (finished && strokes[0] === 1 && strokes[1] === 1))
+    && integer(e.water, 0, 200) && integer(e.aces, 0, 2) && (finished ? e.aces === ones : e.aces <= ones)
+    && e.doubleAce === (finished && ones === 2)
     && integer(e.seconds, 0, 3600);
 }
 function round(e: Record<string, unknown>) {
