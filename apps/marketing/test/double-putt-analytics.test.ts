@@ -130,20 +130,23 @@ test('stores only aggregate counters per content: pairs, courses and the install
     [`${pairToken}|milestone.pair_finished`]:1,[`${pairToken}|milestone.trophy_won`]:1,
     [`${pairToken}|outcome.finished`]:1,[`${pairToken}|sum.swings`]:3,[`${pairToken}|sum.mirrorSwings`]:1,[`${pairToken}|sum.finished.seconds`]:84,
     [`${pairToken}|sum.first.strokesA`]:2,[`${pairToken}|sum.first.strokesB`]:3,[`${pairToken}|sum.first.par`]:5,[`${pairToken}|first.atOrUnderPar`]:1,
-    [`${pairToken}|first.overPar.0`]:1,[`${pairToken}|attempt.1`]:1,[`${pairToken}|sum.first.attempt`]:1,
+    [`${pairToken}|attempt.1`]:1,[`${pairToken}|sum.first.attempt`]:1,
     [`${courseToken}|round.started`]:1,[`${courseToken}|round.started.first`]:1,[`${courseToken}|round.left.4`]:1,
     [`${courseToken}|round.finished`]:1,[`${courseToken}|medal.none`]:1,[`${courseToken}|round.best`]:1,
     [`${courseToken}|sum.round.strokes`]:41,[`${courseToken}|sum.round.par`]:40,
   });
-  // Replays, quits and single-hole play are split out; strokes over par clamp; tries are bucketed.
+  // Replays, quits and single-hole play are split out; tries to a first finish are bucketed.
   const more = counts(sample([attempt({replay:true,attempt:0,strokes:[1,1],aces:2,doubleAce:true}),attempt({outcome:'quit',mode:'single',strokes:[4,0],water:2,seconds:30}),
     attempt({strokes:[12,10],attempt:6}),attempt({strokes:[1,1],par:12,attempt:1000})]));
   const m = (k: string) => more[`${pairToken}|${k}`];
   assert.equal(m('replay.finished'),1);assert.equal(m('replay.doubleAce'),1);assert.equal(m('sum.replay.par'),5);assert.equal(m('sum.aces'),2);
   assert.equal(m('outcome.quit'),1);assert.equal(m('single.quit'),1);assert.equal(m('sum.water'),2);assert.equal(m('sum.quit.seconds'),30);
-  assert.equal(m('first.overPar.10'),1);assert.equal(m('first.overPar.-3'),1);assert.equal(m('attempt.7'),1);assert.equal(m('attempt.1000'),1);
+  assert.equal(m('attempt.7'),1);assert.equal(m('attempt.1000'),1);assert.equal(m('sum.first.strokesA'),13);assert.equal(m('sum.first.par'),17);
   assert.equal(m('sum.first.attempt'),1006);assert.equal(m('outcome.finished'),3);
-  assert.equal(Object.keys(more).some(k=>/overPar|attempt\./.test(k)&&k.includes('replay')),false,'replays never count as tries to a first finish');
+  // A replay finish counts as a replay only: never as a first finish or a try.
+  const replay = Object.keys(counts(sample([attempt({replay:true,attempt:0})]))).map(k=>k.split('|')[1]);
+  assert.deepEqual(replay.filter(k=>/^(attempt\.|sum\.first\.|first\.)/.test(k)),[]);
+  assert.equal(replay.includes('sum.replay.strokesA'),true);
   assert.equal(Object.values(more).includes(0),false,'zero sums spend no fields');
 });
 test('report pools builds per pair and revision, and computes what the stats page shows',()=>{
@@ -172,14 +175,17 @@ test('report pools builds per pair and revision, and computes what the stats pag
   const p = report1.pairs.find(p=>p.course==='midway'&&p.pair===2&&p.revision===r1)!;
   assert.deepEqual([p.attempts,p.finished,p.firstFinishes,p.replayFinishes,p.quits,p.abandoned,p.single],[4,3,2,1,1,0,0]);
   // Finishes: [3,3] +1, [2,2] -1, replay [2,2] -1 over a par of 5.
-  assert.equal(p.overPar,-1/3);assert.equal(p.firstOverPar,0);assert.equal(p.atOrUnderPar,2/3);
-  assert.equal(p.triesToFirstFinish,1.5);assert.deepEqual(p.firstHoleStrokes,[2.5,2.5]);
+  assert.equal(p.firstOverPar,0);assert.equal(p.allOverPar,-1/3);assert.equal(p.firstAtOrUnderPar,1/2);assert.equal(p.allAtOrUnderPar,2/3);
+  assert.equal(p.triesToFirstFinish,1.5);assert.equal(p.medianTries,'1');assert.deepEqual(p.firstHoleStrokes,[2.5,2.5]);
   assert.equal(p.waterPerAttempt,.5);assert.equal(p.mirrorShare,4/17);assert.equal(p.secondsToFinish,84);
   assert.equal(p.installsFinished,1);assert.equal(p.doubleAces,0);
   const ace = report1.pairs.find(p=>p.course==='daybreak')!;
-  assert.equal(ace.doubleAces,1);assert.equal(ace.overPar,-1);assert.equal(ace.atOrUnderPar,1);
+  assert.equal(ace.doubleAces,1);assert.equal(ace.firstOverPar,-1);assert.equal(ace.firstAtOrUnderPar,1);
   const abandoned = report1.pairs.find(p=>p.revision===r2)!;
-  assert.deepEqual([abandoned.attempts,abandoned.abandoned,abandoned.overPar,abandoned.triesToFirstFinish,abandoned.mirrorShare],[1,1,null,null,0]);
+  assert.deepEqual([abandoned.attempts,abandoned.abandoned,abandoned.firstOverPar,abandoned.triesToFirstFinish,abandoned.medianTries,abandoned.mirrorShare],[1,1,null,null,null,0]);
+  // The median is the bucket holding the middle first finish.
+  const tries = report([{day,build:'testflight:0.1:1',counts:counts(sample([1,6,7,6].map(n=>attempt({attempt:n}))))}]).pairs[0]!;
+  assert.equal(tries.medianTries,'6–7');assert.equal(tries.triesToFirstFinish,5);
   assert.deepEqual(report1.courses.map(c=>c.course),['daybreak','midway']);
   const midway = report1.courses[1]!;
   assert.deepEqual([midway.started,midway.firstStarts,midway.left,midway.finished,midway.best,midway.overPar,midway.unlocks],
@@ -200,6 +206,10 @@ test('ingestion fails closed without the key, and rejects oversized or unvalidat
   assert.equal((await handleEvents(req({...sample(),installID:'bad'}),{store:store(),appKey:'key'})).status,400);
   assert.equal((await handleEvents(req('{"schema":1'),{store:store(),appKey:'key'})).status,400);
   assert.equal((await handleEvents(req('x'.repeat(70000)),{store:store(),appKey:'key'})).status,413);
+  // Exactly 64 KiB is allowed; one byte more is not.
+  const padded=(bytes:number)=>JSON.stringify(sample()).padEnd(bytes,' ');
+  assert.equal((await handleEvents(req(padded(65536)),{store:store(),appKey:'key'})).status,204);
+  assert.equal((await handleEvents(req(padded(65537)),{store:store(),appKey:'key'})).status,413);
   const declared=new Request('https://example.test/events',{method:'POST',headers:{'X-App-Key':'key','Content-Length':'70000'},body:'{}'});
   assert.equal((await handleEvents(declared,{store:store(),appKey:'key'})).status,413);
   const full=store();full.write=async()=>false;

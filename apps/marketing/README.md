@@ -132,8 +132,10 @@ bodies, 25 events/batch, 20 builds, 500 build/content pairs and 20,000 counter f
 atomically before any write; keys expire 90 days after their day's last accepted write. Zero sums are not written.
 
 The report pools every build in the selection (filter by `build` or `appVersion` to compare) and keeps revisions
-apart. Strokes over par, at-or-under-par and hole strokes count finished attempts; tries to a first finish count
-non-replay finishes only. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
+apart. Strokes over par, at-or-under-par, hole strokes and tries (mean, and a median from the `attempt.*` buckets)
+count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. A pair
+writes at most about 40 counter fields per build, so the 20,000-field cap and the 500-content cap both allow about
+eight builds' worth of all six courses a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
 `testflight`), `appVersion`, `build`.
 
 Configure Vercel rate limiting on `/api/double-putt/events` before a build with collection on reaches testers. No

@@ -78,8 +78,8 @@ export function contentToken(e: Event) {
   if ('course' in e) return token([e.course, e.revision]);
   return 'install';
 }
-// Upper bucket bounds for tries to a first finish, and the clamp for a first finish's strokes over par.
-const attemptBuckets = [1,2,3,4,5,7,10,15,20,50,100,1000], overPar = { min: -3, max: 10 };
+// Upper bucket bounds for tries to a first finish (`attempt.<bound>`), for the median.
+const attemptBuckets = [1,2,3,4,5,7,10,15,20,50,100,1000];
 const bucket = (value: number, boundaries: number[]) => String(boundaries.find(v => value <= v) ?? boundaries.at(-1));
 export function counterUpdates(batch: Batch): Update[] {
   const totals = new Map<string, number>();
@@ -107,7 +107,6 @@ export function counterUpdates(batch: Batch): Update[] {
     if (a + b <= e.par) add(c, `${finish}.atOrUnderPar`);
     if (e.doubleAce) add(c, `${finish}.doubleAce`);
     if (e.replay) continue;
-    add(c, `first.overPar.${Math.min(overPar.max, Math.max(overPar.min, a + b - e.par))}`);
     add(c, `attempt.${bucket(e.attempt, attemptBuckets)}`); add(c, 'sum.first.attempt', e.attempt);
   }
   return [...totals].map(([field,by]) => ({field,by}));
@@ -165,6 +164,14 @@ function decode(t: string): Content | null {
   return null;
 }
 const ratio = (n: number, d: number) => d ? n/d : null;
+// The bucket holding the middle first finish, as a range of tries (`6–7`).
+function medianTries(counts: Record<string, number>, firstFinishes: number) {
+  let seen = 0;
+  const i = attemptBuckets.findIndex(bound => (seen += counts[`attempt.${bound}`] ?? 0) >= firstFinishes / 2);
+  if (!firstFinishes || i < 0) return null;
+  const low = (attemptBuckets[i-1] ?? 0) + 1, high = attemptBuckets[i]!;
+  return low === high ? String(high) : `${low}–${high}`;
+}
 function pairRow(context: Context, counts: Record<string, number>) {
   const n = (k: string) => counts[k] ?? 0;
   const finished = n('outcome.finished'), quits = n('outcome.quit'), abandoned = n('outcome.abandoned');
@@ -172,10 +179,12 @@ function pairRow(context: Context, counts: Record<string, number>) {
   const over = (f: string) => n(`sum.${f}.strokesA`) + n(`sum.${f}.strokesB`) - n(`sum.${f}.par`);
   return {...context, attempts, finished, firstFinishes, replayFinishes, quits, abandoned,
     single: n('single.finished') + n('single.quit') + n('single.abandoned'),
-    overPar: ratio(over('first') + over('replay'), finished), firstOverPar: ratio(over('first'), firstFinishes),
-    atOrUnderPar: ratio(n('first.atOrUnderPar') + n('replay.atOrUnderPar'), finished),
+    // First finishes are the difficulty signal; every finish, replays included, is kept beside them.
+    firstOverPar: ratio(over('first'), firstFinishes), allOverPar: ratio(over('first') + over('replay'), finished),
+    firstAtOrUnderPar: ratio(n('first.atOrUnderPar'), firstFinishes),
+    allAtOrUnderPar: ratio(n('first.atOrUnderPar') + n('replay.atOrUnderPar'), finished),
     doubleAces: n('first.doubleAce') + n('replay.doubleAce'),
-    triesToFirstFinish: ratio(n('sum.first.attempt'), firstFinishes),
+    triesToFirstFinish: ratio(n('sum.first.attempt'), firstFinishes), medianTries: medianTries(counts, firstFinishes),
     firstHoleStrokes: firstFinishes ? [n('sum.first.strokesA')/firstFinishes, n('sum.first.strokesB')/firstFinishes] : null,
     waterPerAttempt: ratio(n('sum.water'), attempts), mirrorShare: ratio(n('sum.mirrorSwings'), n('sum.swings')),
     secondsToFinish: ratio(n('sum.finished.seconds'), finished),
@@ -237,7 +246,7 @@ export async function handleStats(request: Request, deps: {store: DoublePuttStor
       const [channel,version,build] = r.build.split(':');
       return (url.searchParams.get('channel') ?? 'testflight') === channel && (!url.searchParams.has('appVersion') || url.searchParams.get('appVersion') === version) && (!url.searchParams.has('build') || url.searchParams.get('build') === build);
     });
-    const body: Report = {from,to, notes: ['Anonymous aggregate attempts, not unique people; installs are counted only by once-per-install reports (first launches, first starts, first finishes, trophies, unlocks).', 'Every build in this selection is pooled; filter by build to compare builds. Content revisions stay separate.', 'Strokes over par and tries to a first finish count finished attempts only; read them beside quits.', 'Failed deliveries are dropped; receive-day is not play-day.'], ...report(selected)};
+    const body: Report = {from,to, notes: ['Anonymous aggregate attempts, not unique people; installs are counted only by once-per-install reports (first launches, first starts, first finishes, trophies, unlocks).', 'Every build in this selection is pooled; filter by build to compare builds. Content revisions stay separate.', 'Strokes over par, at or under par and tries to a first finish count first finishes (not replays) only; read them beside quits.', 'Failed deliveries are dropped; receive-day is not play-day.'], ...report(selected)};
     return Response.json(body, {headers});
   } catch { return status(503); }
 }

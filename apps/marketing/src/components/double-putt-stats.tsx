@@ -17,11 +17,11 @@ const medalOrder = ['gold','silver','bronze','none'] as const;
 type SortKey = 'course'|'attempts'|'finishRate'|'quitRate'|'overPar'|'atOrUnderPar'|'doubleAces'|'triesToFirstFinish'|'waterPerAttempt'|'mirrorShare';
 const sortValue: Record<Exclude<SortKey,'course'>,(p:PairRow)=>number|null> = {
   attempts:p=>p.attempts, finishRate:p=>p.attempts?p.finished/p.attempts:null, quitRate:p=>p.attempts?p.quits/p.attempts:null,
-  overPar:p=>p.overPar, atOrUnderPar:p=>p.atOrUnderPar, doubleAces:p=>p.doubleAces, triesToFirstFinish:p=>p.triesToFirstFinish,
+  overPar:p=>p.firstOverPar, atOrUnderPar:p=>p.firstAtOrUnderPar, doubleAces:p=>p.doubleAces, triesToFirstFinish:p=>p.triesToFirstFinish,
   waterPerAttempt:p=>p.waterPerAttempt, mirrorShare:p=>p.mirrorShare,
 };
 const columns: {key:SortKey;label:string}[] = [
-  {key:'course',label:'Pair'},{key:'attempts',label:'Attempts'},{key:'finishRate',label:'Finishes (first / replay)'},{key:'quitRate',label:'Quits'},
+  {key:'course',label:'Pair'},{key:'attempts',label:'Attempts'},{key:'finishRate',label:'Finishes (first / replay)'},{key:'quitRate',label:'Quit rate'},
   {key:'overPar',label:'Strokes over par'},{key:'atOrUnderPar',label:'At or under par'},{key:'doubleAces',label:'Double aces'},
   {key:'triesToFirstFinish',label:'Tries to a first finish'},{key:'waterPerAttempt',label:'Water per attempt'},{key:'mirrorShare',label:'Swings in Mirror'},
 ];
@@ -40,7 +40,7 @@ function PairsTable({pairs}:{pairs:PairRow[]}) {
   }
   return <section aria-labelledby="pairs-heading">
     <h2 id="pairs-heading">Pairs</h2>
-    <p><small>Every attempt at each pair, by course and content revision. Strokes over par, at or under par and hole strokes count finished attempts; tries to a first finish count each install&rsquo;s first finish (1 = first try). Water and Mirror count every attempt. Choose a heading to sort; sort by strokes over par to find the hardest pairs. Faded rows have fewer than {fewAttempts} attempts.</small></p>
+    <p><small>Every attempt at each pair, by course and content revision. Strokes over par, at or under par, hole strokes and tries count first finishes, each install&rsquo;s first finish of the pair (1 = first try); the small figures beside them include replays, which are mostly players chasing the trophy. Water and Mirror count every attempt. Choose a heading to sort; sort by strokes over par to find the hardest pairs. Faded rows have fewer than {fewAttempts} attempts.</small></p>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
       <caption>Attempts and difficulty per pair</caption>
       <thead><tr>{columns.map(c=><th key={c.key} scope="col" aria-sort={key===c.key?(descending?'descending':'ascending'):'none'}>
@@ -51,11 +51,11 @@ function PairsTable({pairs}:{pairs:PairRow[]}) {
         <th scope="row">{courseName(p.course)} {p.pair}<br/><small>{p.slug} · {p.revision}</small></th>
         <td>{p.attempts}<br/><small>{p.single} in Single Hole</small></td>
         <td>{p.firstFinishes} / {p.replayFinishes}<br/><small>{percentage(p.attempts?p.finished/p.attempts:null)} of attempts</small></td>
-        <td>{p.quits}<br/><small>{p.abandoned} abandoned</small></td>
-        <td>{signed(p.overPar)}<br/><small>first finishes {signed(p.firstOverPar)}{p.firstHoleStrokes&&<> · holes {decimal(p.firstHoleStrokes[0]!)} + {decimal(p.firstHoleStrokes[1]!)}</>}</small></td>
-        <td>{percentage(p.atOrUnderPar)}</td>
+        <td>{percentage(p.attempts?p.quits/p.attempts:null)}<br/><small>{p.quits} quit · {p.abandoned} abandoned</small></td>
+        <td>{signed(p.firstOverPar)}<br/><small>{p.firstHoleStrokes&&<>holes {decimal(p.firstHoleStrokes[0]!)} + {decimal(p.firstHoleStrokes[1]!)} · </>}all finishes {signed(p.allOverPar)}</small></td>
+        <td>{percentage(p.firstAtOrUnderPar)}<br/><small>all finishes {percentage(p.allAtOrUnderPar)}</small></td>
         <td>{p.doubleAces}<br/><small>{p.trophies} trophies won</small></td>
-        <td>{decimal(p.triesToFirstFinish)}<br/><small>{p.installsFinished} installs finished</small></td>
+        <td>{decimal(p.triesToFirstFinish)}<br/><small>median {p.medianTries??'—'} · {p.installsFinished} installs finished</small></td>
         <td>{decimal(p.waterPerAttempt,2)}</td>
         <td>{percentage(p.mirrorShare)}</td>
       </tr>)}</tbody>
@@ -84,13 +84,13 @@ function CoursesTable({courses}:{courses:CourseRow[]}) {
   </section>;
 }
 export default function DoublePuttStats() {
-  const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
+  const [secret,setSecret]=useState(''),[appVersion,setAppVersion]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[course,setCourse]=useState('');
   async function load(e:FormEvent) {
-    e.preventDefault();setLoading(true);setError('');setData(null);
+    e.preventDefault();setLoading(true);setError('');setData(null);setCourse('');
     try {
       const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
-      const query=new URLSearchParams({channel,from,to});if(build)query.set('build',build);
+      const query=new URLSearchParams({channel,from,to});if(appVersion)query.set('appVersion',appVersion);if(build)query.set('build',build);
       const response=await fetch(`/api/double-putt/stats?${query}`,{headers:{Authorization:`Bearer ${secret}`},cache:'no-store'});
       if(!response.ok){setError(response.status===401?'Check the private reporting key.':'Report unavailable. Try again later.');return;}
       setData(await response.json());
@@ -104,6 +104,7 @@ export default function DoublePuttStats() {
       <label>Private reporting key<br/><input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off" required/></label>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
+      <label>App version (optional)<br/><input value={appVersion} onChange={e=>setAppVersion(e.target.value)} inputMode="decimal" placeholder="0.1"/></label>
       <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>
       <button disabled={loading}>{loading?'Loading…':'Load report'}</button>
     </form>
