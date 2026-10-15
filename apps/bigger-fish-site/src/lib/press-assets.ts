@@ -33,8 +33,8 @@ const loop = (slug: string, title: string, detail: string): PressAsset => ({
   title,
 });
 
-// Shallow Reef and Kelp Forest are rendered from the game. Jelly Bloom, Sunset Cove and Midnight Zone are cut from
-// screen recordings of real play on an iPhone, cropped clear of the pause button with the level's name blended out.
+// Shallow Reef, Kelp Forest and Midnight Zone are rendered from the game. Jelly Bloom and Sunset Cove are cut from screen
+// recordings of real play on an iPhone, cropped clear of the pause button with the level's name blended out.
 export const loops: PressAsset[] = [
   loop('shallow-reef', 'Shallow Reef', 'MP4, 1280 × 588, 0:05, silent, no interface'),
   loop('jelly-bloom', 'Jelly Bloom', 'MP4, 1280 × 588, 0:03, silent, no interface'),

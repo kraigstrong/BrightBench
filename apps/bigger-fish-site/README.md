@@ -36,13 +36,17 @@ Everything that changes at launch is an environment variable (see `.env.example`
   is real play, recorded from the game a frame at a time with the interface hidden
   (`scripts/bigger-fish-footage.sh` in kraigstrong/bigger-fish), with captions in Avenir Next. The same cut at 30 fps,
   without the release date, is the App Store preview. `trailer-poster.jpg` is its frame at 0:06.
-- `public/media/hero.mp4`, `public/media/worlds/shallow-reef.mp4`, `public/media/worlds/kelp-forest.mp4`, and
-  `public/screenshots/*.png` other than Sunset Cove's: rendered straight from the game's SpriteKit scenes at iPhone 17 Pro
-  resolution (2622 × 1206) with the interface hidden, by a scratch Xcode test that plays each level with a simple
-  bot. They show real levels, not mock-ups.
+- `public/media/hero.mp4`, `public/media/worlds/shallow-reef.mp4`, and the Shallow Reef and Jelly Bloom screenshots:
+  rendered straight from the game's SpriteKit scenes at iPhone 17 Pro resolution (2622 × 1206) with the interface
+  hidden, by a scratch Xcode test that plays each level with a simple bot. They show real levels, not mock-ups.
+- Kelp Forest's and Midnight Zone's loops and screenshots, with the kelp's bubbles and Midnight Zone's lure: from the
+  game's own scripts in kraigstrong/bigger-fish, on the iPhone 17 Pro Max simulator, scaled down. The loops, their
+  posters, `kelp-forest-clearing.png` and `midnight-zone-lures.png` come from `scripts/bigger-fish-footage.sh`
+  (`kelp-forest.7 opportunist 2 10` and `midnight-zone.3 collector 1 8`, the trailer's footage). `kelp-forest.png`
+  and `midnight-zone.png` are the App Store captures (`scripts/bigger-fish-store-capture.sh kelp-shadows midnight-light`).
 - `public/screenshots/sunset-cove.png` and `sunset-cove-hooks.png`: the same size, from the game's store capture
   (`scripts/bigger-fish-store-capture.sh sunset-hooks` in kraigstrong/bigger-fish, on the iPhone 17 Pro simulator).
-- `public/media/worlds/jelly-bloom.mp4`, `sunset-cove.mp4`, and `midnight-zone.mp4`: cut from iPhone screen
+- `public/media/worlds/jelly-bloom.mp4` and `sunset-cove.mp4`: cut from iPhone screen
   recordings of real play (2622 × 1206) to 1280 × 588 like the others, silent. The pause button is cropped off the
   right and the level's name blended out at the top left, so the boats along the top stay in frame. Each ends
   before the player is stung or eaten. Recut them from new recordings, or render them like the others.
