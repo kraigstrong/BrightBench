@@ -21,7 +21,7 @@ const sections: { title: string; body: string[] }[] = [
       'To learn which pairs of holes are too hard or too easy, the game sends a short anonymous report of each attempt at a pair to BrightBench. It says which course and pair it was and which version of the course; whether it was played in a course round or in Single Hole; whether you had already finished that pair; and how the attempt ended: finished, restarted or left, or cut short by the app closing.',
       "The report also includes your strokes on each hole and the pair's par; how many swings you took, and how many of them in Mirror; how many balls went in the water; how many holes you made in one stroke, and whether that was a double ace; until you first finish a pair, which try at it this was; and how many seconds you spent on it.",
       'For course rounds, the game reports when a round is started, and whether it is your first round of that course; when a round is left unfinished, and on which pair; and when a round is finished, with its total strokes, the course par, the medal won, and whether it was your best round of that course.',
-      'A few reports are sent only once per device: the first launch, each course a medal opens, and, for each version of the courses, the first time you finish each pair and the first double ace on it (its trophy). Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
+      'A few reports are sent only once each time the game is installed: the first launch, each course a medal opens, and, for each version of the courses, the first time you finish each pair and the first double ace on it (its trophy). Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
     ],
   },
   {
@@ -47,7 +47,7 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: 'Information Stored on Your Device',
     body: [
-      'Double Putt keeps your progress on your device only: your best scores, medals, and trophies, which courses you have opened, a round in progress, which tips you have seen, and your sound setting. To send the once-per-device reports and try counts described above, it also keeps a few markers and counters, and holds reports until they are sent. None of these are sent to us; only the anonymous reports are.',
+      'Double Putt keeps your progress on your device only: your best scores, medals, and trophies, which courses you have opened, a round in progress, which tips you have seen, and your sound setting. To send the once-per-installation reports and try counts described above, it also keeps a few markers and counters, and holds reports until they are sent. None of these are sent to us; only the anonymous reports are.',
       "Double Putt doesn't use iCloud or any account, so deleting the app removes this information. Like other app data, it may be included in your own device backups, which we cannot access.",
     ],
   },
