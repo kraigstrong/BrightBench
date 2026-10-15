@@ -21,7 +21,7 @@ const sections: { title: string; body: string[] }[] = [
       'To learn which pairs of holes are too hard or too easy, the game sends a short anonymous report of each attempt at a pair to BrightBench. It says which course and pair it was and which version of the course; whether it was played in a course round or in Single Hole; whether you had already finished that pair; and how the attempt ended: finished, restarted or left, or cut short by the app closing.',
       "The report also includes your strokes on each hole and the pair's par; how many swings you took, and how many of them in Mirror; how many balls went in the water; how many holes you made in one stroke, and whether that was a double ace; until you first finish a pair, which try at it this was; and how many seconds you spent on it.",
       'For course rounds, the game reports when a round is started, and whether it is your first round of that course; when a round is left unfinished, and on which pair; and when a round is finished, with its total strokes, the course par, the medal won, and whether it was your best round of that course.',
-      'A few reports are sent only once per device: the first launch, the first time you finish each pair, the first double ace on each pair (its trophy), and each course a medal opens. Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
+      'A few reports are sent only once per device: the first launch, each course a medal opens, and, for each version of the courses, the first time you finish each pair and the first double ace on it (its trophy). Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
     ],
   },
   {
@@ -35,7 +35,7 @@ const sections: { title: string; body: string[] }[] = [
     body: [
       'Each report is checked and immediately added to running totals for each day, grouped by pair or course and game version. Individual reports are not stored, and the totals cannot be traced back to a player or a device. Daily totals are deleted after 90 days.',
       "The totals are used only to improve Double Putt's pairs and courses and how hard they are. They are never used for advertising or tracking, and never sold or shared.",
-      'Reports are sent soon after each pair or round ends and when you leave the app. Double Putt works without an internet connection; a report that fails to send is discarded rather than retried.',
+      'Reports wait on the device and are sent when you finish a pair or a round, when you leave the app, and when it next opens. Double Putt works without an internet connection; a report that fails to send is discarded rather than retried.',
     ],
   },
   {
