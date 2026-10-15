@@ -94,8 +94,9 @@ test('every image and video the pages use is in public/', () => {
 
 test('every press screenshot says what it shows, for screen readers', () => {
   for (const asset of screenshots) {
-    assert.ok(asset.alt?.startsWith(`${asset.title.split(',')[0]}: `), `${asset.file} has no description`);
-    assert.ok(asset.alt.length > asset.title.length + 20, `${asset.file}'s description only names it`);
+    const alt = asset.alt ?? '';
+    assert.ok(alt.startsWith(`${asset.title.split(',')[0]}: `), `${asset.file} has no description`);
+    assert.ok(alt.length > asset.title.length + 20, `${asset.file}'s description only names it`);
   }
 });
 
