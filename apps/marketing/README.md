@@ -107,6 +107,44 @@ shim: `node test/run-bigger-fish-redis.mjs` from `apps/marketing`. The runner us
 Fengari interpreter through npm exec and does not modify dependencies or connect to Redis.
 This checks script behavior; live Upstash validation remains a release check.
 
+## Double Putt gameplay analytics
+
+Double Putt (the mini golf puzzle game, kraigstrong/double-putt; client in `MiniGolf/Game/Analytics.swift`) posts
+anonymous schema-1 batches to `POST /api/double-putt/events`. The contract is `docs/analytics.md` in that repo: change
+both together. `GET /api/double-putt/stats` and `/double-putt/stats` provide protected aggregate reporting;
+`/double-putt/privacy` is the app's privacy policy, linked from its Settings screen. Logic and validation live in
+`src/lib/double-putt-analytics.ts`, storage in `src/lib/double-putt-redis.ts` (keys under `dp:v1:`), tests in
+`test/double-putt-analytics.test.ts`. It is a copy of the Bigger Fish backend above, with the same safeguards and caps.
+
+Configuration:
+
+- Existing `KV_REST_API_URL` / `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_*`).
+- `DOUBLE_PUTT_APP_KEY`: match `Analytics.appKey` in the app, `double-putt-gameplay-v1`. A noise filter, not
+  authentication; strict validation and bounded cardinality still apply.
+- `DOUBLE_PUTT_STATS_SECRET`: independent private reporting secret, never shipped in the app.
+
+Three event kinds: `milestone` (`first_launch`, `course_unlocked`, `pair_finished`, `trophy_won`), `pair` (one per
+attempt) and `round` (`started`, `left`, `finished`). A batch with any field or value the contract doesn't allow is
+rejected whole (400). Counters are kept per build (`channel:appVersion:build`) and content: each pair at a course
+revision, each course at a revision, and the install, so a revision bump never mixes two versions of a pair. Courses
+and pair slugs are bounded patterns, not a list: a new course needs no server change. Limits are Bigger Fish's: 64 KiB
+bodies, 25 events/batch, 20 builds, 500 build/content pairs and 20,000 counter fields per receive-day, enforced
+atomically before any write; keys expire 90 days after their day's last accepted write. Zero sums are not written.
+
+The report pools every build in the selection (filter by `build` or `appVersion` to compare) and keeps revisions
+apart. Strokes over par, at-or-under-par and hole strokes count finished attempts; tries to a first finish count
+non-replay finishes only. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
+`testflight`), `appVersion`, `build`.
+
+Configure Vercel rate limiting on `/api/double-putt/events` before a build with collection on reaches testers. No
+request or error logging in these routes. Storage limiter regressions: `node test/run-double-putt-redis.mjs` from
+`apps/marketing`, as for Bigger Fish.
+
+```bash
+curl -s "https://brightbench.app/api/double-putt/stats?from=2026-10-01&to=2026-10-31" \
+  -H "Authorization: Bearer $DOUBLE_PUTT_STATS_SECRET"
+```
+
 ## Apex lap service
 
 Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses six routes. Logic and validation live in
