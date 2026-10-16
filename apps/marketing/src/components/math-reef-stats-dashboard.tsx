@@ -137,7 +137,7 @@ export function MathReefStatsDashboard() {
         <input type="text" name="username" autoComplete="username" value="math-reef-stats" readOnly hidden />
         <label style={{ display: 'grid', gap: spacing.xs, fontWeight: 700 }}>
           Access code
-          <input type="password" name="password" autoComplete="current-password" required style={field} />
+          <input type="password" name="password" id="password" autoComplete="current-password" required style={field} />
         </label>
         {error && <p style={{ color: palette.danger, margin: 0 }}>{error}</p>}
         <button type="submit" style={{ ...button, justifySelf: 'start' }} disabled={loading}>

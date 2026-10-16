@@ -128,7 +128,9 @@ export default function BiggerFishStats() {
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
-      <label>Private reporting key<br/><input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off" required/></label>
+      {/* A username field helps password managers match the saved item; the key is its password. */}
+      <input type="text" name="username" autoComplete="username" value="bigger-fish-stats" readOnly hidden/>
+      <label>Private reporting key<br/><input type="password" name="password" id="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="current-password" required/></label>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
       <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>

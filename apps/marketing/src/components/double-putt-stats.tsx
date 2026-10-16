@@ -101,7 +101,9 @@ export default function DoublePuttStats() {
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Double Putt beta report</h1><p>Anonymous aggregate attempts and rounds by receive-day. Daily totals are kept for 90 days. Every build in the selection is pooled; content revisions stay separate.</p>
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
-      <label>Private reporting key<br/><input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="off" required/></label>
+      {/* A username field helps password managers match the saved item; the key is its password. */}
+      <input type="text" name="username" autoComplete="username" value="double-putt-stats" readOnly hidden/>
+      <label>Private reporting key<br/><input type="password" name="password" id="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="current-password" required/></label>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
       <label>App version (optional)<br/><input value={appVersion} onChange={e=>setAppVersion(e.target.value)} inputMode="decimal" placeholder="0.1"/></label>
