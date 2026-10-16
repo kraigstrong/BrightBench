@@ -130,7 +130,8 @@ export function MathReefStatsDashboard() {
 
   if (!secret) {
     return (
-      <form onSubmit={unlock} style={{ ...card, margin: '0 auto', maxWidth: 440 }}>
+      // POST so a submit before the page's script loads can't put the access code in the URL.
+      <form onSubmit={unlock} method="post" style={{ ...card, margin: '0 auto', maxWidth: 440 }}>
         <h1 style={{ fontSize: 32, margin: 0 }}>Math Reef stats</h1>
         <p style={{ color: palette.inkMuted, margin: 0 }}>Enter the access code to see the anonymous usage counts.</p>
         {/* A username field helps password managers match the saved item. */}

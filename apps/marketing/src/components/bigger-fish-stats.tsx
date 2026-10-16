@@ -127,7 +127,8 @@ export default function BiggerFishStats() {
   const funnel=paywallFunnel(data?.rows??[],world);
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
-    <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
+    {/* POST so a submit before the page's script loads can't put the key in the URL. */}
+    <form onSubmit={load} method="post" style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       {/* A username field helps password managers match the saved item; the key is its password. */}
       <input type="text" name="username" autoComplete="username" value="bigger-fish-stats" readOnly hidden/>
       <label>Private reporting key<br/><input type="password" name="password" id="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="current-password" required/></label>

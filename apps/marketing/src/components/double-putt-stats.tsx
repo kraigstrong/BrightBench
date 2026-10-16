@@ -100,7 +100,8 @@ export default function DoublePuttStats() {
   const pairs=(data?.pairs??[]).filter(p=>!course||p.course===course),courses=(data?.courses??[]).filter(c=>!course||c.course===course);
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Double Putt beta report</h1><p>Anonymous aggregate attempts and rounds by receive-day. Daily totals are kept for 90 days. Every build in the selection is pooled; content revisions stay separate.</p>
-    <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
+    {/* POST so a submit before the page's script loads can't put the key in the URL. */}
+    <form onSubmit={load} method="post" style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       {/* A username field helps password managers match the saved item; the key is its password. */}
       <input type="text" name="username" autoComplete="username" value="double-putt-stats" readOnly hidden/>
       <label>Private reporting key<br/><input type="password" name="password" id="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="current-password" required/></label>
