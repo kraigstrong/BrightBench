@@ -109,10 +109,12 @@ function PaywallChart({funnel}:{funnel:PaywallFunnel}) {
   </section>;
 }
 export default function BiggerFishStats() {
-  const [secret,setSecret]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
+  const [build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
-  async function load(e:FormEvent) {
+  async function load(e:FormEvent<HTMLFormElement>) {
     e.preventDefault();setLoading(true);setError('');setData(null);
+    // The key is read from the form, not state: a password manager can fill the field without firing onChange.
+    const secret=String(new FormData(e.currentTarget).get('password')??'');
     try {
       const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
       const query=new URLSearchParams({channel,from,to});if(build)query.set('build',build);
@@ -131,7 +133,7 @@ export default function BiggerFishStats() {
     <form onSubmit={load} method="post" style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       {/* A username field helps password managers match the saved item; the key is its password. */}
       <input type="text" name="username" autoComplete="username" value="bigger-fish-stats" readOnly hidden/>
-      <label>Private reporting key<br/><input type="password" name="password" id="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="current-password" required/></label>
+      <label>Private reporting key<br/><input type="password" name="password" id="password" autoComplete="current-password" required/></label>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
       <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>
