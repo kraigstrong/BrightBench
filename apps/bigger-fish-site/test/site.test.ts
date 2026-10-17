@@ -6,7 +6,7 @@ import test from 'node:test';
 import { buildPressKit, factSheet } from '../scripts/build-press-kit.ts';
 import { createZip, zipEntryNames } from '../scripts/zip.ts';
 import { beats, facts, game, totalLevels, worlds } from '../src/lib/game.ts';
-import { pressKitFiles, zipPath } from '../src/lib/press-assets.ts';
+import { pressKitFiles, screenshots, zipPath } from '../src/lib/press-assets.ts';
 import { appStoreId, contactEmail, productionOrigin, readEnv, siteOrigin, storeCta } from '../src/lib/site.ts';
 
 const publicDir = join(import.meta.dirname, '..', 'public');
@@ -90,6 +90,14 @@ test('every image and video the pages use is in public/', () => {
     ...pressKitFiles.flatMap((asset) => [asset.file, ...(asset.poster ? [asset.poster.slice(1)] : [])]),
   ];
   for (const file of files) assert.ok(existsSync(join(publicDir, file)), `missing public/${file}`);
+});
+
+test('every press screenshot says what it shows, for screen readers', () => {
+  for (const asset of screenshots) {
+    const alt = asset.alt ?? '';
+    assert.ok(alt.startsWith(`${asset.title.split(',')[0]}: `), `${asset.file} has no description`);
+    assert.ok(alt.length > asset.title.length + 20, `${asset.file}'s description only names it`);
+  }
 });
 
 test('the press kit zip holds the fact sheet and every asset, under tidy folders', () => {

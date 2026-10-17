@@ -89,10 +89,10 @@ export const worlds: World[] = [
   {
     name: 'Kelp Forest',
     motto: "Dive into the kelp. Mind what's hiding.",
-    line: 'Kelp slows you down and hides fish as shadows until you get close.',
+    line: 'Kelp slows you down. Deep in it, fish show only their bubbles until you get close.',
     slug: 'kelp-forest',
     screenshot: '/screenshots/kelp-forest.png',
-    screenshotAlt: 'Kelp Forest: dark fish silhouettes hidden in tall kelp, one big fish revealed.',
+    screenshotAlt: 'Kelp Forest: bubbles rising from a fish hidden in tall kelp, a big fish out in the open water.',
   },
   {
     name: 'Sunset Cove',
@@ -108,7 +108,7 @@ export const worlds: World[] = [
     line: 'Your headlamp only reaches so far. Every glowing lure could belong to something bigger.',
     slug: 'midnight-zone',
     screenshot: '/screenshots/midnight-zone.png',
-    screenshotAlt: "Midnight Zone: the player's headlamp beam lighting up anglerfish lures in the dark.",
+    screenshotAlt: "Midnight Zone: the beam from the player's own lure lighting up anglerfish in the dark.",
   },
 ];
 
@@ -119,7 +119,7 @@ export const descriptions = {
   long: [
     'Bigger Fish is a one-touch arcade game for iPhone and iPad about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
     'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead.',
-    'Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, read the shadows in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
+    'Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, follow the bubbles in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
   ],
 } as const;
 

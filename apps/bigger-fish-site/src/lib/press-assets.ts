@@ -1,7 +1,11 @@
 // The press kit's downloads, by their path under public/. The press page lists them and
 // scripts/build-press-kit.ts packs them into one zip. Plain relative imports only: the build script runs in Node.
 
+import { worlds } from './game.ts';
+
 export type PressAsset = {
+  /** What an image shows, for screen readers. */
+  alt?: string;
   /** Path under public/. */
   file: string;
   title: string;
@@ -33,7 +37,7 @@ const loop = (slug: string, title: string, detail: string): PressAsset => ({
   title,
 });
 
-// Shallow Reef and Kelp Forest are rendered from the game. Jelly Bloom, Sunset Cove and Midnight Zone are cut from
+// Shallow Reef, Kelp Forest and Midnight Zone are rendered from the game. Jelly Bloom and Sunset Cove are cut from
 // screen recordings of real play on an iPhone, cropped clear of the pause button with the level's name blended out.
 export const loops: PressAsset[] = [
   loop('shallow-reef', 'Shallow Reef', 'MP4, 1280 × 588, 0:05, silent, no interface'),
@@ -43,7 +47,9 @@ export const loops: PressAsset[] = [
   loop('midnight-zone', 'Midnight Zone', 'MP4, 1280 × 588, 0:05, silent, no interface'),
 ];
 
-const screenshot = (slug: string, title: string): PressAsset => ({
+// A world's own screenshot is described as in game.ts; the others say what they show.
+const screenshot = (slug: string, title: string, alt?: string): PressAsset => ({
+  alt: alt ?? worlds.find((world) => world.screenshot === `/screenshots/${slug}.png`)?.screenshotAlt,
   detail: 'PNG, 2622 × 1206',
   file: `screenshots/${slug}.png`,
   folder: 'Screenshots',
@@ -56,11 +62,31 @@ export const screenshots: PressAsset[] = [
   screenshot('kelp-forest', 'Kelp Forest'),
   screenshot('sunset-cove', 'Sunset Cove'),
   screenshot('midnight-zone', 'Midnight Zone'),
-  screenshot('shallow-reef-big-fish', 'Shallow Reef, a bigger fish'),
-  screenshot('jelly-bloom-school', 'Jelly Bloom, a school'),
-  screenshot('kelp-forest-clearing', 'Kelp Forest, a clearing'),
-  screenshot('sunset-cove-hooks', 'Sunset Cove, a baited hook'),
-  screenshot('midnight-zone-lures', 'Midnight Zone, lures'),
+  screenshot(
+    'shallow-reef-big-fish',
+    'Shallow Reef, a bigger fish',
+    "Shallow Reef: the player's small orange fish near the top, a big pink striped fish ahead.",
+  ),
+  screenshot(
+    'jelly-bloom-school',
+    'Jelly Bloom, a school',
+    'Jelly Bloom: a school of fish in purple water between two jellyfish.',
+  ),
+  screenshot(
+    'kelp-forest-clearing',
+    'Kelp Forest, a clearing',
+    "Kelp Forest: the player's fish eating at the edge of the kelp, a big fish fading out of it, open water beyond.",
+  ),
+  screenshot(
+    'sunset-cove-hooks',
+    'Sunset Cove, a baited hook',
+    "Sunset Cove: a baited hook hanging from a boat's line into pink evening water, fish all around.",
+  ),
+  screenshot(
+    'midnight-zone-lures',
+    'Midnight Zone, lures',
+    "Midnight Zone: the beam from the player's lure lighting up anglerfish and their glowing lures in the dark.",
+  ),
 ];
 
 export const brand: PressAsset[] = [

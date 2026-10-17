@@ -150,7 +150,7 @@ export default function PressPage() {
                   <figure className={styles.figure} key={asset.file}>
                     <div className={styles.thumb}>
                       <Image
-                        alt={`${game.name}: ${asset.title}`}
+                        alt={asset.alt ?? `${game.name}: ${asset.title}`}
                         fill
                         sizes="(max-width: 700px) 92vw, 380px"
                         src={`/${asset.file}`}
