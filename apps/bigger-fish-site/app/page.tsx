@@ -145,6 +145,7 @@ export default function HomePage() {
           <h2 className={styles.closingTitle} id="get-it">
             How big can you get?
           </h2>
+          <p className={styles.sectionLede}>{game.retryLine}</p>
           <StoreCta />
           <p className={styles.offer}>{game.offer}</p>
           <p className={styles.promise}>No ads. No accounts. Plays offline.</p>

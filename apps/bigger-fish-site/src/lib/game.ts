@@ -12,6 +12,11 @@ export const game = {
   offer: 'The first world is free. One $4.99 purchase unlocks every level.',
   /** The home page's lines under the logo. */
   pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
+  /**
+   * The home page's closing line. From the TestFlight beta's anonymous stats, Sep 18 to Oct 17, 2026: 3,076 of
+   * 3,143 lost runs ended in a retry (97.9%). It counts runs, not people, so keep "of lost runs".
+   */
+  retryLine: 'In the beta, players tried again after 98% of lost runs.',
   developer: 'Kraig Strong',
   /** The App Store release day, announced before launch. */
   releaseDay: 'November 3',
@@ -118,7 +123,7 @@ export const descriptions = {
     'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
   long: [
     'Bigger Fish is a one-touch arcade game for iPhone and iPad about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
-    'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead.',
+    'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead. Runs are over in seconds, and in the beta, players tried again after 98% of the runs they lost.',
     'Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, follow the bubbles in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
   ],
 } as const;
@@ -128,6 +133,7 @@ export const features = [
   'A living food chain: every fish is eating and growing, just like you.',
   'Five worlds, each with its own twist: jellyfish, kelp, fishing hooks, and the dark.',
   `${totalLevels} levels, including a five-level Deep End in every world.`,
-  'Short runs built for one more try.',
+  // 86% of the beta's runs ended within 10 seconds (same stats as `game.retryLine`).
+  'Short runs built for one more try: most last under ten seconds.',
   'No ads, no accounts, and it plays offline.',
 ] as const;
