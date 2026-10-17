@@ -28,7 +28,7 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, independent` },
-  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear} (in beta on TestFlight until then)` },
+  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear}, on the App Store` },
   { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later' },
   { label: 'Price', value: 'First world free, plus the first two levels of every other world; one $4.99 purchase unlocks every level' },
   { label: 'Genre', value: 'Arcade' },

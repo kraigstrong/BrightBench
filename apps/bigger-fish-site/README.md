@@ -22,7 +22,8 @@ from the files listed in `src/lib/press-assets.ts`. The zip is generated, never 
 
 ## Launch day
 
-Everything that changes at launch is an environment variable (see `.env.example`):
+The store links are environment variables (see `.env.example`). Next.js bakes them in when it builds, so a change
+needs a new deploy:
 
 - `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL` swaps "Coming to iPhone and iPad <release day>" for Apple's App Store badge (and adds
   Apple's trademark line to the footer). With `NEXT_PUBLIC_BIGGER_FISH_PREORDER=true` it shows a pre-order link
@@ -34,8 +35,9 @@ Everything that changes at launch is an environment variable (see `.env.example`
 
 - `public/media/bigger-fish-trailer.mp4`: the trailer (1920 × 886, 60 fps, 0:30, with the game's music). Every shot
   is real play, recorded from the game a frame at a time with the interface hidden
-  (`scripts/bigger-fish-footage.sh` in kraigstrong/bigger-fish), with captions in Avenir Next. The same cut at 30 fps,
-  without the release date, is the App Store preview. `trailer-poster.jpg` is its frame at 0:06.
+  (`scripts/bigger-fish-footage.sh` in kraigstrong/bigger-fish), with captions in Avenir Next. It ends on "Out now on
+  iPhone and iPad". The same cut at 30 fps, without that line, is the App Store preview. `trailer-poster.jpg` is its
+  frame at 0:06.
 - `public/media/hero.mp4`, `public/media/worlds/shallow-reef.mp4`, and the Shallow Reef and Jelly Bloom screenshots:
   rendered straight from the game's SpriteKit scenes at iPhone 17 Pro resolution (2622 × 1206) with the interface
   hidden, by a scratch Xcode test that plays each level with a simple bot. They show real levels, not mock-ups.
