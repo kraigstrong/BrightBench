@@ -9,6 +9,9 @@ import { palette, radii, spacing } from '@education/design';
 const contactEmail = 'support@brightbench.app';
 
 export const metadata: Metadata = {
+  // biggerfish.app/privacy carries the same text word for word. This copy stays live because the App Store listing
+  // links it; the canonical tells search engines to show the biggerfish.app one.
+  alternates: { canonical: 'https://biggerfish.app/privacy' },
   description: 'How Bigger Fish, an arcade game, handles information, including its anonymous gameplay summaries.',
   title: 'Bigger Fish Privacy Policy',
 };
