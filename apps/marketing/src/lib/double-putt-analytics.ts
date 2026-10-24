@@ -2,21 +2,30 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 
 // Content identity only: no user/install/session/device IDs or client wall-clock timestamps.
 // The contract is docs/analytics.md in kraigstrong/double-putt (sent by MiniGolf/Game/Analytics.swift): change both together.
-export type Context = { course: string; pair: number; slug: string; revision: string };
+export type Context = { course: string; hole: number; slug: string; revision: string };
 export const modes = ['round', 'single'] as const;
 export const outcomes = ['finished', 'quit', 'abandoned'] as const;
 export const medals = ['none', 'bronze', 'silver', 'gold'] as const;
 export type Event =
   | { kind: 'milestone'; name: 'first_launch' }
   | { kind: 'milestone'; name: 'course_unlocked'; course: string; revision: string }
-  | { kind: 'milestone'; name: 'pair_finished' | 'trophy_won'; context: Context }
-  // One per attempt at a pair. `strokes` is hole A then hole B, water penalties included.
-  | { kind: 'pair'; context: Context; mode: typeof modes[number]; outcome: typeof outcomes[number]; replay: boolean; attempt: number;
+  | { kind: 'milestone'; name: 'hole_finished' | 'trophy_won'; context: Context }
+  // One per attempt at a hole. `strokes` is green A then green B, water penalties included.
+  | { kind: 'hole'; context: Context; mode: typeof modes[number]; outcome: typeof outcomes[number]; replay: boolean; attempt: number;
       strokes: [number, number]; par: number; swings: number; mirrorSwings: number; water: number; aces: number; doubleAce: boolean; seconds: number }
   | { kind: 'round'; action: 'started'; course: string; revision: string; first: boolean }
-  | { kind: 'round'; action: 'left'; course: string; revision: string; pair: number }
+  | { kind: 'round'; action: 'left'; course: string; revision: string; hole: number }
   | { kind: 'round'; action: 'finished'; course: string; revision: string; strokes: number; par: number; medal: typeof medals[number]; best: boolean };
-export type Batch = { schema: 1; appVersion: string; build: string; channel: 'debug' | 'testflight' | 'appstore'; events: Event[] };
+export type Batch = { schema: 2; appVersion: string; build: string; channel: 'debug' | 'testflight' | 'appstore'; events: Event[] };
+// Schema 1, sent by TestFlight builds 1–3, called a hole a pair: `kind: 'pair'`, `context.pair`, `pair_finished`, and
+// `pair` on a round left. It's still accepted, and upgraded on arrival so both schemas count together.
+type Schema1Context = Omit<Context, 'hole'> & { pair: number };
+type Schema1Event =
+  | Exclude<Event, { context: Context } | { action: 'left' }>
+  | { kind: 'milestone'; name: 'pair_finished' | 'trophy_won'; context: Schema1Context }
+  | Omit<Extract<Event, { kind: 'hole' }>, 'kind' | 'context'> & { kind: 'pair'; context: Schema1Context }
+  | Omit<Extract<Event, { action: 'left' }>, 'hole'> & { pair: number };
+export type Schema1Batch = Omit<Batch, 'schema' | 'events'> & { schema: 1; events: Schema1Event[] };
 export const maxBodyBytes = 64 * 1024;
 export const retentionDays = 90;
 export type Update = { field: string; by: number };
@@ -32,18 +41,21 @@ function keys(x: Record<string, unknown>, required: string[]) {
 const oneOf = (x: unknown, values: readonly string[]) => typeof x === 'string' && values.includes(x);
 const integer = (x: unknown, min: number, max: number): x is number => typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max;
 const matches = (x: unknown, pattern: RegExp) => typeof x === 'string' && pattern.test(x);
-// Bounded slugs, not a fixed list: new courses and pairs need no server change.
+// Bounded slugs, not a fixed list: new courses and holes need no server change.
 const course = /^[a-z][a-z0-9-]{0,31}$/, slug = /^[a-z][a-z0-9-]{0,47}$/, revision = /^[a-zA-Z0-9.-]{1,48}$/;
-function context(x: unknown): x is Context {
-  return record(x) && keys(x, ['course','pair','slug','revision']) && matches(x.course, course) && integer(x.pair, 1, 9)
+// What each schema calls a hole and its first finish; every other name and rule is the same.
+const words = { 1: { hole: 'pair', finished: 'pair_finished' }, 2: { hole: 'hole', finished: 'hole_finished' } } as const;
+type Words = typeof words[keyof typeof words];
+function context(x: unknown, w: Words) {
+  return record(x) && keys(x, ['course',w.hole,'slug','revision']) && matches(x.course, course) && integer(x[w.hole], 1, 9)
     && matches(x.slug, slug) && matches(x.revision, revision);
 }
-function pair(e: Record<string, unknown>) {
+function hole(e: Record<string, unknown>, w: Words) {
   if (!keys(e, ['kind','context','mode','outcome','replay','attempt','strokes','par','swings','mirrorSwings','water','aces','doubleAce','seconds'])) return false;
-  if (!context(e.context) || !oneOf(e.mode, modes) || !oneOf(e.outcome, outcomes) || typeof e.replay !== 'boolean') return false;
+  if (!context(e.context, w) || !oneOf(e.mode, modes) || !oneOf(e.outcome, outcomes) || typeof e.replay !== 'boolean') return false;
   const finished = e.outcome === 'finished', strokes = e.strokes;
   if (!Array.isArray(strokes) || strokes.length !== 2 || !strokes.every(s => integer(s, finished ? 1 : 0, 99))) return false;
-  // An ace is a hole made in one stroke: on a finish every 1 in `strokes` is one; unfinished, a 1 may still be out.
+  // An ace is a green made in one stroke: on a finish every 1 in `strokes` is one; unfinished, a 1 may still be out.
   const ones = strokes.filter(s => s === 1).length;
   return integer(e.attempt, 0, 1000) && (e.replay ? e.attempt === 0 : e.attempt > 0)
     && integer(e.par, 2, 12) && integer(e.swings, 0, 200) && integer(e.mirrorSwings, 0, e.swings as number)
@@ -51,32 +63,45 @@ function pair(e: Record<string, unknown>) {
     && e.doubleAce === (finished && ones === 2)
     && integer(e.seconds, 0, 3600);
 }
-function round(e: Record<string, unknown>) {
+function round(e: Record<string, unknown>, w: Words) {
   const base = ['kind','action','course','revision'];
   if (!matches(e.course, course) || !matches(e.revision, revision)) return false;
   if (e.action === 'started') return keys(e, [...base,'first']) && typeof e.first === 'boolean';
-  if (e.action === 'left') return keys(e, [...base,'pair']) && integer(e.pair, 1, 9);
+  if (e.action === 'left') return keys(e, [...base,w.hole]) && integer(e[w.hole], 1, 9);
   return e.action === 'finished' && keys(e, [...base,'strokes','par','medal','best'])
     && integer(e.strokes, 9, 999) && integer(e.par, 18, 108) && oneOf(e.medal, medals) && typeof e.best === 'boolean';
 }
-export function validateBatch(x: unknown): x is Batch {
-  if (!record(x) || !keys(x, ['schema','appVersion','build','channel','events']) || x.schema !== 1) return false;
+// One schema per batch: a schema 2 batch with a `pair` in it (or the reverse) is rejected like any unknown field.
+export function validateBatch(x: unknown): x is Batch | Schema1Batch {
+  if (!record(x) || !keys(x, ['schema','appVersion','build','channel','events']) || (x.schema !== 1 && x.schema !== 2)) return false;
   if (!matches(x.appVersion, /^\d{1,3}\.\d{1,3}(\.\d{1,3})?$/) || !matches(x.build, /^\d{1,9}$/)) return false;
   if (!oneOf(x.channel, ['debug','testflight','appstore']) || !Array.isArray(x.events) || x.events.length < 1 || x.events.length > 25) return false;
+  const w = words[x.schema];
   return x.events.every((e: unknown) => {
     if (!record(e)) return false;
-    if (e.kind === 'pair') return pair(e);
-    if (e.kind === 'round') return round(e);
+    if (e.kind === w.hole) return hole(e, w);
+    if (e.kind === 'round') return round(e, w);
     if (e.kind !== 'milestone') return false;
     if (e.name === 'first_launch') return keys(e, ['kind','name']);
     if (e.name === 'course_unlocked') return keys(e, ['kind','name','course','revision']) && matches(e.course, course) && matches(e.revision, revision);
-    return oneOf(e.name, ['pair_finished','trophy_won']) && keys(e, ['kind','name','context']) && context(e.context);
+    return oneOf(e.name, [w.finished,'trophy_won']) && keys(e, ['kind','name','context']) && context(e.context, w);
   });
+}
+// A validated batch under schema 2's names, so a hole counts the same whichever build reported it.
+export function upgrade(batch: Batch | Schema1Batch): Batch {
+  if (batch.schema === 2) return batch;
+  const context = ({pair, ...rest}: Schema1Context): Context => ({...rest, hole: pair});
+  return {...batch, schema: 2, events: batch.events.map((e): Event => {
+    if (e.kind === 'pair') return {...e, kind: 'hole', context: context(e.context)};
+    if (e.kind === 'milestone' && 'context' in e) return {...e, name: e.name === 'pair_finished' ? 'hole_finished' : e.name, context: context(e.context)};
+    if (e.kind === 'round' && e.action === 'left') { const {pair, ...rest} = e; return {...rest, hole: pair}; }
+    return e;
+  })};
 }
 // Canonical order independent of request JSON key ordering. This is game content, never an attempt or install key.
 const token = (parts: (string | number)[]) => Buffer.from(JSON.stringify(parts)).toString('base64url');
 export function contentToken(e: Event) {
-  if ('context' in e) return token([e.context.course, e.context.revision, e.context.pair, e.context.slug]);
+  if ('context' in e) return token([e.context.course, e.context.revision, e.context.hole, e.context.slug]);
   if ('course' in e) return token([e.course, e.revision]);
   return 'install';
 }
@@ -92,7 +117,7 @@ export function counterUpdates(batch: Batch): Update[] {
     if (e.kind === 'milestone') { add(c, `milestone.${e.name}`); continue; }
     if (e.kind === 'round') {
       if (e.action === 'started') { add(c, 'round.started'); if (e.first) add(c, 'round.started.first'); }
-      if (e.action === 'left') add(c, `round.left.${e.pair}`);
+      if (e.action === 'left') add(c, `round.left.${e.hole}`);
       if (e.action === 'finished') {
         add(c, 'round.finished'); add(c, `medal.${e.medal}`); if (e.best) add(c, 'round.best');
         add(c, 'sum.round.strokes', e.strokes); add(c, 'sum.round.par', e.par);
@@ -135,10 +160,11 @@ export async function handleEvents(request: Request, deps: { store: DoublePuttSt
     value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
   } catch { return status(400); }
   if (!validateBatch(value)) return status(400);
-  const build = `${value.channel}:${value.appVersion}:${value.build}`;
+  const batch = upgrade(value);
+  const build = `${batch.channel}:${batch.appVersion}:${batch.build}`;
   const day = (deps.now?.() ?? new Date()).toISOString().slice(0,10);
   try {
-    const ok = await deps.store.write(day, build, [...new Set(value.events.map(contentToken))], counterUpdates(value));
+    const ok = await deps.store.write(day, build, [...new Set(batch.events.map(contentToken))], counterUpdates(batch));
     return status(ok ? 204 : 429);
   } catch { return status(503); } // Never log errors or requests that may contain bodies/network metadata.
 }
@@ -155,12 +181,12 @@ function newerBuildFirst(a: string, b: string) {
   for (let i = 0; i < Math.max(pa.version.length,pb.version.length); i++) { const d = (pb.version[i] ?? 0) - (pa.version[i] ?? 0); if (d) return d; }
   return pb.build - pa.build || a.localeCompare(b);
 }
-type Content = { kind: 'pair'; context: Context } | { kind: 'course'; course: string; revision: string } | { kind: 'install' };
+type Content = { kind: 'hole'; context: Context } | { kind: 'course'; course: string; revision: string } | { kind: 'install' };
 function decode(t: string): Content | null {
   if (t === 'install') return {kind: 'install'};
   try {
     const p: unknown = JSON.parse(Buffer.from(t, 'base64url').toString());
-    if (Array.isArray(p) && p.length === 4) return {kind: 'pair', context: {course: String(p[0]), revision: String(p[1]), pair: Number(p[2]), slug: String(p[3])}};
+    if (Array.isArray(p) && p.length === 4) return {kind: 'hole', context: {course: String(p[0]), revision: String(p[1]), hole: Number(p[2]), slug: String(p[3])}};
     if (Array.isArray(p) && p.length === 2) return {kind: 'course', course: String(p[0]), revision: String(p[1])};
   } catch { /* not a token this file wrote */ }
   return null;
@@ -174,7 +200,7 @@ function medianTries(counts: Record<string, number>, firstFinishes: number) {
   const low = (attemptBuckets[i-1] ?? 0) + 1, high = attemptBuckets[i]!;
   return low === high ? String(high) : `${low}–${high}`;
 }
-function pairRow(context: Context, counts: Record<string, number>) {
+function holeRow(context: Context, counts: Record<string, number>) {
   const n = (k: string) => counts[k] ?? 0;
   const finished = n('outcome.finished'), quits = n('outcome.quit'), abandoned = n('outcome.abandoned');
   const attempts = finished + quits + abandoned, replayFinishes = n('replay.finished'), firstFinishes = finished - replayFinishes;
@@ -187,10 +213,11 @@ function pairRow(context: Context, counts: Record<string, number>) {
     allAtOrUnderPar: ratio(n('first.atOrUnderPar') + n('replay.atOrUnderPar'), finished),
     doubleAces: n('first.doubleAce') + n('replay.doubleAce'),
     triesToFirstFinish: ratio(n('sum.first.attempt'), firstFinishes), medianTries: medianTries(counts, firstFinishes),
-    firstHoleStrokes: firstFinishes ? [n('sum.first.strokesA')/firstFinishes, n('sum.first.strokesB')/firstFinishes] : null,
+    firstGreenStrokes: firstFinishes ? [n('sum.first.strokesA')/firstFinishes, n('sum.first.strokesB')/firstFinishes] : null,
     waterPerAttempt: ratio(n('sum.water'), attempts), mirrorShare: ratio(n('sum.mirrorSwings'), n('sum.swings')),
     secondsToFinish: ratio(n('sum.finished.seconds'), finished),
-    installsFinished: n('milestone.pair_finished'), trophies: n('milestone.trophy_won'), counts};
+    // Counters written before schema 2 call a first finish `pair_finished` (kept until they expire, 90 days on).
+    installsFinished: n('milestone.hole_finished') + n('milestone.pair_finished'), trophies: n('milestone.trophy_won'), counts};
 }
 function courseRow(course: string, revision: string, counts: Record<string, number>) {
   const n = (k: string) => counts[k] ?? 0, finished = n('round.finished');
@@ -199,11 +226,11 @@ function courseRow(course: string, revision: string, counts: Record<string, numb
     medals: Object.fromEntries(medals.map(m => [m, n(`medal.${m}`)])) as Record<typeof medals[number], number>,
     overPar: ratio(n('sum.round.strokes') - n('sum.round.par'), finished), unlocks: n('milestone.course_unlocked'), counts};
 }
-export type PairRow = ReturnType<typeof pairRow>;
+export type HoleRow = ReturnType<typeof holeRow>;
 export type CourseRow = ReturnType<typeof courseRow>;
 export type BuildRow = { build: string; firstLaunches: number; attempts: number; roundsStarted: number; roundsFinished: number };
-// Every build in `rows` pooled per pair and per course at one revision, so counts never mix two versions of a pair;
-// `builds` keeps a few totals per build. Pairs sort by course (game order), newest revision, then pair.
+// Every build in `rows` pooled per hole and per course at one revision, so counts never mix two versions of a hole;
+// `builds` keeps a few totals per build. Holes sort by course (game order), newest revision, then hole.
 export function report(rows: Awaited<ReturnType<DoublePuttStore['read']>>) {
   const contents = new Map<string, Record<string, number>>(), builds = new Map<string, BuildRow>();
   for (const row of rows) {
@@ -219,16 +246,16 @@ export function report(rows: Awaited<ReturnType<DoublePuttStore['read']>>) {
       if (metric === 'round.finished') b.roundsFinished += value;
     }
   }
-  const pairs: PairRow[] = [], courses: CourseRow[] = [];
+  const holes: HoleRow[] = [], courses: CourseRow[] = [];
   for (const [t,counts] of contents) {
     const c = decode(t);
-    if (c?.kind === 'pair') pairs.push(pairRow(c.context, counts));
+    if (c?.kind === 'hole') holes.push(holeRow(c.context, counts));
     if (c?.kind === 'course') courses.push(courseRow(c.course, c.revision, counts));
   }
   return {
     builds: [...builds.values()].sort((a,b) => newerBuildFirst(a.build,b.build)),
     firstLaunches: contents.get('install')?.['milestone.first_launch'] ?? 0,
-    pairs: pairs.sort((a,b) => byCourse(a,b) || a.pair - b.pair || a.slug.localeCompare(b.slug)),
+    holes: holes.sort((a,b) => byCourse(a,b) || a.hole - b.hole || a.slug.localeCompare(b.slug)),
     courses: courses.sort(byCourse),
   };
 }

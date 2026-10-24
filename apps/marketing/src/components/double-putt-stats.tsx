@@ -1,6 +1,6 @@
 'use client';
 import { useState, type FormEvent } from 'react';
-import type { CourseRow, PairRow, Report } from '@/lib/double-putt-analytics';
+import type { CourseRow, HoleRow, Report } from '@/lib/double-putt-analytics';
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
 const decimal = (x:number|null,digits=1) => x === null ? '—' : x.toFixed(digits);
 const signed = (x:number|null) => x === null ? '—' : `${x > 0 ? '+' : ''}${x.toFixed(2)}`;
@@ -15,44 +15,44 @@ const courseName = (id:string) => courseNames[id] ?? id;
 const courseRank = (id:string) => { const i = Object.keys(courseNames).indexOf(id); return i < 0 ? Infinity : i; };
 const medalOrder = ['gold','silver','bronze','none'] as const;
 type SortKey = 'course'|'attempts'|'finishRate'|'quitRate'|'overPar'|'atOrUnderPar'|'doubleAces'|'triesToFirstFinish'|'waterPerAttempt'|'mirrorShare';
-const sortValue: Record<Exclude<SortKey,'course'>,(p:PairRow)=>number|null> = {
+const sortValue: Record<Exclude<SortKey,'course'>,(p:HoleRow)=>number|null> = {
   attempts:p=>p.attempts, finishRate:p=>p.attempts?p.finished/p.attempts:null, quitRate:p=>p.attempts?p.quits/p.attempts:null,
   overPar:p=>p.firstOverPar, atOrUnderPar:p=>p.firstAtOrUnderPar, doubleAces:p=>p.doubleAces, triesToFirstFinish:p=>p.triesToFirstFinish,
   waterPerAttempt:p=>p.waterPerAttempt, mirrorShare:p=>p.mirrorShare,
 };
 const columns: {key:SortKey;label:string}[] = [
-  {key:'course',label:'Pair'},{key:'attempts',label:'Attempts'},{key:'finishRate',label:'Finishes (first / replay)'},{key:'quitRate',label:'Quit rate'},
+  {key:'course',label:'Hole'},{key:'attempts',label:'Attempts'},{key:'finishRate',label:'Finishes (first / replay)'},{key:'quitRate',label:'Quit rate'},
   {key:'overPar',label:'Strokes over par'},{key:'atOrUnderPar',label:'At or under par'},{key:'doubleAces',label:'Double aces'},
   {key:'triesToFirstFinish',label:'Tries to a first finish'},{key:'waterPerAttempt',label:'Water per attempt'},{key:'mirrorShare',label:'Swings in Mirror'},
 ];
-// `course` keeps the report's order (course, newest revision, pair). Every other column puts empty cells last.
-function sorted(pairs:PairRow[],key:SortKey,descending:boolean) {
-  if (key==='course') return descending?[...pairs].reverse():pairs;
+// `course` keeps the report's order (course, newest revision, hole). Every other column puts empty cells last.
+function sorted(holes:HoleRow[],key:SortKey,descending:boolean) {
+  if (key==='course') return descending?[...holes].reverse():holes;
   const value=sortValue[key];
-  return pairs.map((p,i)=>({p,i,v:value(p)})).sort((a,b)=>a.v===null||b.v===null?Number(a.v===null)-Number(b.v===null)||a.i-b.i
+  return holes.map((p,i)=>({p,i,v:value(p)})).sort((a,b)=>a.v===null||b.v===null?Number(a.v===null)-Number(b.v===null)||a.i-b.i
     :(descending?b.v-a.v:a.v-b.v)||a.i-b.i).map(x=>x.p);
 }
-function PairsTable({pairs}:{pairs:PairRow[]}) {
+function HolesTable({holes}:{holes:HoleRow[]}) {
   const [key,setKey]=useState<SortKey>('course'),[descending,setDescending]=useState(false);
   function sortBy(next:SortKey) {
     // A new column starts hardest-first for strokes over par and biggest-first for counts; course order starts at the top.
     if (next===key) setDescending(!descending); else { setKey(next); setDescending(next!=='course'); }
   }
-  return <section aria-labelledby="pairs-heading">
-    <h2 id="pairs-heading">Pairs</h2>
-    <p><small>Every attempt at each pair, by course and content revision. Strokes over par, at or under par, hole strokes and tries count first finishes, each install&rsquo;s first finish of the pair (1 = first try); the small figures beside them include replays, which are mostly players chasing the trophy. Water and Mirror count every attempt. Choose a heading to sort; sort by strokes over par to find the hardest pairs. Faded rows have fewer than {fewAttempts} attempts.</small></p>
+  return <section aria-labelledby="holes-heading">
+    <h2 id="holes-heading">Holes</h2>
+    <p><small>Every attempt at each hole, by course and content revision. Strokes over par, at or under par, green strokes and tries count first finishes, each install&rsquo;s first finish of the hole (1 = first try); the small figures beside them include replays, which are mostly players chasing the trophy. Water and Mirror count every attempt. Choose a heading to sort; sort by strokes over par to find the hardest holes. Faded rows have fewer than {fewAttempts} attempts.</small></p>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
-      <caption>Attempts and difficulty per pair</caption>
+      <caption>Attempts and difficulty per hole</caption>
       <thead><tr>{columns.map(c=><th key={c.key} scope="col" aria-sort={key===c.key?(descending?'descending':'ascending'):'none'}>
         <button type="button" onClick={()=>sortBy(c.key)} style={{background:'none',border:0,color:'inherit',cursor:'pointer',font:'inherit',fontWeight:700,padding:0,textAlign:'left'}}>
           {c.label}{key===c.key?(descending?' ▼':' ▲'):''}
         </button></th>)}</tr></thead>
-      <tbody>{sorted(pairs,key,descending).map(p=><tr key={`${p.course}:${p.revision}:${p.pair}:${p.slug}`} style={{opacity:p.attempts<fewAttempts?0.5:1}}>
-        <th scope="row">{courseName(p.course)} {p.pair}<br/><small>{p.slug} · {p.revision}</small></th>
-        <td>{p.attempts}<br/><small>{p.single} in Single Hole</small></td>
+      <tbody>{sorted(holes,key,descending).map(p=><tr key={`${p.course}:${p.revision}:${p.hole}:${p.slug}`} style={{opacity:p.attempts<fewAttempts?0.5:1}}>
+        <th scope="row">{courseName(p.course)} {p.hole}<br/><small>{p.slug} · {p.revision}</small></th>
+        <td>{p.attempts}<br/><small>{p.single} in Free Play</small></td>
         <td>{p.firstFinishes} / {p.replayFinishes}<br/><small>{percentage(p.attempts?p.finished/p.attempts:null)} of attempts</small></td>
         <td>{percentage(p.attempts?p.quits/p.attempts:null)}<br/><small>{p.quits} quit · {p.abandoned} abandoned</small></td>
-        <td>{signed(p.firstOverPar)}<br/><small>{p.firstHoleStrokes&&<>holes {decimal(p.firstHoleStrokes[0]!)} + {decimal(p.firstHoleStrokes[1]!)} · </>}all finishes {signed(p.allOverPar)}</small></td>
+        <td>{signed(p.firstOverPar)}<br/><small>{p.firstGreenStrokes&&<>greens {decimal(p.firstGreenStrokes[0]!)} + {decimal(p.firstGreenStrokes[1]!)} · </>}all finishes {signed(p.allOverPar)}</small></td>
         <td>{percentage(p.firstAtOrUnderPar)}<br/><small>all finishes {percentage(p.allAtOrUnderPar)}</small></td>
         <td>{p.doubleAces}<br/><small>{p.trophies} trophies won</small></td>
         <td>{decimal(p.triesToFirstFinish)}<br/><small>median {p.medianTries??'—'} · {p.installsFinished} installs finished</small></td>
@@ -60,20 +60,20 @@ function PairsTable({pairs}:{pairs:PairRow[]}) {
         <td>{percentage(p.mirrorShare)}</td>
       </tr>)}</tbody>
     </table></div>
-    {pairs.length===0&&<p>No pairs played in this selection.</p>}
+    {holes.length===0&&<p>No holes played in this selection.</p>}
   </section>;
 }
 function CoursesTable({courses}:{courses:CourseRow[]}) {
   return <section aria-labelledby="courses-heading">
     <h2 id="courses-heading">Courses</h2>
-    <p><small>Course rounds by revision. Left counts rounds left unfinished (Leave Round, or a new round started over one), by the pair the round was on, to show where players stop. Unlocks count installs whose medal opened the course (Daybreak and Nightfall are open from the start).</small></p>
+    <p><small>Course rounds by revision. Left counts rounds left unfinished (Leave Round, or a new round started over one), by the hole the round was on, to show where players stop. Unlocks count installs whose medal opened the course (Daybreak and Nightfall are open from the start).</small></p>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
       <caption>Rounds, medals and unlocks per course</caption>
-      <thead><tr>{['Course','Rounds started (first time)','Left, by pair','Finished (personal bests)','Medals: gold / silver / bronze / none','Strokes over par','Unlocks'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+      <thead><tr>{['Course','Rounds started (first time)','Left, by hole','Finished (personal bests)','Medals: gold / silver / bronze / none','Strokes over par','Unlocks'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
       <tbody>{courses.map(c=>{const left=c.left.reduce((a,b)=>a+b,0);return <tr key={`${c.course}:${c.revision}`}>
         <th scope="row">{courseName(c.course)}<br/><small>{c.revision}</small></th>
         <td>{c.started} ({c.firstStarts})</td>
-        <td>{left}{left>0&&<><br/><small>{c.left.flatMap((n,i)=>n?[`pair ${i+1}: ${n}`]:[]).join(' · ')}</small></>}</td>
+        <td>{left}{left>0&&<><br/><small>{c.left.flatMap((n,i)=>n?[`hole ${i+1}: ${n}`]:[]).join(' · ')}</small></>}</td>
         <td>{c.finished} ({c.best})</td>
         <td>{medalOrder.map(m=>c.medals[m]).join(' / ')}</td>
         <td>{signed(c.overPar)}</td>
@@ -98,8 +98,8 @@ export default function DoublePuttStats() {
       setData(await response.json());
     }catch{setError('Report unavailable. Try again later.');}finally{setLoading(false);}
   }
-  const courseIds=[...new Set([...(data?.pairs??[]),...(data?.courses??[])].map(r=>r.course))].sort((a,b)=>courseRank(a)-courseRank(b)||a.localeCompare(b));
-  const pairs=(data?.pairs??[]).filter(p=>!course||p.course===course),courses=(data?.courses??[]).filter(c=>!course||c.course===course);
+  const courseIds=[...new Set([...(data?.holes??[]),...(data?.courses??[])].map(r=>r.course))].sort((a,b)=>courseRank(a)-courseRank(b)||a.localeCompare(b));
+  const holes=(data?.holes??[]).filter(p=>!course||p.course===course),courses=(data?.courses??[]).filter(c=>!course||c.course===course);
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Double Putt beta report</h1><p>Anonymous aggregate attempts and rounds by receive-day. Daily totals are kept for 90 days. Every build in the selection is pooled; content revisions stay separate.</p>
     {/* POST so a submit before the page's script loads can't put the key in the URL. */}
@@ -119,15 +119,15 @@ export default function DoublePuttStats() {
       <p>Showing receive-days {data.from} to {data.to} (UTC). <strong>{data.firstLaunches}</strong> first launches.</p>
       <div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
         <caption>Builds in this selection, newest first</caption>
-        <thead><tr>{['Build','First launches','Pair attempts','Rounds started','Rounds finished'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+        <thead><tr>{['Build','First launches','Hole attempts','Rounds started','Rounds finished'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
         <tbody>{data.builds.map(b=><tr key={b.build}><th scope="row">{b.build}</th><td>{b.firstLaunches}</td><td>{b.attempts}</td><td>{b.roundsStarted}</td><td>{b.roundsFinished}</td></tr>)}</tbody>
       </table></div>
       {data.builds.length===0&&<p>No reports in this selection.</p>}
       <label>Course <select value={course} onChange={e=>setCourse(e.target.value)}><option value="">All courses</option>{courseIds.map(c=><option key={c} value={c}>{courseName(c)}</option>)}</select></label>
-      <PairsTable pairs={pairs}/>
+      <HolesTable holes={holes}/>
       <CoursesTable courses={courses}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
-      <details><summary>Raw counters</summary><pre style={{overflowX:'auto'}}>{JSON.stringify({pairs:data.pairs,courses:data.courses},null,2)}</pre></details>
+      <details><summary>Raw counters</summary><pre style={{overflowX:'auto'}}>{JSON.stringify({holes:data.holes,courses:data.courses},null,2)}</pre></details>
     </>}
   </main>;
 }
