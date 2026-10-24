@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
 
+import nextConfig from '../next.config.ts';
 import { base, beats, courses, faqs, game, storeCta } from '../src/lib/double-putt-site.ts';
 
 const publicFile = (path: string) => new URL(`../public${path}`, import.meta.url);
@@ -39,4 +40,15 @@ test("the site's words follow the game's: a hole is two greens, never a pair, ne
   const copy = JSON.stringify({ beats, courses, faqs, game });
   assert.doesNotMatch(copy, /\bpairs?\b/i);
   assert.doesNotMatch(copy, /\b(hole|green) [AB]\b/);
+});
+
+test('the old /double-putt pages redirect under /doubleputt, and the analytics endpoint stays put', async () => {
+  const redirects = (await nextConfig.redirects?.()) ?? [];
+  const rule = redirects.find((r) => r.source.startsWith('/double-putt'));
+  assert.deepEqual(rule && { destination: rule.destination, permanent: rule.permanent, source: rule.source }, {
+    destination: '/doubleputt/:path*',
+    permanent: true,
+    source: '/double-putt/:path*',
+  });
+  assert.ok(!redirects.some((r) => r.source.startsWith('/api')), 'the app posts to /api/double-putt/events');
 });
