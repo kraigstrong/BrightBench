@@ -48,7 +48,7 @@ reset()
 for i=1,20 do assert(write('build'..i,{'c'},{{'a',1}})==1) end
 assert(write('build21',{'c'},{{'a',1}})==0)
 reset()
--- Six courses of nine pairs, their six courses and the install: 61 contents per build, so eight builds fit a day.
+-- Six courses of nine holes, their six courses and the install: 61 contents per build, so eight builds fit a day.
 local course={}; for i=1,61 do course[i]='content'..i end
 for i=1,8 do assert(write('build'..i,course,{{'content1|outcome.finished',1}})==1) end
 assert(redis.call('SCARD','contents')==488)

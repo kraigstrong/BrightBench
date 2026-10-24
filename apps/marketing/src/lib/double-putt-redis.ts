@@ -10,8 +10,8 @@ function client() {
 const buildsKey = (day: string) => `dp:v1:builds:${day}`;
 const countsKey = (day: string, build: string) => `dp:v1:counts:${day}:${build}`;
 // Fixed bounded daily cardinality, enforced atomically even with a public app key.
-// These are ingest limits, not a finite course/pair registry; beyond-limit batches are discarded.
-// A "content" here is one build's pair, course or install counters (`build|token`), not a golf pair.
+// These are ingest limits, not a finite course/hole registry; beyond-limit batches are discarded.
+// A "content" here is one build's hole, course or install counters (`build|token`).
 export const doublePuttIncrementScript = `
 local builds = KEYS[1]
 local contentIndex = KEYS[2]
