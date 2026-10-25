@@ -73,8 +73,8 @@ export const beats = [
     title: 'Drop both.',
     body: "Every hole has a swing that sinks both balls. Find it, and the hole's trophy is yours.",
     image: `${base}/beats/double-ace.jpg`,
-    focus: '50% 14%',
-    alt: 'Both balls in on Grand Finale under the fireworks, an Ace! over each cup.',
+    focus: '50% 50%',
+    alt: 'A double ace on Grand Finale: confetti over the course, and the Double Ace! card with its new trophy.',
   },
 ] as const;
 

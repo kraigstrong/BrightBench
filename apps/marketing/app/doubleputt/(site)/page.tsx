@@ -179,7 +179,7 @@ export default function DoublePuttPage() {
             </h2>
           </div>
           <TrailerPlayer
-            length="0:25"
+            length="0:26"
             poster={`${base}/trailer-poster.jpg`}
             src={`${base}/trailer.mp4`}
             title={`${game.name} trailer`}
