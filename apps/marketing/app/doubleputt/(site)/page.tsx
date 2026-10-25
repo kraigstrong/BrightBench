@@ -188,7 +188,7 @@ export default function DoublePuttPage() {
 
         <section aria-labelledby="get-it" className={`${styles.section} ${styles.closing}`}>
           <h2 className={styles.closingTitle} id="get-it">
-            Can you find the double ace?
+            Chase the double ace.
           </h2>
           <p className={styles.sectionLede}>Every hole has one swing that drops both balls.</p>
           <StoreCta />
