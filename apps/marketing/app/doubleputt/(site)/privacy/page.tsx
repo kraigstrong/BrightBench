@@ -1,16 +1,17 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { palette, radii, spacing } from '@education/design';
+
+import { ProsePage, ProseSection } from '@/components/double-putt/prose-page';
+import { base, contactEmail } from '@/lib/double-putt-site';
 
 // Double Putt is a native iOS app built outside this repo (kraigstrong/double-putt). Keep this in step with its
 // PrivacyInfo.xcprivacy, its analytics payload (MiniGolf/Game/Analytics.swift, docs/analytics.md), the App Store
-// privacy answers, and the analytics endpoint (src/lib/double-putt-analytics.ts).
-
-const contactEmail = 'support@brightbench.app';
+// privacy answers, and the analytics endpoint (src/lib/double-putt-analytics.ts). The App Store listing and the
+// game's Settings link here.
 
 export const metadata: Metadata = {
+  alternates: { canonical: `${base}/privacy` },
   description: 'How Double Putt, a mini golf puzzle game, handles information, including its anonymous gameplay counts.',
-  title: 'Double Putt Privacy Policy',
+  title: 'Privacy Policy',
 };
 
 const sections: { title: string; body: string[] }[] = [
@@ -73,58 +74,19 @@ const sections: { title: string; body: string[] }[] = [
 
 export default function DoublePuttPrivacyPage() {
   return (
-    <main
-      style={{
-        display: 'grid',
-        gap: spacing.lg,
-        margin: '0 auto',
-        maxWidth: 760,
-        paddingTop: spacing.xl,
-      }}>
-      <Link href="/" style={{ color: palette.inkMuted, fontWeight: 700 }}>
-        Back to home
-      </Link>
-
-      <section
-        style={{
-          background: palette.surface,
-          border: `1px solid ${palette.ring}`,
-          borderRadius: radii.xl,
-          display: 'grid',
-          gap: spacing.md,
-          padding: spacing.xxl,
-        }}>
-        <div
-          style={{
-            color: palette.inkMuted,
-            fontSize: 14,
-            fontWeight: 700,
-            letterSpacing: 1.1,
-            textTransform: 'uppercase',
-          }}>
-          Privacy
-        </div>
-        <h1 style={{ fontSize: 44, margin: 0 }}>Double Putt Privacy Policy</h1>
-        <p style={{ color: palette.inkMuted, margin: 0 }}>Last updated: October 24, 2026</p>
-
-        {sections.map((section) => (
-          <div key={section.title} style={{ display: 'grid', gap: spacing.sm }}>
-            <h2 style={{ fontSize: 24, margin: 0 }}>{section.title}</h2>
-            {section.body.map((paragraph) => (
-              <p
-                key={paragraph}
-                style={{ color: palette.inkMuted, fontSize: 18, lineHeight: 1.6, margin: 0 }}>
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        ))}
-
-        <p style={{ color: palette.inkMuted, margin: 0 }}>
-          Questions can be sent to{' '}
-          <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
+    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 24, 2026</p>} title="Double Putt Privacy Policy">
+      {sections.map((section) => (
+        <ProseSection key={section.title} title={section.title}>
+          {section.body.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </ProseSection>
+      ))}
+      <ProseSection title="Questions">
+        <p>
+          Questions can be sent to <a href={`mailto:${contactEmail}`}>{contactEmail}</a>.
         </p>
-      </section>
-    </main>
+      </ProseSection>
+    </ProsePage>
   );
 }
