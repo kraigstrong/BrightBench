@@ -197,19 +197,16 @@ export function MathReefStatsDashboard() {
             <StatTile label="New installs" value={dashboard.installs} />
             <StatTile label="Played a round" value={dashboard.firstRounds} />
             <StatTile label="Rounds recorded" value={dashboard.rounds} />
-            <StatTile label="Saw the unlock screen" value={dashboard.paywallShown} />
+            <StatTile label="Hit a locked level" value={dashboard.paywallShown} />
             <StatTile
-              label="Unlocked"
-              value={dashboard.unlocked}
-              note={
-                dashboard.unlockRatio === null
-                  ? undefined
-                  : `${Math.round(dashboard.unlockRatio * 100)}% of the unlock-screen count (not a per-player rate)`
-              }
+              label="Grown-up opened unlock"
+              value={dashboard.unlockScreenShown}
+              note={lockedLevelShare(dashboard.unlockScreenRatio)}
             />
+            <StatTile label="Unlocked" value={dashboard.unlocked} note={lockedLevelShare(dashboard.unlockRatio)} />
           </div>
 
-          {dashboard.installs + dashboard.rounds + dashboard.paywallShown + dashboard.unlocked === 0 && (
+          {dashboard.installs + dashboard.rounds + dashboard.paywallShown + dashboard.unlockScreenShown + dashboard.unlocked === 0 && (
             <p style={{ ...card, margin: 0 }}>No counts for these filters yet.</p>
           )}
 
@@ -258,6 +255,10 @@ export function MathReefStatsDashboard() {
 
 function hasData(row: LevelRow) {
   return row.started + row.passed + row.finished + row.quit + row.abandoned > 0;
+}
+
+function lockedLevelShare(ratio: number | null): string | undefined {
+  return ratio === null ? undefined : `${Math.round(ratio * 100)}% of the locked-level count (not a per-player rate)`;
 }
 
 function StatTile({ label, value, note }: { label: string; value: number; note?: string }) {
