@@ -30,6 +30,7 @@ Use the right template for the job instead of forcing every workspace into the s
 - `lint`
 - `test`
 - `typecheck`
+- `verify`
 - `web:export`
 
 ## Standard Scripts For Marketing
@@ -37,6 +38,9 @@ Use the right template for the job instead of forcing every workspace into the s
 - `build`
 - `lint`
 - `typecheck`
+- `verify`
+
+CI runs only `verify` for affected workspaces, so any workspace with `lint`, `test`, or `typecheck` must also define `verify`.
 
 ## Standard Workflow For Expo Product Apps
 1. Run `npm run dev -w <app>`
