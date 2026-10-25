@@ -134,11 +134,17 @@ Run the standard repository quality gate:
 npm run check
 ```
 
-Run the full CI-equivalent gate, including affected Expo exports and the
-production dependency audit:
+Run the CI gate: `verify` for changed workspaces and their consumers, affected
+Expo web exports, and the production dependency audit:
 
 ```sh
 npm run check:ci
+```
+
+Run the full-repository gate, `check` followed by `check:ci`:
+
+```sh
+npm run check:full
 ```
 
 Verify only changed workspaces and their consumers:
@@ -198,7 +204,7 @@ Examples: native dependencies, permissions, privacy, analytics, release configur
 
 Required evidence:
 
-- Full repository CI-equivalent checks via `npm run check:ci`.
+- Full repository checks via `npm run check:full`.
 - Independent review of the actual diff.
 - Physical-device or production validation where relevant.
 - Explicit record of remaining human release checks.

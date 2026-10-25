@@ -37,11 +37,13 @@ Smoke-test the changed flow in an iOS simulator or on web and record which path 
 
 Run the full repository gate:
 
-    npm run check:ci
+    npm run check:full
 
-This runs typechecking, lint, tests, the marketing production build, affected
-Expo web exports, and the production dependency audit. It uses `origin/main` as
-the affected-change base unless `BASE_REF` is set.
+This runs typechecking, lint, and tests across every workspace and the
+marketing production build, then the CI gate: `verify` for changed workspaces
+and their consumers, affected Expo web exports, and the production dependency
+audit. It uses `origin/main` as the affected-change base unless `BASE_REF` is
+set.
 
 Also require an independent review of the actual diff and physical-device or production evidence where relevant. Do not treat an automated command as proof of device feel, privacy correctness, or release readiness.
 
