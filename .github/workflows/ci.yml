@@ -6,7 +6,9 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Each push to main verifies only its own diff, so it gets its own group: a canceled or replaced run would leave that
+  # merge unchecked. PR runs share a group per branch and cancel stale runs.
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: true
 
 jobs:
