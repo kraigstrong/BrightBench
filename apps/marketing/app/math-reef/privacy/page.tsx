@@ -17,7 +17,7 @@ const sections: { title: string; body: string[] }[] = [
     title: 'What Math Reef Sends',
     body: [
       'Math Reef has no accounts and never asks for a name, email address, photo, or location. It has no ads, no tracking, and no third-party code that collects data.',
-      'To learn which levels are too hard or too easy and where kids stop playing, the app sends anonymous usage counts to BrightBench: which levels are started and passed, which crowns are earned, and how each round ends (finished, quit, or left partway), with how many questions were answered correctly and the stars earned. It also sends whether the unlock screen was shown and whether the full game was unlocked. Each report also says which version of the app sent it and whether it is a test build or the App Store version.',
+      'To learn which levels are too hard or too easy and where kids stop playing, the app sends anonymous usage counts to BrightBench: which levels are started and passed, which crowns are earned, and how each round ends (finished, quit, or left partway), with how many questions were answered correctly and the stars earned. It also sends whether a locked level was reached, whether a grown-up opened the unlock screen, and whether the full game was unlocked. Each report also says which version of the app sent it and whether it is a test build or the App Store version.',
       'A few of these are sent only once per device, such as the first time a level is started, so the totals can show how many players reach each level.',
     ],
   },
@@ -110,7 +110,7 @@ export default function MathReefPrivacyPage() {
           Privacy
         </div>
         <h1 style={{ fontSize: 44, margin: 0 }}>Math Reef Privacy Policy</h1>
-        <p style={{ color: palette.inkMuted, margin: 0 }}>Last updated: September 29, 2026</p>
+        <p style={{ color: palette.inkMuted, margin: 0 }}>Last updated: October 25, 2026</p>
 
         {sections.map((section) => (
           <div key={section.title} style={{ display: 'grid', gap: spacing.sm }}>

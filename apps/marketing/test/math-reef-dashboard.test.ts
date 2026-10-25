@@ -81,10 +81,19 @@ test('rounds for a level with no milestones still show, and odd fields are skipp
 });
 
 test('unlock milestones become the paywall funnel', () => {
-  const dashboard = summarize({ milestones: { paywall_shown: 20, unlocked: 5 }, rounds: {} });
+  const dashboard = summarize({ milestones: { paywall_shown: 20, unlock_screen_shown: 8, unlocked: 5 }, rounds: {} });
   assert.equal(dashboard.paywallShown, 20);
+  assert.equal(dashboard.unlockScreenShown, 8);
   assert.equal(dashboard.unlocked, 5);
+  assert.equal(dashboard.unlockScreenRatio, 0.4);
   assert.equal(dashboard.unlockRatio, 0.25);
-  // Counted separately, so the ratio isn't capped at 100%.
-  assert.equal(summarize({ milestones: { paywall_shown: 2, unlocked: 3 }, rounds: {} }).unlockRatio, 1.5);
+  // Counted separately, so the ratios aren't capped at 100%.
+  const settingsOnly = summarize({ milestones: { paywall_shown: 2, unlock_screen_shown: 3, unlocked: 3 }, rounds: {} });
+  assert.equal(settingsOnly.unlockScreenRatio, 1.5);
+  assert.equal(settingsOnly.unlockRatio, 1.5);
+  // No kid hit a lock: no ratios, even with grown-ups reaching the unlock screen from Settings.
+  const noLock = summarize({ milestones: { unlock_screen_shown: 1 }, rounds: {} });
+  assert.equal(noLock.unlockScreenShown, 1);
+  assert.equal(noLock.unlockScreenRatio, null);
+  assert.equal(noLock.unlockRatio, null);
 });
