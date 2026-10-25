@@ -66,6 +66,7 @@ const fullPortfolioSignals = [
   'package.json',
   'package-lock.json',
   'scripts/',
+  'tsconfig.base.json',
   'turbo.json',
 ];
 const affectsAll = [...changedFiles].some((file) =>
