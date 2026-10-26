@@ -19,7 +19,7 @@ test('Play lists Bigger Fish and Double Putt, each linking to its own site', () 
 
 test('every game picture and loop is in public/', () => {
   for (const game of games) {
-    for (const path of [game.icon, game.video.poster, game.video.src]) {
+    for (const path of [game.icon, game.keyArt, game.video.poster, game.video.src]) {
       assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `${game.name} is missing ${path}`);
     }
   }

@@ -13,14 +13,21 @@ export const size = shareImageSize;
 const playLine = games.map((game) => game.name).join(' · ');
 const learnLine = featuredProductCards.map((app) => app.name).join(' · ');
 
+/**
+ * Where each game's card lies in the Play door, as on the page: the second over the first's far corner, clear of its
+ * name (the left half of each card's art).
+ */
+const cardPlacements = [
+  { left: 182, rotate: -5, top: 22 },
+  { left: 290, rotate: 4, top: 96 },
+];
+const cardSize = { height: 110, width: 210 };
+
 export default async function Image() {
-  const [landscape, portrait] = [
-    games.find((game) => game.video.orientation === 'landscape'),
-    games.find((game) => game.video.orientation === 'portrait'),
-  ];
-  const [water, greens, fox, fonts] = await Promise.all([
-    landscape ? publicImage(landscape.video.poster) : undefined,
-    portrait ? publicImage(portrait.video.poster) : undefined,
+  const [keyArts, fox, fonts] = await Promise.all([
+    Promise.all(
+      games.slice(0, cardPlacements.length).map(async (game) => ({ slug: game.slug, src: await publicImage(game.keyArt) })),
+    ),
     publicImage('/mascots/brightbench-fox-sitting.png'),
     Promise.all([
       nunito(900, `${studio.name}${studio.tagline}PlayLearn`),
@@ -52,7 +59,7 @@ export default async function Image() {
         <div style={{ display: 'flex', gap: 28, marginTop: 'auto' }}>
           <div
             style={{
-              background: night.deep,
+              background: `radial-gradient(70% 90% at 60% 35%, #1b4672 0%, ${night.night} 100%)`,
               borderRadius: 30,
               display: 'flex',
               height: 270,
@@ -60,37 +67,24 @@ export default async function Image() {
               position: 'relative',
               width: 522,
             }}>
-            {water ? (
-              // Bigger enough than the card, and high enough, that its fish swim above the door's name.
-              <img alt="" height={372} src={water} style={{ left: -50, position: 'absolute', top: -100 }} width={809} />
-            ) : null}
-            <div
-              style={{
-                background: 'linear-gradient(0deg, rgba(7, 20, 38, 0.92) 0%, rgba(7, 20, 38, 0) 70%)',
-                display: 'flex',
-                height: '100%',
-                left: 0,
-                position: 'absolute',
-                top: 0,
-                width: '100%',
-              }}
-            />
-            {greens ? (
+            {keyArts.map((art, index) => (
               <img
                 alt=""
-                height={252}
-                src={greens}
+                height={cardSize.height}
+                key={art.slug}
+                src={art.src}
                 style={{
-                  border: '3px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: 20,
+                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                  borderRadius: 10,
+                  boxShadow: '0 12px 28px rgba(0, 0, 0, 0.5)',
+                  left: cardPlacements[index]?.left,
                   position: 'absolute',
-                  right: 40,
-                  top: 26,
-                  transform: 'rotate(6deg)',
+                  top: cardPlacements[index]?.top,
+                  transform: `rotate(${cardPlacements[index]?.rotate}deg)`,
                 }}
-                width={116}
+                width={cardSize.width}
               />
-            ) : null}
+            ))}
             <Door line={playLine} lineColor={night.muted} title="Play" titleColor={night.cream} />
           </div>
 

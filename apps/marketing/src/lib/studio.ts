@@ -33,6 +33,8 @@ export type Game = {
   /** Where it is in release. */
   status: string;
   icon: string;
+  /** Its logo card (1200×630, the game's own share image): how the front door shows it. */
+  keyArt: string;
   video: { src: string; poster: string; orientation: 'landscape' | 'portrait' };
   /** Decorative media gets no description; this is the game in words, for anyone who can't see it. */
   alt: string;
@@ -52,6 +54,7 @@ export const games: Game[] = [
     // The App Store release day (game.releaseDay there). Switch this at launch.
     status: 'Coming November 3',
     icon: '/games/bigger-fish/icon.png',
+    keyArt: '/games/bigger-fish/key-art.png',
     video: {
       orientation: 'landscape',
       poster: '/games/bigger-fish/hero-poster.jpg',
@@ -72,6 +75,7 @@ export const games: Game[] = [
     // In TestFlight beta, with no public link yet. Switch this at launch.
     status: 'In beta',
     icon: '/games/double-putt/icon.png',
+    keyArt: '/games/double-putt/key-art.png',
     video: {
       orientation: 'portrait',
       poster: '/games/double-putt/hero-poster.jpg',

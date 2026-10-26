@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { LoopVideo } from '@/components/loop-video';
 import { featuredProductCards, getPublicSiteOrigin } from '@/lib/site';
 import { games, studio } from '@/lib/studio';
 
@@ -52,11 +51,6 @@ function OutArrow() {
 }
 
 export default function StudioHomePage() {
-  const [landscape, portrait] = [
-    games.find((game) => game.video.orientation === 'landscape'),
-    games.find((game) => game.video.orientation === 'portrait'),
-  ];
-
   return (
     <>
       <script
@@ -76,19 +70,11 @@ export default function StudioHomePage() {
         <section aria-labelledby="door-play" className={`${styles.door} ${styles.play}`}>
           <div className={styles.doorMain}>
             <div className={styles.playMedia}>
-              {landscape ? (
-                <LoopVideo
-                  className={styles.playWide}
-                  eager
-                  poster={landscape.video.poster}
-                  src={landscape.video.src}
-                />
-              ) : null}
-              {portrait ? (
-                <div className={styles.playTall}>
-                  <LoopVideo eager poster={portrait.video.poster} src={portrait.video.src} />
+              {games.map((game) => (
+                <div className={styles.keyArt} key={game.slug}>
+                  <Image alt="" fill priority sizes="(max-width: 860px) 56vw, 330px" src={game.keyArt} />
                 </div>
-              ) : null}
+              ))}
             </div>
             <div className={styles.doorCopy}>
               <h2 className={styles.doorTitle} id="door-play">

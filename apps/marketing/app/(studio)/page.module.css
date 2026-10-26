@@ -90,36 +90,35 @@
 }
 
 .playMedia {
-  background: #071530;
+  background: radial-gradient(70% 90% at 50% 40%, #1b4672 0%, #0b1d33 100%);
 }
 
-/* Bigger Fish's water, wide, with Double Putt's screen standing in it. */
-.playWide {
-  height: 100%;
-  object-fit: cover;
-  object-position: 30% 50%;
-  transition: transform 400ms ease;
-  width: 100%;
-}
-
-.playTall {
-  aspect-ratio: 720 / 1564;
-  border: 3px solid rgb(255 255 255 / 0.18);
-  border-radius: 18px;
-  bottom: -18%;
-  box-shadow: 0 18px 40px rgb(0 0 0 / 0.45);
+/* Each game as its own card, in its own key art: two cards laid on the table, the second over the first's corner. */
+.keyArt {
+  aspect-ratio: 1200 / 630;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.5);
   overflow: hidden;
   position: absolute;
-  right: 8%;
-  rotate: 5deg;
-  top: 9%;
-  transition: rotate 400ms ease;
+  transition: rotate 400ms ease, translate 400ms ease;
+  width: 56%;
 }
 
-.playTall video {
-  height: 100%;
+.keyArt:nth-child(1) {
+  left: 6%;
+  rotate: -5deg;
+  top: 9%;
+}
+
+.keyArt:nth-child(2) {
+  bottom: 9%;
+  right: 6%;
+  rotate: 4deg;
+}
+
+.keyArt img {
   object-fit: cover;
-  width: 100%;
 }
 
 .learnMedia {
@@ -198,12 +197,14 @@
   translate: 0 -1px;
 }
 
-.doorMain:hover .playWide {
-  transform: scale(1.03);
+.doorMain:hover .keyArt:nth-child(1) {
+  rotate: -7deg;
+  translate: -3% -2%;
 }
 
-.doorMain:hover .playTall {
-  rotate: 3deg;
+.doorMain:hover .keyArt:nth-child(2) {
+  rotate: 6deg;
+  translate: 3% 2%;
 }
 
 .doorMain:hover .learnFox {
@@ -308,8 +309,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .playWide,
-  .playTall,
+  .keyArt,
   .learnFox,
   .doorCta {
     transition: none;
