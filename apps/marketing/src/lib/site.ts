@@ -438,14 +438,14 @@ export const productPages: ProductPage[] = [
     noindex: true,
     pageTitle: 'Fraction Finder | BrightBench',
     primaryCta: {
-      href: '/',
+      href: '/learn',
       label: 'See the BrightBench app lineup',
     },
     primaryTopic: 'fraction learning app',
     relatedLinks: [
       {
         description: 'Return to the BrightBench hub to see live and planned apps.',
-        href: '/',
+        href: '/learn',
         label: 'BrightBench focused learning apps',
       },
     ],
@@ -474,14 +474,14 @@ export const productPages: ProductPage[] = [
     noindex: true,
     pageTitle: 'Letter Bingo | BrightBench',
     primaryCta: {
-      href: '/',
-      label: 'Back to the BrightBench hub',
+      href: '/learn',
+      label: 'Back to BrightBench learning apps',
     },
     primaryTopic: 'letter recognition app',
     relatedLinks: [
       {
         description: 'Return to the BrightBench overview.',
-        href: '/',
+        href: '/learn',
         label: 'BrightBench educational app suite',
       },
     ],
@@ -510,14 +510,14 @@ export const productPages: ProductPage[] = [
     noindex: true,
     pageTitle: 'Place Value | BrightBench',
     primaryCta: {
-      href: '/',
-      label: 'Back to the BrightBench hub',
+      href: '/learn',
+      label: 'Back to BrightBench learning apps',
     },
     primaryTopic: 'place value app',
     relatedLinks: [
       {
         description: 'Return to the BrightBench overview.',
-        href: '/',
+        href: '/learn',
         label: 'BrightBench educational app suite',
       },
     ],

@@ -127,16 +127,18 @@
     linear-gradient(180deg, #f6efe3 0%, #fff9f2 100%);
 }
 
+/* The whole picture, scaled so the fox (the middle 70% of its height, a little high) fills the frame with a little
+   room above its ears and below its paws, and nudged down to sit centred. */
 .learnFox {
   inset: 0;
   position: absolute;
-  scale: 1.08;
+  scale: 1.19;
   transition: scale 400ms ease;
-  translate: 0 7%;
+  translate: 0 5.8%;
 }
 
 .learnFox img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .doorCopy {
@@ -208,7 +210,7 @@
 }
 
 .doorMain:hover .learnFox {
-  scale: 1.13;
+  scale: 1.23;
 }
 
 .learn .doorCta:focus-visible {
