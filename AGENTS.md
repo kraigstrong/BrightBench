@@ -100,7 +100,8 @@ A work item produces one understandable outcome, can be verified independently, 
 ## Technical Standards
 
 - Product apps use Expo-managed React Native, Expo Router, and React Native Web.
-- The marketing sites (brightbench.app, and biggerfish.app in `apps/bigger-fish-site`) use Next.js App Router.
+- The marketing sites (brightbench.app, biggerfish.app in `apps/bigger-fish-site`, and doubleputt.app in
+  `apps/double-putt-site`) use Next.js App Router.
 - Use npm workspaces and Turbo.
 - Apps remain independently deployable.
 - Time Tutor is the visual source of truth.

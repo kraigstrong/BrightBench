@@ -20,6 +20,7 @@ CI verifies the workspaces a change touches and their declared consumers (typech
 ### Current Root Directories
 - `apps/marketing` → Next.js marketing site (brightbench.app)
 - `apps/bigger-fish-site` → Next.js site for Bigger Fish (biggerfish.app)
+- `apps/double-putt-site` → Next.js site for Double Putt (doubleputt.app)
 - `apps/fraction-finder` → Expo static web export
 - `apps/time-tutor` → Expo static web export
 
@@ -31,6 +32,10 @@ CI verifies the workspaces a change touches and their declared consumers (typech
   - Framework preset: Next.js
   - Build command: default (`npm run build`, whose `prebuild` packs the press kit zip)
   - Domain: `biggerfish.app`
+- `double-putt-site`
+  - Framework preset: Next.js
+  - Build command: default (`npm run build`)
+  - Domain: `doubleputt.app` (`www.doubleputt.app` redirects to it)
 - `fraction-finder`
   - Build command: `npm run web:export -w fraction-finder`
   - Output directory: `apps/fraction-finder/dist`
@@ -111,3 +116,8 @@ Shared code should not force every app to release together.
 ### Bigger Fish Site
 1. `npm run verify -w bigger-fish-site`
 2. Deploy the `bigger-fish-site` workspace as its own Vercel project (named `bigger-fish-site`) with Root Directory set to `apps/bigger-fish-site`, and add the `biggerfish.app` domain to it
+
+### Double Putt Site
+1. `npm run verify -w double-putt-site`
+2. Deploys as its own Vercel project (named `double-putt-site`) with Root Directory set to `apps/double-putt-site`, serving `doubleputt.app`
+3. The game's analytics endpoint and stats report stay on brightbench.app (`apps/marketing`); brightbench.app's old `/doubleputt` and `/double-putt` pages redirect to doubleputt.app
