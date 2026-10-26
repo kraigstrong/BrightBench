@@ -42,6 +42,15 @@ test('every course, still and loop the page shows is there (Tools/capture/site.s
   for (const file of files) assert.ok(existsSync(publicFile(file)), `missing public${file}`);
 });
 
+test('support says what is free, what All Courses opens, and where to restore it; no beta questions', () => {
+  const copy = JSON.stringify(faqs);
+  assert.match(copy, /all of Daybreak, plus one hole from every other course/);
+  assert.match(copy, /All Courses for \$4\.99, opens all 81 holes, and every course added later/);
+  assert.match(copy, /Restore Purchases/);
+  assert.match(copy, /Family Sharing/);
+  assert.doesNotMatch(copy, /beta|TestFlight/i);
+});
+
 test("the site's words follow the game's: a hole is two greens, never a pair, never A and B", () => {
   const copy = JSON.stringify({ beats, courses, faqs, game });
   assert.doesNotMatch(copy, /\bpairs?\b/i);
