@@ -11,7 +11,12 @@ const buildsKey = (day: string) => `bf:v1:builds:${day}`;
 const countsKey = (day: string, build: string) => `bf:v1:counts:${day}:${build}`;
 // Fixed bounded daily cardinality, enforced atomically even with a public app key.
 // These are ingest limits, not a finite world/level registry; beyond-limit batches are discarded.
+// Upstash bills the script call plus every redis.call it makes, so a write costs about 4 + one HINCRBY per counter:
+// one SISMEMBER (build), one SMISMEMBER (content pairs), one GET (the day's counter total), and the increments. The
+// rest runs only when something is new to the day (a build, a pair, the day's first counter) or near the counter cap.
+// Keys expire 90 days after the day's first write to them.
 export const arcadeIncrementScript = `
+local unpack = unpack or table.unpack
 local builds = KEYS[1]
 local pairIndex = KEYS[2]
 local counts = KEYS[3]
@@ -19,36 +24,62 @@ local fields = KEYS[4]
 local build = ARGV[1]
 local ttl = tonumber(ARGV[2])
 local n = tonumber(ARGV[3])
-if redis.call('SISMEMBER', builds, build) == 0 and redis.call('SCARD', builds) >= 20 then return 0 end
-local newPairs = 0
-local seenPairs = {}
-for i=1,n do
-  local pair = build .. '|' .. ARGV[3+i]
-  if not seenPairs[pair] then
-    seenPairs[pair] = true
-    if redis.call('SISMEMBER', pairIndex, pair) == 0 then newPairs = newPairs + 1 end
-  end
-end
-if redis.call('SCARD', pairIndex) + newPairs > 500 then return 0 end
-local newFields = 0
-local seenFields = {}
+local names, seenNames = {}, {}
 for i=4+n,#ARGV,2 do
-  local field = ARGV[i]
-  if not seenFields[field] then
-    seenFields[field] = true
-    if redis.call('HEXISTS', counts, field) == 0 then newFields = newFields + 1 end
-  end
+  if not seenNames[ARGV[i]] then seenNames[ARGV[i]] = true; names[#names+1] = ARGV[i] end
 end
-local fieldCount = tonumber(redis.call('GET', fields) or '0')
-if fieldCount + newFields > 20000 then return 0 end
-redis.call('SADD', builds, build)
-for pair,_ in pairs(seenPairs) do redis.call('SADD', KEYS[2], pair) end
-redis.call('INCRBY', fields, newFields)
-for i=4+n,#ARGV,2 do redis.call('HINCRBY', counts, ARGV[i], ARGV[i+1]) end
-redis.call('EXPIRE', builds, ttl)
-redis.call('EXPIRE', KEYS[2], ttl)
-redis.call('EXPIRE', fields, ttl)
-redis.call('EXPIRE', counts, ttl)
+if #names == 0 then return 1 end
+local newBuild = redis.call('SISMEMBER', builds, build) == 0
+local buildsBefore = -1
+if newBuild then
+  buildsBefore = redis.call('SCARD', builds)
+  if buildsBefore >= 20 then return 0 end
+end
+local newPairs = {}
+if n > 0 then
+  local list, seen = {}, {}
+  for i=1,n do
+    local pair = build .. '|' .. ARGV[3+i]
+    if not seen[pair] then seen[pair] = true; list[#list+1] = pair end
+  end
+  local present = redis.call('SMISMEMBER', pairIndex, unpack(list))
+  for i=1,#list do if present[i] == 0 then newPairs[#newPairs+1] = list[i] end end
+end
+local pairsBefore = -1
+if #newPairs > 0 then
+  pairsBefore = redis.call('SCARD', pairIndex)
+  if pairsBefore + #newPairs > 500 then return 0 end
+end
+local total = redis.call('GET', fields)
+local fieldCount = tonumber(total or '0')
+if fieldCount + #names > 20000 then
+  -- Near the cap only: count exactly the counters this build's hash doesn't have yet.
+  local unseen = #names
+  if not newBuild then
+    unseen = 0
+    for _,name in ipairs(names) do if redis.call('HEXISTS', counts, name) == 0 then unseen = unseen + 1 end end
+  end
+  if fieldCount + unseen > 20000 then return 0 end
+end
+if newBuild then
+  redis.call('SADD', builds, build)
+  if buildsBefore == 0 then redis.call('EXPIRE', builds, ttl) end
+end
+if #newPairs > 0 then
+  redis.call('SADD', pairIndex, unpack(newPairs))
+  if pairsBefore == 0 then redis.call('EXPIRE', pairIndex, ttl) end
+end
+-- An increment that returns exactly itself made a new counter.
+local added = 0
+for i=4+n,#ARGV,2 do
+  local by = tonumber(ARGV[i+1])
+  if redis.call('HINCRBY', counts, ARGV[i], by) == by then added = added + 1 end
+end
+if added > 0 then
+  redis.call('INCRBY', fields, added)
+  if not total then redis.call('EXPIRE', fields, ttl) end
+end
+if newBuild then redis.call('EXPIRE', counts, ttl) end
 return 1`;
 export const arcadeStore: ArcadeStore = {
   async write(day, build, contexts, updates) {

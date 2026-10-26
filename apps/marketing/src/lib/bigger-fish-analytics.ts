@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { offerSources, purchaseOutcomes, restoreOutcomes, restoreSources, type OfferSource, type PurchaseOutcome, type RestoreOutcome, type RestoreSource } from './bigger-fish-paywall.ts';
+import { lookId, openWaterBuckets, openWaterLevelCap, shopSources, type ShopSource } from './bigger-fish-open-water.ts';
 
 // Content identity only: no user/install/session IDs or client wall-clock timestamps.
 // Keep in sync with BiggerFish/ArcadeAnalytics.swift and ArcadeMetrics.swift.
@@ -11,10 +12,27 @@ export type Summary = {
   noPathSeconds: number; firstNoPathSeconds?: number; firstNoPathCircuits?: number;
   pathRecovered: boolean; snapshot: Snapshot; fatalRatio?: number;
 };
+// One Open Water run, start to end: levels cleared, fish eaten (its score), pearls taken, game seconds, whether it beat
+// the best kept so far, levels that waited on the next one's plan and for how long, the slowest plan (wall seconds),
+// and whether the fish wore any look.
+export type OpenWaterSummary = {
+  levels: number; fish: number; pearls: number; seconds: number; best: boolean;
+  waits: number; waitSeconds: number; slowestPlan: number; dressed: boolean;
+};
 export type Event =
   | { kind: 'milestone'; name: string; context?: Context }
-  // `unlocked`: whether the player had the unlock, sent only while it is on sale.
-  | { kind: 'run'; context: Context; outcome: 'win' | 'death' | 'quit' | 'abandoned'; cause: string; replay: boolean; attempt: number; summary: Summary; unlocked?: boolean }
+  // `unlocked`: whether the player had the unlock, sent only while it is on sale. `dressed`: whether the fish wore any
+  // look, from the build that reports the Open Water and the shop.
+  | { kind: 'run'; context: Context; outcome: 'win' | 'death' | 'quit' | 'abandoned'; cause: string; replay: boolean; attempt: number; summary: Summary; unlocked?: boolean; dressed?: boolean }
+  // An Open Water run, its context the same for every run (mode `endless`, seed "0"): no wins, there's always a bigger fish.
+  | { kind: 'endless'; context: Context; outcome: 'death' | 'quit' | 'abandoned'; cause: string; openWater: OpenWaterSummary; unlocked?: boolean }
+  // A visit to the pearl shop: where from, pearls in hand as it opened, the looks bought, and on the install's first
+  // purchase, the Open Water runs finished before it.
+  | { kind: 'shop'; source: ShopSource; wallet: number; bought: string[]; firstPurchaseRuns?: number }
+  // A look earned (never bought), once per install.
+  | { kind: 'earned'; id: string }
+  // What the fish wore on a launch's first run, a piece per kind, with no run or level: counted piece by piece.
+  | { kind: 'outfit'; pieces: string[] }
   | { kind: 'decision'; name: 'retry' | 'next' | 'leave' | 'unknown'; context: Context; outcome: 'win' | 'death' }
   // Every showing of the unlock's screen; `first` marks the install's first.
   | { kind: 'offer'; source: OfferSource; first: boolean }
@@ -43,6 +61,17 @@ function context(x: unknown): x is Context {
     && ['campaign','endless'].includes(String(x.mode))
     && typeof x.revision === 'string' && /^[a-zA-Z0-9.-]{1,48}$/.test(x.revision);
 }
+function openWater(x: unknown): x is OpenWaterSummary {
+  return record(x) && keys(x, ['levels','fish','pearls','seconds','best','waits','waitSeconds','slowestPlan','dressed'])
+    && number(x.levels, 1000, true) && number(x.fish, 10000, true) && number(x.pearls, 10000, true) && number(x.seconds, 3600)
+    && typeof x.best === 'boolean' && number(x.waits, Math.min(1000, (x.levels as number) + 1), true)
+    && number(x.waitSeconds, x.seconds as number) && number(x.slowestPlan, 600) && typeof x.dressed === 'boolean';
+}
+// Distinct look IDs, at most `max`; with `onePerKind`, no two of one kind (an outfit).
+function looks(x: unknown, max: number, onePerKind = false): x is string[] {
+  if (!Array.isArray(x) || x.length > max || !x.every(id => typeof id === 'string' && lookId.test(id)) || new Set(x).size !== x.length) return false;
+  return !onePerKind || new Set(x.map(id => id.split('.')[0])).size === x.length;
+}
 function summary(x: unknown): x is Summary {
   if (!record(x) || !keys(x, ['seconds','circuits','playerMeals','aiMeals','closeMeals','nearEqualMeals','bounces','cleanupSeconds','longestMealGap','noPathSeconds','pathRecovered','snapshot'], ['firstNoPathSeconds','firstNoPathCircuits','fatalRatio'])) return false;
   if (!['seconds','cleanupSeconds','longestMealGap','noPathSeconds'].every(k => number(x[k], 3600)) || !number(x.circuits, 100)) return false;
@@ -68,6 +97,7 @@ export function validateBatch(x: unknown): x is Batch {
   return x.events.every((e: unknown) => {
     if (!record(e)) return false;
     if (e.kind === 'milestone') {
+      if (e.name === 'open_water_started' || e.name === 'open_water_round') return keys(e, ['kind','name','context']) && context(e.context) && e.context.mode === 'endless';
       return keys(e, ['kind','name'], ['context']) && (e.name === 'first_launch' ? !Object.hasOwn(e, 'context')
         : ['level_started','world_started','level_cleared','world_cleared','world_conquered'].includes(String(e.name)) && context(e.context));
     }
@@ -77,8 +107,21 @@ export function validateBatch(x: unknown): x is Batch {
     if (e.kind === 'offer') return keys(e, ['kind','source','first']) && oneOf(e.source, offerSources) && typeof e.first === 'boolean';
     if (e.kind === 'purchase') return keys(e, ['kind','outcome','source']) && oneOf(e.outcome, purchaseOutcomes) && oneOf(e.source, offerSources);
     if (e.kind === 'restore') return keys(e, ['kind','outcome','source']) && oneOf(e.outcome, restoreOutcomes) && oneOf(e.source, restoreSources);
-    if (e.kind !== 'run' || !keys(e, ['kind','context','outcome','cause','replay','attempt','summary'], ['unlocked']) || !context(e.context) || !summary(e.summary)) return false;
+    // The Open Water and the shop. The shop's events, like the paywall's, carry no context.
+    if (e.kind === 'endless') {
+      return keys(e, ['kind','context','outcome','cause','openWater'], ['unlocked']) && context(e.context) && e.context.mode === 'endless'
+        && ['death','quit','abandoned'].includes(String(e.outcome)) && (e.outcome === 'death' ? deathCauses.includes(String(e.cause)) : e.cause === 'none')
+        && openWater(e.openWater) && (!Object.hasOwn(e, 'unlocked') || typeof e.unlocked === 'boolean');
+    }
+    if (e.kind === 'shop') {
+      return keys(e, ['kind','source','wallet','bought'], ['firstPurchaseRuns']) && oneOf(e.source, shopSources) && number(e.wallet, 100000, true)
+        && looks(e.bought, 64) && (!Object.hasOwn(e, 'firstPurchaseRuns') || ((e.bought as string[]).length > 0 && number(e.firstPurchaseRuns, 10000, true)));
+    }
+    if (e.kind === 'earned') return keys(e, ['kind','id']) && typeof e.id === 'string' && lookId.test(e.id);
+    if (e.kind === 'outfit') return keys(e, ['kind','pieces']) && looks(e.pieces, 8, true) && (e.pieces as string[]).length > 0;
+    if (e.kind !== 'run' || !keys(e, ['kind','context','outcome','cause','replay','attempt','summary'], ['unlocked','dressed']) || !context(e.context) || !summary(e.summary)) return false;
     if (Object.hasOwn(e, 'unlocked') && typeof e.unlocked !== 'boolean') return false;
+    if (Object.hasOwn(e, 'dressed') && typeof e.dressed !== 'boolean') return false;
     return ['win','death','quit','abandoned'].includes(String(e.outcome)) && typeof e.replay === 'boolean'
       && number(e.attempt, 1000, true) && (e.replay ? e.attempt === 0 : e.attempt > 0)
       && (e.outcome === 'death' ? deathCauses.includes(String(e.cause)) : e.cause === 'none')
@@ -102,11 +145,37 @@ export function counterUpdates(batch: Batch): Update[] {
       add('install', `offer.shown.${e.source}`); if (e.first) add('install', `offer.first.${e.source}`); continue;
     }
     if (e.kind === 'purchase' || e.kind === 'restore') { add('install', `${e.kind}.${e.outcome}.${e.source}`); continue; }
+    if (e.kind === 'shop') {
+      add('install', `shop.visit.${e.source}`); add('install', `shop.wallet.${bucket(e.wallet,openWaterBuckets.wallet)}`);
+      if (e.bought.length) add('install', `shop.buyingVisit.${e.source}`);
+      for (const id of e.bought) add('install', `look.bought.${id}`);
+      if (e.firstPurchaseRuns !== undefined) add('install', `shop.firstPurchaseRuns.${bucket(e.firstPurchaseRuns,buckets.count)}`);
+      continue;
+    }
+    if (e.kind === 'earned') { add('install', `look.earned.${e.id}`); continue; }
+    if (e.kind === 'outfit') { add('install', 'look.outfits'); for (const id of e.pieces) add('install', `look.worn.${id}`); continue; }
     const c = contentToken(e.context);
     if (e.kind === 'milestone') { add(c, `milestone.${e.name}`); continue; }
     if (e.kind === 'decision') { add(c, `decision.${e.outcome}.${e.name}`); continue; }
+    if (e.kind === 'endless') {
+      const r = e.openWater, ending = e.outcome === 'death' ? e.cause : e.outcome;
+      add(c, `outcome.${e.outcome}`); if (e.outcome === 'death') add(c, `death.${e.cause}`);
+      // Where the run ended: the report adds up the runs that reached each level from these.
+      add(c, `ended.${Math.min(r.levels + 1, openWaterLevelCap)}.${ending}`);
+      for (const field of ['fish','pearls','seconds'] as const) {
+        add(c, `sum.${e.outcome}.${field}`, Math.round(r[field] * 1000));
+        add(c, `hist.${e.outcome}.${field}.${bucket(r[field],openWaterBuckets[field])}`);
+      }
+      if (r.best) add(c, 'best');
+      add(c, `planWaits.${bucket(r.waits,buckets.count)}`); add(c, 'sum.planWaitSeconds', Math.round(r.waitSeconds * 1000));
+      add(c, `slowestPlan.${bucket(r.slowestPlan,openWaterBuckets.plan)}`);
+      add(c, `${r.dressed ? 'dressed' : 'plain'}.${e.outcome}`);
+      if (e.unlocked !== undefined) add(c, `${e.unlocked ? 'unlocked' : 'free'}.${e.outcome}`);
+      continue;
+    }
     add(c, `outcome.${e.outcome}`); add(c, `${e.replay ? 'replay' : 'learning'}.${e.outcome}`);
     if (e.unlocked !== undefined) add(c, `${e.unlocked ? 'unlocked' : 'free'}.${e.outcome}`);
+    if (e.dressed !== undefined) add(c, `${e.dressed ? 'dressed' : 'plain'}.${e.outcome}`);
     const s = e.summary;
     if (e.outcome === 'win' && !e.replay) add(c, `attempt.${bucket(e.attempt,buckets.attempt)}`);
     if (e.outcome === 'death') {
@@ -128,7 +197,8 @@ export function counterUpdates(batch: Batch): Update[] {
     add(c, `edible.${bucket(s.snapshot.edible,buckets.count)}`);
     add(c, `largestRatio.${bucket(s.snapshot.largestRatio,buckets.ratio)}`);
   }
-  return [...totals].map(([field,by]) => ({field,by}));
+  // A zero adds nothing (the report reads a missing counter as 0), and each counter written is a billed Redis command.
+  return [...totals].filter(([,by]) => by !== 0).map(([field,by]) => ({field,by}));
 }
 function authorized(given: string, expected: string) {
   if (!expected) return false;
@@ -216,6 +286,6 @@ export async function handleStats(request: Request, deps: {store: ArcadeStore; s
       const [channel,version,build] = r.build.split(':');
       return (url.searchParams.get('channel') ?? 'testflight') === channel && (!url.searchParams.has('appVersion') || url.searchParams.get('appVersion') === version) && (!url.searchParams.has('build') || url.searchParams.get('build') === build);
     });
-    return Response.json({from,to, notes: ['Anonymous aggregate attempts, not unique people.', 'Growth paths are optimistic size budgets, not proven winnability.', 'Histograms use upper bucket bounds; sums are thousandths of displayed units.', 'First-clear distributions exclude installs that have not cleared; consult starts and quits too.', 'Failed deliveries are dropped; receive-day is not play-day.', 'Unlock offers count every showing; first offers count installs. Purchases and restores count attempts, not people.'], rows: report(selected)}, {headers});
+    return Response.json({from,to, notes: ['Anonymous aggregate attempts, not unique people.', 'Growth paths are optimistic size budgets, not proven winnability.', 'Histograms use upper bucket bounds; sums are thousandths of displayed units.', 'First-clear distributions exclude installs that have not cleared; consult starts and quits too.', 'Failed deliveries are dropped; receive-day is not play-day.', 'Unlock offers count every showing; first offers count installs. Purchases and restores count attempts, not people.', 'Open Water runs are counted on the level where they ended; a level\'s reached count adds up the runs that ended there or later.', 'Shop visits, purchases, and outfits count visits and launches, not people; earned looks count installs.'], rows: report(selected)}, {headers});
   } catch { return status(503); }
 }

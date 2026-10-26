@@ -86,6 +86,30 @@ outcomes are fixed lists in `src/lib/bigger-fish-paywall.ts`. It also adds the `
 milestone (a world's tenth level first cleared) and an optional `unlocked` boolean on runs, counted
 as `free.<outcome>` / `unlocked.<outcome>` per level. The report's "The unlock" section pools them.
 
+The Open Water and the pearl shop (behind the app's `ArcadeAnalytics.sendsOpenWaterEvents`) add four kinds, all
+listed in `src/lib/bigger-fish-open-water.ts`:
+
+- `endless`: one per Open Water run, with an `openWater` summary (levels cleared, fish, pearls, game seconds, a new
+  best, levels that waited on the next plan and for how long, the slowest plan, dressed). Its context is the same for
+  every run (world `open-water`, mode `endless`, seed `"0"`, the game's Open Water revision), so runs share one
+  content row however many there are: a run's own seed would open a row per run and hit the daily pair cap. A run is
+  counted only where it ended (`ended.<level>.<cause or quit/abandoned>`, levels capped at 60); the report adds up
+  the runs reaching each level from those. `decision` (retry/leave) and the milestones `open_water_started` and
+  `open_water_round` reuse the endless context.
+- `shop` (a visit: `source`, `wallet`, `bought` look IDs, `firstPurchaseRuns` on the install's first purchase),
+  `earned` (`id`, once per install) and `outfit` (`pieces`, one per kind, once per launch): context-free, under the
+  `install` token. The outfit is counted piece by piece (`look.worn.<id>`); the combination is never kept.
+- An optional `dressed` boolean on campaign runs, counted as `dressed.<outcome>` / `plain.<outcome>`.
+
+The report's "The Open Water" and "The pearl shop and looks" sections pool them; the campaign's charts and table
+leave Open Water rows out.
+
+**Cost.** Upstash bills the script call plus every `redis.call` in it. A write costs about 4 commands plus one
+`HINCRBY` per counter: the cap checks are one `SISMEMBER`, one `SMISMEMBER` and one `GET`, and the rest (`SCARD`,
+`SADD`, `INCRBY`, `EXPIRE`, and an exact `HEXISTS` count near the field cap) runs only when something is new to the
+day. `counterUpdates` drops zero increments. The app sends in batches (when 25 events are waiting, on going to the
+background, and at launch), and identical counters in a batch merge into one increment.
+
 The report defaults to TestFlight and the last 30 receive-days. Optional query parameters:
 `from`, `to` (up to 90 days), `channel`, `appVersion`, `build`. Read credentials use only the
 Authorization header; the web report holds its key in component memory, not a URL/local storage.
