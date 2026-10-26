@@ -2,10 +2,16 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
 
-import nextConfig from '../next.config.ts';
-import { base, beats, courses, faqs, game, storeCta } from '../src/lib/double-putt-site.ts';
+import { beats, courses, faqs, game, productionOrigin, siteOrigin, storeCta } from '../src/lib/site.ts';
 
 const publicFile = (path: string) => new URL(`../public${path}`, import.meta.url);
+
+test('the canonical origin is the configured one, then doubleputt.app in production, then the preview URL', () => {
+  assert.equal(siteOrigin({ siteOrigin: 'https://example.com/' }), 'https://example.com');
+  assert.equal(siteOrigin({ vercelEnv: 'production', vercelUrl: 'double-putt.vercel.app' }), productionOrigin);
+  assert.equal(siteOrigin({ vercelEnv: 'preview', vercelUrl: 'double-putt-abc.vercel.app' }), 'https://double-putt-abc.vercel.app');
+  assert.equal(siteOrigin({}), 'http://localhost:3000');
+});
 
 test('the button: coming soon, then the beta with a link, then the App Store', () => {
   assert.deepEqual(storeCta({}), { betaHref: undefined, kind: 'comingSoon' });
@@ -29,8 +35,8 @@ test('every course, still and loop the page shows is there (Tools/capture/site.s
   assert.equal(courses.length, game.courseCount);
   assert.equal(new Set(courses.map((course) => course.slug)).size, courses.length);
   const files = [
-    ...['hero.mp4', 'hero-poster.jpg', 'trailer.mp4', 'trailer-poster.jpg', 'og.png', 'icon-1024.png'].map((f) => `${base}/${f}`),
-    ...courses.flatMap((course) => [`${base}/courses/${course.slug}.mp4`, `${base}/courses/${course.slug}-poster.jpg`]),
+    ...['hero.mp4', 'hero-poster.jpg', 'trailer.mp4', 'trailer-poster.jpg', 'og.png', 'icon-1024.png'].map((f) => `/${f}`),
+    ...courses.flatMap((course) => [`/courses/${course.slug}.mp4`, `/courses/${course.slug}-poster.jpg`]),
     ...beats.map((beat) => beat.image),
   ];
   for (const file of files) assert.ok(existsSync(publicFile(file)), `missing public${file}`);
@@ -40,15 +46,4 @@ test("the site's words follow the game's: a hole is two greens, never a pair, ne
   const copy = JSON.stringify({ beats, courses, faqs, game });
   assert.doesNotMatch(copy, /\bpairs?\b/i);
   assert.doesNotMatch(copy, /\b(hole|green) [AB]\b/);
-});
-
-test('the old /double-putt pages redirect under /doubleputt, and the analytics endpoint stays put', async () => {
-  const redirects = (await nextConfig.redirects?.()) ?? [];
-  const rule = redirects.find((r) => r.source.startsWith('/double-putt'));
-  assert.deepEqual(rule && { destination: rule.destination, permanent: rule.permanent, source: rule.source }, {
-    destination: '/doubleputt/:path*',
-    permanent: true,
-    source: '/double-putt/:path*',
-  });
-  assert.ok(!redirects.some((r) => r.source.startsWith('/api')), 'the app posts to /api/double-putt/events');
 });

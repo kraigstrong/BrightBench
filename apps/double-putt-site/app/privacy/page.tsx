@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
 
-import { ProsePage, ProseSection } from '@/components/double-putt/prose-page';
-import { base, contactEmail } from '@/lib/double-putt-site';
+import { ProsePage, ProseSection } from '@/components/prose-page';
+import { contactEmail } from '@/lib/site';
 
 // Double Putt is a native iOS app built outside this repo (kraigstrong/double-putt). Keep this in step with its
 // PrivacyInfo.xcprivacy, its analytics payload (MiniGolf/Game/Analytics.swift, docs/analytics.md), the App Store
-// privacy answers, and the analytics endpoint (src/lib/double-putt-analytics.ts). The App Store listing and the
-// game's Settings link here.
+// privacy answers, and the analytics endpoint, which stays on brightbench.app (apps/marketing/src/lib/
+// double-putt-analytics.ts). The App Store listing and the game's Settings link here, some of them by way of the old
+// brightbench.app/doubleputt/privacy, which redirects.
 
 export const metadata: Metadata = {
-  alternates: { canonical: `${base}/privacy` },
+  alternates: { canonical: '/privacy' },
   description: 'How Double Putt, a mini golf puzzle game, handles information, including its anonymous gameplay counts.',
   title: 'Privacy Policy',
 };

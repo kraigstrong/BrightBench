@@ -1,22 +1,39 @@
-// What brightbench.app/doubleputt says about Double Putt, in one place for its pages and metadata. Double Putt is a
-// native iOS app built outside this repo (kraigstrong/double-putt); keep these in step with it: the courses
+// What doubleputt.app says about Double Putt, in one place for its pages and metadata. Double Putt is a native iOS
+// app built outside this repo (kraigstrong/double-putt); keep these in step with it: the courses
 // (MiniGolf/Core/Levels.swift, Levels.lineup), the rules and Settings (README there), and the iOS deployment target.
 // Its words follow the game's: a hole is two greens side by side; never "pair", never "hole A" and "hole B".
-// The media in public/doubleputt is made by Tools/capture/site.sh there, from the game itself.
+// The media in public/ is made by Tools/capture/site.sh there, from the game itself.
 
-/** Where the site lives on brightbench.app. */
-export const base = '/doubleputt';
+/** The site's own domain. Production falls back to it; previews use their Vercel URL. */
+export const productionOrigin = 'https://doubleputt.app';
+
+export type OriginEnv = { siteOrigin?: string; vercelEnv?: string; vercelUrl?: string };
+
+/** Canonical origin for metadata, the sitemap, and absolute links. */
+export function siteOrigin(
+  env: OriginEnv = {
+    siteOrigin: process.env.NEXT_PUBLIC_SITE_ORIGIN,
+    vercelEnv: process.env.VERCEL_ENV,
+    vercelUrl: process.env.VERCEL_URL,
+  },
+): string {
+  const configured = env.siteOrigin?.trim().replace(/\/$/, '');
+  if (configured) return configured;
+  if (env.vercelEnv === 'production') return productionOrigin;
+  if (env.vercelUrl) return `https://${env.vercelUrl}`;
+  return 'http://localhost:3000';
+}
 
 export const game = {
   name: 'Double Putt',
   tagline: 'One swing. Two greens.',
   /** One sentence, for previews. */
-  oneLiner: 'A mini golf puzzle game for iPhone: one swing plays two greens at once. Find the putt that drops both.',
+  oneLiner: 'A mini golf puzzle game for iPhone and iPad: one swing plays two greens at once. Find the putt that drops both.',
   /** The home page's lines under the logo. */
   pitch: ['Every swing plays two greens at once.', 'Find the one putt that drops both.'],
   developer: 'Kraig Strong',
-  platform: 'iPhone',
-  requirements: 'iPhone with iOS 17 or later.',
+  platform: 'iPhone and iPad',
+  requirements: 'iPhone with iOS 17 or later, or an iPad with iPadOS 17 or later.',
   courseCount: 9,
   holesPerCourse: 9,
 } as const;
@@ -53,26 +70,29 @@ export const appStoreBadgeSrc = 'https://developer.apple.com/assets/elements/bad
 
 export const contactEmail = 'support@brightbench.app';
 
+/** The studio's site, which the footer credits. */
+export const brightBenchUrl = 'https://brightbench.app';
+
 /** A swing, in three steps. Each still is the whole screen; `focus` is the part a card shows (object-position). */
 export const beats = [
   {
     title: 'Aim once.',
     body: 'Pull back anywhere to aim. Both balls take the same swing.',
-    image: `${base}/beats/aim.jpg`,
+    image: '/beats/aim.jpg',
     focus: '50% 90%',
     alt: 'Aiming on Reflection: a finger pulls back below the left ball, and a guide shows each ball its line.',
   },
   {
     title: 'Same or Mirror.',
     body: 'Send the other ball the same way, or flip its shot left to right. Pick before every swing.',
-    image: `${base}/beats/mirror.jpg`,
+    image: '/beats/mirror.jpg',
     focus: '50% 90%',
     alt: 'Mirror on: the two guides point away from each other, toward cups on opposite sides.',
   },
   {
     title: 'Drop both.',
     body: "Every hole has a swing that sinks both balls. Find it, and the hole's trophy is yours.",
-    image: `${base}/beats/double-ace.jpg`,
+    image: '/beats/double-ace.jpg',
     focus: '50% 50%',
     alt: 'A double ace on Grand Finale: confetti over the course, and the Double Ace! card with its new trophy.',
   },
@@ -169,7 +189,7 @@ export const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'How do I turn the sound off?',
-    answer: "Tap the gear on the title screen for Settings. Sound also follows your iPhone's silent switch.",
+    answer: "Tap the gear on the title screen for Settings. Sound also follows Silent mode on your iPhone or iPad.",
   },
   {
     question: 'Does it need an internet connection?',

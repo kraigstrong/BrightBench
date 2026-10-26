@@ -42,6 +42,8 @@
   letter-spacing: 0.12em;
   margin-bottom: 18px;
   text-transform: uppercase;
+  /* On a phone it takes two lines: even ones, not "iPad" on its own. */
+  text-wrap: balance;
 }
 
 /* The title screen's wordmark: two balls over DOUBLE and a bigger PUTT, with a hard ink edge. */
