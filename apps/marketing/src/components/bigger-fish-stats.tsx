@@ -115,7 +115,7 @@ export default function BiggerFishStats() {
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
   const [openWaterRevision,setOpenWaterRevision]=useState('');
   async function load(e:FormEvent<HTMLFormElement>) {
-    e.preventDefault();setLoading(true);setError('');setData(null);
+    e.preventDefault();setLoading(true);setError('');setData(null);setOpenWaterRevision('');
     // The key is read from the form, not state: a password manager can fill the field without firing onChange.
     const secret=String(new FormData(e.currentTarget).get('password')??'');
     try {
@@ -131,6 +131,8 @@ export default function BiggerFishStats() {
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?.mode==='campaign'?[r.context.world]:[]))];
   const perLevel=difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})));
   const funnel=paywallFunnel(data?.rows??[],world);
+  // An Open Water revision chosen for one report, and not in this one, would hide every run: it's let go.
+  const shownRevision=data&&openWaterReport(data.rows).revisions.includes(openWaterRevision)?openWaterRevision:'';
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
     <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
     {/* POST so a submit before the page's script loads can't put the key in the URL. */}
@@ -152,7 +154,7 @@ export default function BiggerFishStats() {
       <TriesChart worlds={perLevel}/>
       <RampChart worlds={perLevel}/>
       <PaywallChart funnel={funnel}/>
-      <OpenWaterChart report={openWaterReport(data.rows,openWaterRevision||undefined)} revision={openWaterRevision} onRevision={setOpenWaterRevision}/>
+      <OpenWaterChart report={openWaterReport(data.rows,shownRevision||undefined)} revision={shownRevision} onRevision={setOpenWaterRevision}/>
       <ShopChart shop={shopReport(data.rows)}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
