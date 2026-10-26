@@ -35,10 +35,11 @@ CI verifies the workspaces a change touches and their declared consumers (typech
   - Build command: `npm run web:export -w fraction-finder`
   - Output directory: `apps/fraction-finder/dist`
 - `time-tutor`
-  - Build command: `npm run web:export -w time-tutor`
-  - Output directory: `apps/time-tutor/dist`
+  - Root Directory: `apps/time-tutor` (install command left to Vercel's monorepo detection)
+  - Build command: `npm run web:export`
+  - Output directory: `dist`
   - support/privacy links on `timetutor.app` are served by the Time Tutor web export at `/support` and `/privacy`
-  - include `apps/time-tutor/vercel.json` so clean URLs resolve exported `.html` routes in production
+  - `scripts/postprocess-web-export.mjs` copies the exported `privacy.html` and `support.html` to `privacy/index.html` and `support/index.html`, so those clean URLs resolve in production
 
 ## iOS Deployment
 - Each app should have its own bundle identifier
@@ -68,6 +69,9 @@ Shared code should not force every app to release together.
 - Use monorepo project linking rather than one combined deployment target
 - Project naming standard: use the workspace slug as the Vercel project name when possible
 - Current repo still needs dashboard or CLI linking per project
+- Every project has "Skip deployments when there are no changes to the root directory or its dependencies" on, so a push builds only the projects whose directory or workspace dependencies changed. Turn it on for any new project; it needs that project's Root Directory set to its workspace.
+- A change to any file outside every workspace (`docs/`, root Markdown, `.agents/`, `scripts/`, `package.json`, the lockfile) counts as a change to every project, so all of them build
+- Vercel compares a push with the branch's previous commit, not with `main`, so merging `main` into a branch builds every project `main` changed since then
 
 ## Environment Variable Strategy
 - Do not hardcode future suite-wide domains in product code
