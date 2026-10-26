@@ -4,8 +4,9 @@
 // Where the pearl shop was opened from: the world map's pearl button, or the Shop button on an Open Water run's card.
 export const shopSources = ['map', 'run_card'] as const;
 export type ShopSource = typeof shopSources[number];
-// A look's ID, as the game saves it: its kind, a dot, and a name (`hat.cone`). Never renamed, so counts by ID last.
-export const lookId = /^[a-z]{1,16}\.[a-z0-9-]{1,40}$/;
+// A look's ID, as the game saves it: its kind, a dot, and a name of up to 40 characters (`hat.cone`), which may have
+// dots of its own (`hat.crown.silver`), never two together or at its end. Never renamed, so counts by ID last.
+export const lookId = /^[a-z]{1,16}\.(?=[a-z0-9.-]{1,40}$)[a-z0-9-]+(?:\.[a-z0-9-]+)*$/;
 // A run's levels are counted where it ended; levels past this one are counted together, as this one.
 export const openWaterLevelCap = 60;
 // The run's worlds in turn, a time round each stage, and the campaign level the first stage's are made like (the

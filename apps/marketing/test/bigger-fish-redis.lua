@@ -1,4 +1,4 @@
--- Run from apps/marketing: node test/run-bigger-fish-redis.mjs
+-- Run by test/redis-lua.test.ts (npm test), which passes the production script as arg[1].
 -- Executes the production Lua script against a deterministic in-memory Redis command shim.
 local increment = assert(loadfile(arg[1]))
 local db, expires, calls = {}, {}, 0
@@ -51,6 +51,16 @@ assert(db['counts:build2']==nil and db['counts:build1']['new-bucket']==nil)
 reset()
 for i=1,20 do assert(write('build'..i,{'c'},{{'a',1}})==1) end
 assert(write('build21',{'c'},{{'a',1}})==0)
+-- A build already counted today still writes once the day has 20.
+assert(write('build20',{'c2'},{{'a',1}})==1 and db['counts:build20'].a==2 and db['counts:build21']==nil)
+reset()
+-- Pairs filled to exactly 500 across writes are accepted; one more new pair is not, and a known one still is.
+local most={}; for i=1,499 do most[i]='context'..i end
+assert(write('build1',most,{{'counter',1}})==1)
+assert(write('build2',{'context1'},{{'counter',1}})==1 and redis.call('SCARD','pairs')==500)
+assert(write('build2',{'context2'},{{'counter',1}})==0)
+assert(redis.call('SCARD','pairs')==500 and db['counts:build2'].counter==1)
+assert(write('build2',{'context1'},{{'counter',1}})==1 and db['counts:build2'].counter==2)
 reset()
 -- Cost (Upstash bills each redis.call): a day's first write sets things up, then a write to known builds and contexts
 -- costs SISMEMBER, SMISMEMBER, GET and HLEN plus one HINCRBY per counter, and HLEN and INCRBY again if a counter is new.

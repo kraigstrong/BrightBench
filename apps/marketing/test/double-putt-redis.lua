@@ -1,4 +1,4 @@
--- Run from apps/marketing: node test/run-double-putt-redis.mjs
+-- Run by test/redis-lua.test.ts (npm test), which passes the production script as arg[1].
 -- Executes the production Lua script against a deterministic in-memory Redis command shim.
 local increment = assert(loadfile(arg[1]))
 local db, expires, calls = {}, {}, 0
@@ -51,6 +51,8 @@ assert(db['counts:build2']==nil and db['counts:build1']['new-bucket']==nil)
 reset()
 for i=1,20 do assert(write('build'..i,{'c'},{{'a',1}})==1) end
 assert(write('build21',{'c'},{{'a',1}})==0)
+-- A build already counted today still writes once the day has 20.
+assert(write('build20',{'c2'},{{'a',1}})==1 and db['counts:build20'].a==2 and db['counts:build21']==nil)
 reset()
 -- Six courses of nine holes, their six courses and the install: 61 contents per build, so eight builds fit a day.
 local course={}; for i=1,61 do course[i]='content'..i end
@@ -58,6 +60,12 @@ for i=1,8 do assert(write('build'..i,course,{{'content1|outcome.finished',1}})==
 assert(redis.call('SCARD','contents')==488)
 assert(write('build9',course,{{'content1|outcome.finished',1}})==0)
 assert(db['counts:build9']==nil and redis.call('SCARD','builds')==8)
+-- Contents filled to exactly 500 across writes are accepted; one more new content is not, and a known one still is.
+local rest={}; for i=1,12 do rest[i]='extra'..i end
+assert(write('build8',rest,{{'extra1|outcome.finished',1}})==1 and redis.call('SCARD','contents')==500)
+assert(write('build8',{'extra13'},{{'extra13|outcome.finished',1}})==0)
+assert(redis.call('SCARD','contents')==500 and db['counts:build8']['extra13|outcome.finished']==nil)
+assert(write('build8',{'extra1'},{{'extra1|outcome.finished',1}})==1 and db['counts:build8']['extra1|outcome.finished']==2)
 reset()
 -- Cost (Upstash bills each redis.call): a day's first write sets things up, then a write to known builds and contents
 -- costs SISMEMBER, SMISMEMBER, GET and HLEN plus one HINCRBY per counter, and HLEN and INCRBY again if a counter is new.
