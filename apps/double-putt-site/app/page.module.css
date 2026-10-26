@@ -1,0 +1,319 @@
+/* Hero: the copy at the left, the game upright beside it, as on a phone. */
+.hero {
+  align-items: center;
+  display: grid;
+  gap: clamp(32px, 5vw, 72px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  margin: 0 auto;
+  max-width: var(--dp-page-width);
+  min-height: min(92vh, 860px);
+  padding: 110px var(--dp-gutter) 40px;
+}
+
+.heroMedia {
+  justify-self: center;
+  position: relative;
+  /* The whole screen, never taller than about four fifths of the window. */
+  width: min(100%, 360px, 36vh);
+}
+
+/* A soft green glow behind the screen. */
+.heroMedia::before {
+  background: radial-gradient(closest-side, rgb(255 201 74 / 0.18), rgb(47 110 67 / 0.25) 55%, transparent);
+  content: '';
+  inset: -18% -40%;
+  position: absolute;
+  z-index: -1;
+}
+
+.heroVideo {
+  aspect-ratio: 720 / 1564;
+  border-radius: 34px;
+  box-shadow: var(--dp-shadow-lg), 0 0 0 1px var(--dp-line);
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+.eyebrow {
+  color: var(--dp-putt);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  /* On a phone it takes two lines: even ones, not "iPad" on its own. */
+  text-wrap: balance;
+}
+
+/* The title screen's wordmark: two balls over DOUBLE and a bigger PUTT, with a hard ink edge. */
+.wordmark {
+  display: grid;
+  justify-items: start;
+  line-height: 0.86;
+  text-shadow: 0 6px 0 rgb(16 35 26 / 0.6), 0 10px 40px rgb(0 0 0 / 0.35);
+  text-transform: uppercase;
+}
+
+.balls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ball {
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.4));
+  height: clamp(30px, 3vw, 40px);
+  width: clamp(30px, 3vw, 40px);
+}
+
+.double {
+  font-size: clamp(54px, 7vw, 92px);
+  letter-spacing: 0.02em;
+}
+
+.putt {
+  font-size: clamp(80px, 10.5vw, 138px);
+  letter-spacing: 0.03em;
+}
+
+.tagline {
+  color: var(--dp-putt);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin-top: 18px;
+}
+
+.pitch {
+  color: var(--dp-muted);
+  font-size: clamp(18px, 1.6vw, 21px);
+  margin-top: 14px;
+}
+
+.pitch span {
+  display: block;
+}
+
+.ctaRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+  margin-top: 30px;
+}
+
+.trailerButton {
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  border-radius: 999px;
+  color: var(--dp-cream);
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 800;
+  gap: 9px;
+  height: 52px;
+  padding: 0 22px;
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.trailerButton:hover,
+.trailerButton:focus-visible {
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.5);
+}
+
+/* Sections */
+.section {
+  margin: 0 auto;
+  max-width: var(--dp-page-width);
+  padding: clamp(56px, 9vw, 110px) var(--dp-gutter) 0;
+}
+
+.sectionHead {
+  display: grid;
+  gap: 12px;
+  margin-bottom: clamp(28px, 4vw, 44px);
+  max-width: 660px;
+}
+
+.centred {
+  justify-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: clamp(36px, 5vw, 56px);
+}
+
+.sectionLede {
+  color: var(--dp-muted);
+  font-size: clamp(18px, 1.6vw, 21px);
+}
+
+/* A swing, in three steps. */
+.beats {
+  display: grid;
+  gap: clamp(28px, 3vw, 40px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.beat {
+  display: grid;
+  gap: 12px;
+  grid-template-rows: auto auto 1fr;
+}
+
+.shot {
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--dp-line);
+  border-radius: var(--dp-radius-md);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.shot img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.beatTitle,
+.courseName {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.beatTitle {
+  font-size: clamp(28px, 2.6vw, 34px);
+}
+
+.beatNumber,
+.courseNumber {
+  align-items: center;
+  background: var(--dp-putt);
+  border-radius: 999px;
+  color: var(--dp-ink);
+  display: inline-flex;
+  flex: none;
+  font-size: 15px;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  width: 28px;
+}
+
+.beatBody {
+  color: var(--dp-muted);
+}
+
+/* The courses: a row to swipe through, as Free Play shows them, the window's whole width. */
+.courses {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding: 0 var(--dp-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--dp-gutter), #000 calc(100% - var(--dp-gutter)), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 var(--dp-gutter), #000 calc(100% - var(--dp-gutter)), transparent);
+}
+
+.courseRow {
+  display: flex;
+  gap: clamp(16px, 2vw, 24px);
+  list-style: none;
+  margin: 0;
+  /* The first card lines up with the page's text; the last can scroll clear of the edge. */
+  padding: 0 max(var(--dp-gutter), calc((100vw - var(--dp-page-width)) / 2 + var(--dp-gutter))) 18px;
+  width: max-content;
+}
+
+.course {
+  display: grid;
+  gap: 10px;
+  grid-template-rows: auto auto 1fr;
+  scroll-snap-align: start;
+  width: clamp(220px, 22vw, 260px);
+}
+
+.courseMedia {
+  aspect-ratio: 480 / 904;
+  background: var(--dp-deep);
+  border: 1px solid var(--dp-line);
+  border-radius: var(--dp-radius-md);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+  overflow: hidden;
+}
+
+.courseVideo {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.courseName {
+  font-size: clamp(22px, 2vw, 26px);
+  margin-top: 8px;
+}
+
+.courseLine {
+  color: var(--dp-muted);
+  font-size: 16px;
+}
+
+/* Closing call to action */
+.closing {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-bottom: clamp(64px, 9vw, 110px);
+  text-align: center;
+}
+
+.closingTitle {
+  font-size: clamp(40px, 6vw, 68px);
+}
+
+.promise {
+  color: var(--dp-faint);
+  font-weight: 800;
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    padding-top: 96px;
+  }
+
+  .heroMedia {
+    width: min(78%, 320px);
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .beats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trailerButton,
+  .courses {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
