@@ -2,6 +2,8 @@
 import { useState, type FormEvent } from 'react';
 import { difficultyRamp, tryGroups, type RampWorld } from '@/lib/bigger-fish-ramp';
 import { paywallFunnel, purchaseOutcomes, restoreOutcomes, type PaywallFunnel } from '@/lib/bigger-fish-paywall';
+import { openWaterReport, shopReport } from '@/lib/bigger-fish-open-water';
+import { OpenWaterChart, ShopChart } from '@/components/bigger-fish-open-water-stats';
 type Row = {build:string;context:{world:string;mode:string;level:number;setup:number;seed:string;revision:string}|null;counts:Record<string,number>;attempts:number;completedAttempts:number;successRate:number|null;allEndedSuccessRate:number|null;deathsWithGrowthPathRate:number|null};
 type Report = {from:string;to:string;notes:string[];rows:Row[]};
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
@@ -111,6 +113,7 @@ function PaywallChart({funnel}:{funnel:PaywallFunnel}) {
 export default function BiggerFishStats() {
   const [build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
   const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
+  const [openWaterRevision,setOpenWaterRevision]=useState('');
   async function load(e:FormEvent<HTMLFormElement>) {
     e.preventDefault();setLoading(true);setError('');setData(null);
     // The key is read from the form, not state: a password manager can fill the field without firing onChange.
@@ -123,8 +126,9 @@ export default function BiggerFishStats() {
       setData(await response.json());
     }catch{setError('Report unavailable. Try again later.');}finally{setLoading(false);}
   }
-  const rows=(data?.rows??[]).filter(r=>r.context&&(!world||r.context.world===world));
-  const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?[r.context.world]:[]))];
+  // The campaign's rows: Open Water runs have a section of their own.
+  const rows=(data?.rows??[]).filter(r=>r.context&&r.context.mode==='campaign'&&(!world||r.context.world===world));
+  const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?.mode==='campaign'?[r.context.world]:[]))];
   const perLevel=difficultyRamp(rows.map(r=>({context:r.context,counts:r.counts})));
   const funnel=paywallFunnel(data?.rows??[],world);
   return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
@@ -148,6 +152,8 @@ export default function BiggerFishStats() {
       <TriesChart worlds={perLevel}/>
       <RampChart worlds={perLevel}/>
       <PaywallChart funnel={funnel}/>
+      <OpenWaterChart report={openWaterReport(data.rows,openWaterRevision||undefined)} revision={openWaterRevision} onRevision={setOpenWaterRevision}/>
+      <ShopChart shop={shopReport(data.rows)}/>
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
         <caption>Per-level success and death diagnostics</caption>
