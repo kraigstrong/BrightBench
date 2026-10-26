@@ -23,20 +23,21 @@ const sections: { title: string; body: string[] }[] = [
       'To learn which holes are too hard or too easy, the game sends a short anonymous report of each attempt at a hole to BrightBench. It says which course and hole it was and which version of the course; whether it was played in a course round or in Free Play; whether you had already finished that hole; and how the attempt ended: finished, restarted or left, or cut short by the app closing.',
       "The report also includes your strokes on each of the hole's two greens and its par; how many swings you took, and how many of them in Mirror; how many balls went in the water; how many greens you made in one stroke, and whether that was a double ace; until you first finish a hole, which try at it this was; and how many seconds you spent on it.",
       'For course rounds, the game reports when a round is started, and whether it is your first round of that course; when a round is left unfinished, and on which hole; and when a round is finished, with its total strokes, the course par, the medal won, and whether it was your best round of that course.',
-      'A few reports are sent only once each time the game is installed: the first launch, each course a medal opens, and, for each version of the courses, the first time you finish each hole and the first double ace on it (its trophy). Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
+      "When the screen to buy All Courses opens, the game reports where it was opened from (a round's scorecard, the end of a free hole, a locked course or hole, the Trophy Shelf, Settings, or continuing a saved round), which course it was for, and whether it's the first time it has opened since the game was installed. It never reports whether you bought anything.",
+      'A few reports are sent only once each time the game is installed: the first launch and, for each version of the courses, the first time you finish each hole and the first double ace on it (its trophy). Versions before 1.0 also sent one for each course a medal opened. Each report also says which version of the game sent it and whether it is a test build or the App Store version.',
     ],
   },
   {
     title: 'What Is Never Sent',
     body: [
-      "No name, account, contact details, photo, or location. No device, advertising, session, or other identifier, and nothing that could tell one player's or device's reports apart from another's. No dates or times of day, device model, system version, or language. No touches, aim, or ball paths.",
+      "No name, account, contact details, photo, or location. No purchases, prices, or payment details, and nothing about your Apple Account. No device, advertising, session, or other identifier, and nothing that could tell one player's or device's reports apart from another's. No dates or times of day, device model, system version, or language. No touches, aim, or ball paths.",
     ],
   },
   {
     title: 'How the Reports Are Kept and Used',
     body: [
       'Each report is checked and immediately added to running totals for each day, grouped by hole or course and game version. Individual reports are not stored, and the totals cannot be traced back to a player or a device. Daily totals are deleted after 90 days.',
-      "The totals are used only to improve Double Putt's holes and courses and how hard they are. They are never used for advertising or tracking, and never sold or shared.",
+      "The totals are used only to improve Double Putt: its holes and courses, how hard they are, and where the game offers All Courses. They are never used for advertising or tracking, and never sold or shared.",
       'Reports wait on the device and are sent together in small batches: when enough have collected, when you leave the app, and when it next opens. Double Putt works without an internet connection; a batch that fails to send is discarded rather than retried.',
     ],
   },
@@ -47,10 +48,17 @@ const sections: { title: string; body: string[] }[] = [
     ],
   },
   {
+    title: 'Buying All Courses',
+    body: [
+      'Double Putt is free to try, with one in-app purchase, All Courses. Apple handles buying it, Restore Purchases, and Family Sharing, under its own privacy policy. We never see your payment details or your Apple Account.',
+      "The game only asks Apple whether your Apple Account has All Courses, to know which holes to open. Apple's sales reports tell us how many copies sell, never who bought them, and the game's anonymous reports never say whether you did.",
+    ],
+  },
+  {
     title: 'Information Stored on Your Device',
     body: [
-      'Double Putt keeps your progress on your device only: your best scores, medals, and trophies, which courses you have opened, a round in progress, which tips you have seen, and your sound setting. To send the once-per-installation reports and try counts described above, it also keeps a few markers and counters, and holds reports until they are sent. None of these are sent to us; only the anonymous reports are.',
-      "Double Putt doesn't use iCloud or any account, so deleting the app removes this information. Like other app data, it may be included in your own device backups, which we cannot access.",
+      'Double Putt keeps your progress on your device only: your best scores, medals, and trophies, a round in progress, which tips you have seen, and your sound setting. To send the once-per-installation reports and try counts described above, it also keeps a few markers and counters, and holds reports until they are sent. None of these are sent to us; only the anonymous reports are.',
+      "Double Putt doesn't use iCloud or an account of its own, so deleting the app removes this information. Your All Courses purchase stays with your Apple Account, and Restore Purchases brings it back. Like other app data, your progress may be included in your own device backups, which we cannot access.",
     ],
   },
   {
@@ -75,7 +83,7 @@ const sections: { title: string; body: string[] }[] = [
 
 export default function DoublePuttPrivacyPage() {
   return (
-    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 24, 2026</p>} title="Double Putt Privacy Policy">
+    <ProsePage eyebrow="Privacy" intro={<p>Last updated: October 26, 2026</p>} title="Double Putt Privacy Policy">
       {sections.map((section) => (
         <ProseSection key={section.title} title={section.title}>
           {section.body.map((paragraph) => (
