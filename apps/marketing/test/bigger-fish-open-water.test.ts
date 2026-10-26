@@ -48,6 +48,24 @@ test('they stay strict: one unknown field or value rejects the whole batch',()=>
   }
 });
 
+test('a look whose name has dots of its own (the crowns) is accepted and counted under its whole ID',()=>{
+  const crowns:Batch={...batch(),events:[{kind:'earned',id:'hat.crown.silver'},{kind:'outfit',pieces:['color.rainbow','hat.crown.diamond']},
+    {kind:'shop',source:'map',wallet:300,bought:['color.cotton-candy']}]};
+  assert.equal(validateBatch(crowns),true);
+  const counts=Object.fromEntries(counterUpdates(crowns).map(u=>[u.field,u.by]));
+  assert.equal(counts['install|look.earned.hat.crown.silver'],1);assert.equal(counts['install|look.worn.hat.crown.diamond'],1);
+  const s=shopReport(rowsOf(report([{day:'2026-10-25',build:'debug:1.1:3',counts}])));
+  assert.deepEqual(s.looks.find(l=>l.id==='hat.crown.diamond'),{id:'hat.crown.diamond',bought:0,earned:0,worn:1});
+  assert.equal(s.looks.find(l=>l.id==='color.cotton-candy')!.bought,1);
+  assert.equal(s.looks.find(l=>l.id==='hat.crown.silver')!.earned,1);
+  // Still one look a kind in an outfit, and still no stray dots or names past 40 characters.
+  for(const event of [{kind:'outfit',pieces:['hat.crown.silver','hat.cone']},{kind:'earned',id:'hat.crown..silver'},
+    {kind:'earned',id:'hat.crown.'},{kind:'earned',id:'hat..crown'},{kind:'earned',id:'.hat.crown'},{kind:'earned',id:`hat.${'a.'.repeat(20)}b`}]){
+    assert.equal(validateBatch({...batch(),events:[event]}),false,JSON.stringify(event));
+  }
+  assert.equal(validateBatch({...batch(),events:[{kind:'earned',id:`hat.${'a'.repeat(40)}`}]}),true);
+});
+
 test('a run is counted where it ended, with a few counters; the shop and looks per install',()=>{
   const counts=Object.fromEntries(counterUpdates(batch()).map(u=>[u.field,u.by]));
   const token=Object.keys(counts).find(k=>k.endsWith('|outcome.death'))!.split('|')[0]!;
