@@ -29,8 +29,9 @@ test("Double Putt's old pages and media go to doubleputt.app", () => {
 });
 
 test('the stats report and the analytics endpoint stay on brightbench.app', () => {
-  assert.equal(redirectFor('/doubleputt/stats'), undefined);
-  assert.equal(redirectFor('/double-putt/stats'), '/doubleputt/stats');
+  // The report is the Double Putt tab of the stats viewer.
+  assert.equal(redirectFor('/doubleputt/stats'), '/stats?game=double-putt');
+  assert.equal(redirectFor('/double-putt/stats'), '/stats?game=double-putt');
   assert.equal(redirectFor('/api/double-putt/events'), undefined);
   assert.equal(redirectFor('/api/double-putt/stats'), undefined);
   assert.equal(redirectFor('/'), undefined);

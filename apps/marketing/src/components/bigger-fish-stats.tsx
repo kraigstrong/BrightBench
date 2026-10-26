@@ -1,5 +1,5 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from 'react';
 import { difficultyRamp, tryGroups, type RampWorld } from '@/lib/bigger-fish-ramp';
 import { paywallFunnel, purchaseOutcomes, restoreOutcomes, type PaywallFunnel } from '@/lib/bigger-fish-paywall';
 import { openWaterReport, shopReport } from '@/lib/bigger-fish-open-water';
@@ -110,22 +110,33 @@ function PaywallChart({funnel}:{funnel:PaywallFunnel}) {
     </table></div>}
   </section>;
 }
-export default function BiggerFishStats() {
+// The report, 401 for a rejected key, or null when it's unavailable.
+async function fetchReport(query:URLSearchParams,secret:string,signal:AbortSignal):Promise<Report|401|null> {
+  const response=await fetch(`/api/bigger-fish/stats?${query}`,{headers:{Authorization:`Bearer ${secret}`},cache:'no-store',signal});
+  return response.status===401?401:response.ok?await response.json() as Report:null;
+}
+// One tab of the stats viewer (stats-viewer.tsx), which holds the key: it loads once on opening, then again from the
+// form with new filters. A rejected key is the viewer's to handle (it locks).
+export default function BiggerFishStats({secret,onUnauthorized}:{secret:string;onUnauthorized:()=>void}) {
   const [build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
-  const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[world,setWorld]=useState('');
+  const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[world,setWorld]=useState('');
   const [openWaterRevision,setOpenWaterRevision]=useState('');
-  async function load(e:FormEvent<HTMLFormElement>) {
-    e.preventDefault();setLoading(true);setError('');setData(null);setOpenWaterRevision('');
-    // The key is read from the form, not state: a password manager can fill the field without firing onChange.
-    const secret=String(new FormData(e.currentTarget).get('password')??'');
-    try {
-      const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
-      const query=new URLSearchParams({channel,from,to});if(build)query.set('build',build);
-      const response=await fetch(`/api/bigger-fish/stats?${query}`,{headers:{Authorization:`Bearer ${secret}`},cache:'no-store'});
-      if(!response.ok){setError(response.status===401?'Check the private reporting key.':'Report unavailable. Try again later.');return;}
-      setData(await response.json());
-    }catch{setError('Report unavailable. Try again later.');}finally{setLoading(false);}
+  // The request in flight. A newer one aborts it, and so does the viewer locking, so a late answer changes nothing.
+  const pending=useRef<AbortController|null>(null);
+  function requestReport() {
+    pending.current?.abort();const request=new AbortController();pending.current=request;
+    const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
+    const query=new URLSearchParams({channel,from,to});if(build)query.set('build',build);
+    // State changes only in the callbacks, once the answer is in, so the first load can start from an effect.
+    fetchReport(query,secret,request.signal).then(report=>{if(request.signal.aborted)return;if(report===401)onUnauthorized();else if(report)setData(report);else setError('Report unavailable. Try again later.');},
+      ()=>{if(!request.signal.aborted)setError('Report unavailable. Try again later.');})
+      .finally(()=>{if(pending.current===request){pending.current=null;setLoading(false);}});
   }
+  function load(e:FormEvent<HTMLFormElement>) {
+    e.preventDefault();setLoading(true);setError('');setData(null);setOpenWaterRevision('');requestReport();
+  }
+  const loadFirst=useEffectEvent(requestReport);
+  useEffect(()=>{loadFirst();return()=>pending.current?.abort();},[]);
   // The campaign's rows: Open Water runs have a section of their own.
   const rows=(data?.rows??[]).filter(r=>r.context&&r.context.mode==='campaign'&&(!world||r.context.world===world));
   const worlds=[...new Set((data?.rows??[]).flatMap(r=>r.context?.mode==='campaign'?[r.context.world]:[]))];
@@ -133,19 +144,14 @@ export default function BiggerFishStats() {
   const funnel=paywallFunnel(data?.rows??[],world);
   // An Open Water revision chosen for one report, and not in this one, would hide every run: it's let go.
   const shownRevision=data&&openWaterReport(data.rows).revisions.includes(openWaterRevision)?openWaterRevision:'';
-  return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
-    <h1>Bigger Fish beta report</h1><p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
-    {/* POST so a submit before the page's script loads can't put the key in the URL. */}
-    <form onSubmit={load} method="post" style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
-      {/* A username field helps password managers match the saved item; the key is its password. */}
-      <input type="text" name="username" autoComplete="username" value="bigger-fish-stats" readOnly hidden/>
-      <label>Private reporting key<br/><input type="password" name="password" id="password" autoComplete="current-password" required/></label>
+  return <>
+    <p>Anonymous aggregate attempts by receive-day, sorted by world, level, then newest build. Daily totals are kept for 90 days. Content and builds remain separate.</p>
+    <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
-      <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>
+      <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric" data-1p-ignore/></label>
       <button disabled={loading}>{loading?'Loading…':'Load report'}</button>
     </form>
-    <p>The key stays in this page’s memory and is sent in an authorization header, never a URL or local storage.</p>
     {error&&<p role="alert">{error}</p>}
     {data&&<>
       <p>Showing receive-days {data.from} to {data.to} (UTC).</p>
@@ -174,5 +180,5 @@ export default function BiggerFishStats() {
       {rows.length===0&&<p>No reports in this selection.</p>}
       <details><summary>Detailed histograms and progression counters</summary><pre style={{overflowX:'auto'}}>{JSON.stringify(data.rows,null,2)}</pre></details>
     </>}
-  </main>;
+  </>;
 }

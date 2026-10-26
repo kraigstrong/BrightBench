@@ -1,5 +1,5 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from 'react';
 import type { CourseRow, HoleRow, Report } from '@/lib/double-putt-analytics';
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
 const decimal = (x:number|null,digits=1) => x === null ? '—' : x.toFixed(digits);
@@ -83,37 +83,43 @@ function CoursesTable({courses}:{courses:CourseRow[]}) {
     {courses.length===0&&<p>No rounds or unlocks in this selection.</p>}
   </section>;
 }
-export default function DoublePuttStats() {
+// The report, 401 for a rejected key, or null when it's unavailable.
+async function fetchReport(query:URLSearchParams,secret:string,signal:AbortSignal):Promise<Report|401|null> {
+  const response=await fetch(`/api/double-putt/stats?${query}`,{headers:{Authorization:`Bearer ${secret}`},cache:'no-store',signal});
+  return response.status===401?401:response.ok?await response.json() as Report:null;
+}
+// One tab of the stats viewer (stats-viewer.tsx), which holds the key: it loads once on opening, then again from the
+// form with new filters. A rejected key is the viewer's to handle (it locks).
+export default function DoublePuttStats({secret,onUnauthorized}:{secret:string;onUnauthorized:()=>void}) {
   const [appVersion,setAppVersion]=useState(''),[build,setBuild]=useState(''),[channel,setChannel]=useState('testflight'),[days,setDays]=useState(30);
-  const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false),[course,setCourse]=useState('');
-  async function load(e:FormEvent<HTMLFormElement>) {
-    e.preventDefault();setLoading(true);setError('');setData(null);setCourse('');
-    // The key is read from the form, not state: a password manager can fill the field without firing onChange.
-    const secret=String(new FormData(e.currentTarget).get('password')??'');
-    try {
-      const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
-      const query=new URLSearchParams({channel,from,to});if(appVersion)query.set('appVersion',appVersion);if(build)query.set('build',build);
-      const response=await fetch(`/api/double-putt/stats?${query}`,{headers:{Authorization:`Bearer ${secret}`},cache:'no-store'});
-      if(!response.ok){setError(response.status===401?'Check the private reporting key.':'Report unavailable. Try again later.');return;}
-      setData(await response.json());
-    }catch{setError('Report unavailable. Try again later.');}finally{setLoading(false);}
+  const [data,setData]=useState<Report|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[course,setCourse]=useState('');
+  // The request in flight. A newer one aborts it, and so does the viewer locking, so a late answer changes nothing.
+  const pending=useRef<AbortController|null>(null);
+  function requestReport() {
+    pending.current?.abort();const request=new AbortController();pending.current=request;
+    const to=utcDay(Date.now()),from=utcDay(Date.parse(to)-(days-1)*86400000);
+    const query=new URLSearchParams({channel,from,to});if(appVersion)query.set('appVersion',appVersion);if(build)query.set('build',build);
+    // State changes only in the callbacks, once the answer is in, so the first load can start from an effect.
+    fetchReport(query,secret,request.signal).then(report=>{if(request.signal.aborted)return;if(report===401)onUnauthorized();else if(report)setData(report);else setError('Report unavailable. Try again later.');},
+      ()=>{if(!request.signal.aborted)setError('Report unavailable. Try again later.');})
+      .finally(()=>{if(pending.current===request){pending.current=null;setLoading(false);}});
   }
+  function load(e:FormEvent<HTMLFormElement>) {
+    e.preventDefault();setLoading(true);setError('');setData(null);setCourse('');requestReport();
+  }
+  const loadFirst=useEffectEvent(requestReport);
+  useEffect(()=>{loadFirst();return()=>pending.current?.abort();},[]);
   const courseIds=[...new Set([...(data?.holes??[]),...(data?.courses??[])].map(r=>r.course))].sort((a,b)=>courseRank(a)-courseRank(b)||a.localeCompare(b));
   const holes=(data?.holes??[]).filter(p=>!course||p.course===course),courses=(data?.courses??[]).filter(c=>!course||c.course===course);
-  return <main style={{maxWidth:1200,margin:'0 auto',padding:'40px 20px'}}>
-    <h1>Double Putt beta report</h1><p>Anonymous aggregate attempts and rounds by receive-day. Daily totals are kept for 90 days. Every build in the selection is pooled; content revisions stay separate.</p>
-    {/* POST so a submit before the page's script loads can't put the key in the URL. */}
-    <form onSubmit={load} method="post" style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
-      {/* A username field helps password managers match the saved item; the key is its password. */}
-      <input type="text" name="username" autoComplete="username" value="double-putt-stats" readOnly hidden/>
-      <label>Private reporting key<br/><input type="password" name="password" id="password" autoComplete="current-password" required/></label>
+  return <>
+    <p>Anonymous aggregate attempts and rounds by receive-day. Daily totals are kept for 90 days. Every build in the selection is pooled; content revisions stay separate.</p>
+    <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
-      <label>App version (optional)<br/><input value={appVersion} onChange={e=>setAppVersion(e.target.value)} inputMode="decimal" placeholder="0.1"/></label>
-      <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>
+      <label>App version (optional)<br/><input value={appVersion} onChange={e=>setAppVersion(e.target.value)} inputMode="decimal" placeholder="0.1" data-1p-ignore/></label>
+      <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric" data-1p-ignore/></label>
       <button disabled={loading}>{loading?'Loading…':'Load report'}</button>
     </form>
-    <p>The key stays in this page’s memory and is sent in an authorization header, never a URL or local storage.</p>
     {error&&<p role="alert">{error}</p>}
     {data&&<>
       <p>Showing receive-days {data.from} to {data.to} (UTC). <strong>{data.firstLaunches}</strong> first launches.</p>
@@ -129,5 +135,5 @@ export default function DoublePuttStats() {
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
       <details><summary>Raw counters</summary><pre style={{overflowX:'auto'}}>{JSON.stringify({holes:data.holes,courses:data.courses},null,2)}</pre></details>
     </>}
-  </main>;
+  </>;
 }

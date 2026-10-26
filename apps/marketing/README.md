@@ -22,6 +22,27 @@ npm run dev -w marketing
 
 - **App Store:** `NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL` (falls back to the default listing in `src/lib/site.ts`).
 
+## Stats viewer
+
+`/stats` is the private view of every game's analytics: sign in once with the stats key, then a tab each for Bigger
+Fish, Double Putt and Math Reef (`src/lib/stats-games.ts` lists them). `/stats?game=bigger-fish`, `double-putt` or
+`math-reef` opens that tab, and the address follows the tab chosen. A tab loads its report the first time it's opened
+and keeps it, filters and all, until the page is locked. The key lives only in the page's memory and goes only in an
+`Authorization` header, never a URL or browser storage; a rejected key locks the page. It's kept out of search
+(`noindex` and `robots.txt`) and out of the sitemap.
+
+- `STATS_SECRET`: the one private key for reading every game's stats (`GET /api/{bigger-fish,double-putt,math-reef}/stats`).
+  Never put it in an app. Until it's set, the stats endpoints answer 401.
+
+The sign-in form calls the key a password, so 1Password fills it: a 1Password login for `brightbench.app` with username
+`brightbench-stats` (the form's hidden, prefilled username) and `STATS_SECRET` as its password. The form follows
+1Password's [website design guide](https://www.1password.dev/web/compatible-website-design): POST, a `<label for>` on
+each field, `autocomplete` values, and the username hidden with `display: none` and `aria-hidden`. The tabs' filter
+text fields carry `data-1p-ignore`, so 1Password doesn't offer logins there.
+
+The old per-game pages, `/bigger-fish/stats`, `/doubleputt/stats` and `/math-reef/stats`, redirect to their tab
+(`next.config.ts`; not permanent, so browsers don't cache them), and so does `/double-putt/stats`.
+
 ## Math Reef analytics
 
 Math Reef (the iOS app in `kraigstrong/bigger-fish`) posts anonymous usage counts to
@@ -35,7 +56,7 @@ ignores):
 
 - `KV_REST_API_URL`, `KV_REST_API_TOKEN`: Upstash Redis, set by the Vercel Marketplace integration.
 - `MATH_REEF_APP_KEY`: must match `ReefAnalytics.appKey` in the app. A bot filter, not a secret.
-- `MATH_REEF_STATS_SECRET`: a real secret for reading stats. Never put it in an app.
+- `STATS_SECRET`: the stats key, shared by every game (see Stats viewer). Never put it in an app.
 
 At most 20 distinct `channel:appVersion` builds are counted per day (`maxBuildsPerDay`); a new
 build past that gets a 429. That bounds what anyone holding the public app key can make us store.
@@ -47,13 +68,13 @@ When Math Reef adds a level, add its ID to `levelIds` before that app version sh
 
 ```bash
 curl -s "https://brightbench.app/api/math-reef/stats?from=2026-10-01&to=2026-10-31" \
-  -H "Authorization: Bearer $MATH_REEF_STATS_SECRET"
+  -H "Authorization: Bearer $STATS_SECRET"
 ```
 
 ## Bigger Fish gameplay diagnostics
 
 The native app posts schema-1 summaries to `POST /api/bigger-fish/events`.
-`GET /api/bigger-fish/stats` and `/bigger-fish/stats` provide protected aggregate reporting;
+`GET /api/bigger-fish/stats` and its tab of `/stats` provide protected aggregate reporting;
 `/bigger-fish/privacy` describes the contract. The app has collection disabled until deployment
 and disclosures are validated. This backend does not change Math Reef's routes or policy.
 
@@ -62,7 +83,7 @@ Configuration:
 - Existing `KV_REST_API_URL` / `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_*`).
 - `BIGGER_FISH_APP_KEY`: match the native public noise filter, `bigger-fish-gameplay-v1`.
   This is not authentication; strict validation and bounded cardinality still apply.
-- `BIGGER_FISH_STATS_SECRET`: independent private reporting secret, never shipped in the app.
+- `STATS_SECRET`: the stats key, shared by every game (see Stats viewer), never shipped in the app.
 
 Requests and storage are bounded: 64 KiB bodies, 25 events/batch, 20 builds, 500 build/content
 pairs and 20,000 counter fields total per receive-day. Redis enforces all caps atomically
@@ -138,14 +159,14 @@ validation remains a release check.
 
 Double Putt's site is its own app now, `apps/double-putt-site`, at doubleputt.app. Its old pages here, `/doubleputt`
 and before that `/double-putt` (with their media), redirect there, since the App Store listing and the game's Settings
-in builds already out link to them. Its stats report (`/doubleputt/stats`) and analytics endpoint stay here. The
-redirects are in `next.config.ts`, with tests in `test/double-putt-redirects.test.ts`.
+in builds already out link to them. Its stats report (now the Double Putt tab of `/stats`) and analytics endpoint stay
+here. The redirects are in `next.config.ts`, with tests in `test/double-putt-redirects.test.ts`.
 
 ## Double Putt gameplay analytics
 
 Double Putt (the mini golf puzzle game, kraigstrong/double-putt; client in `MiniGolf/Game/Analytics.swift`) posts
 anonymous schema-2 batches to `POST /api/double-putt/events`. The contract is `docs/analytics.md` in that repo: change
-both together. `GET /api/double-putt/stats` and `/doubleputt/stats` provide protected aggregate reporting;
+both together. `GET /api/double-putt/stats` and its tab of `/stats` provide protected aggregate reporting;
 doubleputt.app/privacy is the app's privacy policy (see Double Putt's site, above). Logic and validation live in
 `src/lib/double-putt-analytics.ts`, storage in `src/lib/double-putt-redis.ts` (keys under `dp:v1:`), tests in
 `test/double-putt-analytics.test.ts`. It is a copy of the Bigger Fish backend above, with the same safeguards and caps.
@@ -155,7 +176,7 @@ Configuration:
 - Existing `KV_REST_API_URL` / `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_*`).
 - `DOUBLE_PUTT_APP_KEY`: match `Analytics.appKey` in the app, `double-putt-gameplay-v1`. A noise filter, not
   authentication; strict validation and bounded cardinality still apply.
-- `DOUBLE_PUTT_STATS_SECRET`: independent private reporting secret, never shipped in the app.
+- `STATS_SECRET`: the stats key, shared by every game (see Stats viewer), never shipped in the app.
 
 Three event kinds: `milestone` (`first_launch`, `course_unlocked`, `hole_finished`, `trophy_won`), `hole` (one per
 attempt) and `round` (`started`, `left`, `finished`). A batch with any field or value the contract doesn't allow is
@@ -186,7 +207,7 @@ as for Bigger Fish.
 
 ```bash
 curl -s "https://brightbench.app/api/double-putt/stats?from=2026-10-01&to=2026-10-31" \
-  -H "Authorization: Bearer $DOUBLE_PUTT_STATS_SECRET"
+  -H "Authorization: Bearer $STATS_SECRET"
 ```
 
 ## Apex lap service

@@ -271,7 +271,7 @@ function daysBetween(from: string, to: string): string[] | null {
 
 /**
  * `GET /api/math-reef/stats?from=YYYY-MM-DD&to=YYYY-MM-DD[&channel=][&appVersion=]`, behind
- * `Authorization: Bearer <MATH_REEF_STATS_SECRET>`. Sums the counters over the range; defaults to
+ * `Authorization: Bearer <STATS_SECRET>`. Sums the counters over the range; defaults to
  * the last 30 days.
  */
 export async function handleStats(request: Request, deps: StatsDeps): Promise<Response> {
