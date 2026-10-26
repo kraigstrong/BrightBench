@@ -28,12 +28,13 @@ export const game = {
   name: 'Double Putt',
   tagline: 'One swing. Two greens.',
   /** One sentence, for previews. */
-  oneLiner: 'A mini golf puzzle game for iPhone and iPad: one swing plays two greens at once. Find the putt that drops both.',
+  oneLiner: 'A mini golf puzzle game for iPhone, iPad and iPhone Duo: one swing plays two greens at once. Find the putt that drops both.',
   /** The home page's lines under the logo. */
   pitch: ['Every swing plays two greens at once.', 'Find the one putt that drops both.'],
   developer: 'Kraig Strong',
-  platform: 'iPhone and iPad',
-  requirements: 'iPhone with iOS 17 or later, or an iPad with iPadOS 17 or later.',
+  platform: 'iPhone, iPad and iPhone Duo',
+  /** iPhone Duo is an iPhone, so the iPhone's line covers it. */
+  requirements: 'an iPhone with iOS 17 or later, or an iPad with iPadOS 17 or later.',
   courseCount: 9,
   holesPerCourse: 9,
 } as const;
