@@ -29,8 +29,8 @@ gh issue list --state open --label "app:<app>" --limit 100 --json number,title,l
 ```
 
 `<app>` is `time-tutor`, `fraction-finder`, `letter-learner`, `marketing`,
-`bigger-fish-site`, `letter-bingo`, `place-value`, or `shared` for packages,
-tooling, and repo-wide work.
+`bigger-fish-site`, `double-putt-site`, `letter-bingo`, `place-value`, or
+`shared` for packages, tooling, and repo-wide work.
 
 When no app has been named yet — picking the next thing to do rather than
 working inside one app — read the whole portfolio instead, then narrow:
