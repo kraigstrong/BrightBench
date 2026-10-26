@@ -67,9 +67,11 @@ test('a run is counted where it ended, with a few counters; the shop and looks p
   // A zero is never written: each counter written is a billed Redis command.
   assert.equal(Object.values(counts).includes(0),false);
   assert.equal(Object.keys(counts).some(k=>k.endsWith('sum.quit.pearls')),false);
-  // A run deeper than the cap is counted at it.
+  // A run deeper than the cap ends at it, but its levels cleared are summed in full for the mean.
   const deep:Batch={...batch(),events:[{kind:'endless',context,outcome:'death',cause:'tentacles',openWater:{...openWater,levels:200}}]};
-  assert.equal(counterUpdates(deep).some(u=>u.field.endsWith(`|ended.${openWaterLevelCap}.tentacles`)),true);
+  const deepCounts=Object.fromEntries(counterUpdates(deep).map(u=>[u.field.split('|')[1],u.by]));
+  assert.equal(deepCounts[`ended.${openWaterLevelCap}.tentacles`],1);assert.equal(deepCounts['sum.death.levels'],200000);
+  assert.equal(openWaterReport(rowsOf(report([{day:'2026-10-25',build:'debug:1.1:3',counts:Object.fromEntries(counterUpdates(deep).map(u=>[u.field,u.by]))}]))).mean.levels,200);
 });
 
 test('campaign runs report whether the fish was dressed; runs without the field are in neither count',()=>{
@@ -93,7 +95,7 @@ test('the Open Water report adds up the runs reaching each level and labels its 
   assert.equal(r.dressed,1);assert.equal(r.plain,1);
   assert.equal(r.fish.find(h=>h.bound===40)!.runs,1);assert.equal(r.fish.find(h=>h.bound===5)!.runs,1);
   // Only runs with sums are in a mean's numerator; every run is in its denominator.
-  assert.equal(r.mean.fish,(31+2)/4);
+  assert.equal(r.mean.fish,(31+2)/4);assert.equal(r.mean.levels,6/4);
   // Another revision is kept apart when one is chosen.
   assert.equal(openWaterReport(rows,'2026-01-01.1').runs,0);
 });

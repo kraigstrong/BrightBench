@@ -87,7 +87,6 @@ export function openWaterReport(rows: Row[], revision?: string): OpenWaterReport
   }
   // Sums are thousandths, as the game's counters are sent.
   const mean = (field: string) => runs ? outcomes.reduce((a, o) => a + (counts[`sum.${o}.${field}`] ?? 0), 0) / 1000 / runs : null;
-  const levelsCleared = levels.reduce((a, l) => a + l.ended * (l.level - 1), 0);
   return {
     revisions, runs,
     outcomes: { death: counts['outcome.death'] ?? 0, quit: counts['outcome.quit'] ?? 0, abandoned: counts['outcome.abandoned'] ?? 0 },
@@ -96,7 +95,7 @@ export function openWaterReport(rows: Row[], revision?: string): OpenWaterReport
     fish: histogram(sumOutcomes(counts, 'hist', 'fish'), '', openWaterBuckets.fish),
     pearls: histogram(sumOutcomes(counts, 'hist', 'pearls'), '', openWaterBuckets.pearls),
     seconds: histogram(sumOutcomes(counts, 'hist', 'seconds'), '', openWaterBuckets.seconds),
-    mean: { fish: mean('fish'), pearls: mean('pearls'), seconds: mean('seconds'), levels: runs ? levelsCleared / runs : null },
+    mean: { fish: mean('fish'), pearls: mean('pearls'), seconds: mean('seconds'), levels: mean('levels') },
     best: counts.best ?? 0,
     planWaits: histogram(counts, 'planWaits.', [0,1,2,3,5,10,20,50,100,500,10000]),
     slowestPlan: histogram(counts, 'slowestPlan.', openWaterBuckets.plan),

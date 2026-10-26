@@ -160,8 +160,10 @@ export function counterUpdates(batch: Batch): Update[] {
     if (e.kind === 'endless') {
       const r = e.openWater, ending = e.outcome === 'death' ? e.cause : e.outcome;
       add(c, `outcome.${e.outcome}`); if (e.outcome === 'death') add(c, `death.${e.cause}`);
-      // Where the run ended: the report adds up the runs that reached each level from these.
+      // Where the run ended: the report adds up the runs that reached each level from these. Levels past the cap end
+      // at it, so the mean levels cleared comes from their own sum.
       add(c, `ended.${Math.min(r.levels + 1, openWaterLevelCap)}.${ending}`);
+      add(c, `sum.${e.outcome}.levels`, r.levels * 1000);
       for (const field of ['fish','pearls','seconds'] as const) {
         add(c, `sum.${e.outcome}.${field}`, Math.round(r[field] * 1000));
         add(c, `hist.${e.outcome}.${field}.${bucket(r[field],openWaterBuckets[field])}`);

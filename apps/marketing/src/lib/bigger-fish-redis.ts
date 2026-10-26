@@ -11,10 +11,10 @@ const buildsKey = (day: string) => `bf:v1:builds:${day}`;
 const countsKey = (day: string, build: string) => `bf:v1:counts:${day}:${build}`;
 // Fixed bounded daily cardinality, enforced atomically even with a public app key.
 // These are ingest limits, not a finite world/level registry; beyond-limit batches are discarded.
-// Upstash bills the script call plus every redis.call it makes, so a write costs about 4 + one HINCRBY per counter:
-// one SISMEMBER (build), one SMISMEMBER (content pairs), one GET (the day's counter total), and the increments. The
-// rest runs only when something is new to the day (a build, a pair, the day's first counter) or near the counter cap.
-// Keys expire 90 days after the day's first write to them.
+// Upstash bills the script call plus every redis.call it makes, so a write costs about 5 + one HINCRBY per counter:
+// one SISMEMBER (build), one SMISMEMBER (content pairs), one GET (the day's counter total), one HLEN (the build's
+// counters before), and the increments. The rest runs only when something is new to the day (a build, a pair, a
+// counter: HLEN again and INCRBY) or near the counter cap. Keys expire 90 days after the day's first write to them.
 export const arcadeIncrementScript = `
 local unpack = unpack or table.unpack
 local builds = KEYS[1]
@@ -61,6 +61,8 @@ if fieldCount + #names > 20000 then
   end
   if fieldCount + unseen > 20000 then return 0 end
 end
+local before = 0
+if not newBuild then before = redis.call('HLEN', counts) end
 if newBuild then
   redis.call('SADD', builds, build)
   if buildsBefore == 0 then redis.call('EXPIRE', builds, ttl) end
@@ -69,12 +71,15 @@ if #newPairs > 0 then
   redis.call('SADD', pairIndex, unpack(newPairs))
   if pairsBefore == 0 then redis.call('EXPIRE', pairIndex, ttl) end
 end
--- An increment that returns exactly itself made a new counter.
-local added = 0
+-- An increment that returns exactly itself may have made a new counter; only then is the hash counted again. (It may
+-- also have found one at 0, which writes before zero increments were dropped left behind: the count stays exact.)
+local maybeNew = false
 for i=4+n,#ARGV,2 do
   local by = tonumber(ARGV[i+1])
-  if redis.call('HINCRBY', counts, ARGV[i], by) == by then added = added + 1 end
+  if redis.call('HINCRBY', counts, ARGV[i], by) == by then maybeNew = true end
 end
+local added = 0
+if maybeNew then added = redis.call('HLEN', counts) - before end
 if added > 0 then
   redis.call('INCRBY', fields, added)
   if not total then redis.call('EXPIRE', fields, ttl) end
