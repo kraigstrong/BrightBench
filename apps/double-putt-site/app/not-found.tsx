@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 import { ProsePage } from '@/components/prose-page';
 
+import styles from './not-found.module.css';
+
 export const metadata: Metadata = { title: 'Page not found' };
 
 export default function NotFound() {
@@ -12,7 +14,9 @@ export default function NotFound() {
       intro={
         <>
           <p>This page rolled right past the cup.</p>
-          <Link href="/">Back to the first tee</Link>
+          <Link className={styles.home} href="/">
+            Back to the first tee
+          </Link>
         </>
       }
       title="Lipped out">

@@ -30,6 +30,7 @@ html {
   -webkit-text-size-adjust: 100%;
   background: var(--dp-ink);
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -63,6 +64,7 @@ p {
 
 a {
   color: inherit;
+  text-decoration: none;
 }
 
 img,
