@@ -6,6 +6,11 @@ export type Context = { course: string; hole: number; slug: string; revision: st
 export const modes = ['round', 'single'] as const;
 export const outcomes = ['finished', 'quit', 'abandoned'] as const;
 export const medals = ['none', 'bronze', 'silver', 'gold'] as const;
+// Where the game opened its purchase screen (All Courses): a finished round's scorecard, the result card after a free
+// hole, a locked course on the Courses screen, a locked hole in Free Play or on the Trophy Shelf, the Unlock row in
+// Settings, or Continue on a saved round of a course the player doesn't own. Every one but Settings names its course.
+export const unlockSources = ['scorecard', 'free_hole', 'course', 'hole', 'trophy', 'settings', 'round'] as const;
+export type UnlockSource = typeof unlockSources[number];
 export type Event =
   | { kind: 'milestone'; name: 'first_launch' }
   | { kind: 'milestone'; name: 'course_unlocked'; course: string; revision: string }
@@ -15,13 +20,18 @@ export type Event =
       strokes: [number, number]; par: number; swings: number; mirrorSwings: number; water: number; aces: number; doubleAce: boolean; seconds: number }
   | { kind: 'round'; action: 'started'; course: string; revision: string; first: boolean }
   | { kind: 'round'; action: 'left'; course: string; revision: string; hole: number }
-  | { kind: 'round'; action: 'finished'; course: string; revision: string; strokes: number; par: number; medal: typeof medals[number]; best: boolean };
+  | { kind: 'round'; action: 'finished'; course: string; revision: string; strokes: number; par: number; medal: typeof medals[number]; best: boolean }
+  // The purchase screen shown. `first` is the first time this install saw it, from anywhere. No purchase outcome is ever
+  // sent: App Store Connect counts sales.
+  | { kind: 'unlock'; source: Exclude<UnlockSource, 'settings'>; course: string; first: boolean }
+  | { kind: 'unlock'; source: 'settings'; first: boolean };
 export type Batch = { schema: 2; appVersion: string; build: string; channel: 'debug' | 'testflight' | 'appstore'; events: Event[] };
 // Schema 1, sent by TestFlight builds 1–3, called a hole a pair: `kind: 'pair'`, `context.pair`, `pair_finished`, and
-// `pair` on a round left. It's still accepted, and upgraded on arrival so both schemas count together.
+// `pair` on a round left. It's still accepted, and upgraded on arrival so both schemas count together. Those builds never
+// had a purchase screen.
 type Schema1Context = Omit<Context, 'hole'> & { pair: number };
 type Schema1Event =
-  | Exclude<Event, { context: Context } | { action: 'left' }>
+  | Exclude<Event, { context: Context } | { action: 'left' } | { kind: 'unlock' }>
   | { kind: 'milestone'; name: 'pair_finished' | 'trophy_won'; context: Schema1Context }
   | Omit<Extract<Event, { kind: 'hole' }>, 'kind' | 'context'> & { kind: 'pair'; context: Schema1Context }
   | Omit<Extract<Event, { action: 'left' }>, 'hole'> & { pair: number };
@@ -71,6 +81,12 @@ function round(e: Record<string, unknown>, w: Words) {
   return e.action === 'finished' && keys(e, [...base,'strokes','par','medal','best'])
     && integer(e.strokes, 9, 999) && integer(e.par, 18, 108) && oneOf(e.medal, medals) && typeof e.best === 'boolean';
 }
+// A course with every source but Settings, and none with it.
+function unlock(e: Record<string, unknown>) {
+  if (typeof e.first !== 'boolean') return false;
+  if (e.source === 'settings') return keys(e, ['kind','source','first']);
+  return oneOf(e.source, unlockSources) && keys(e, ['kind','source','course','first']) && matches(e.course, course);
+}
 // One schema per batch: a schema 2 batch with a `pair` in it (or the reverse) is rejected like any unknown field.
 export function validateBatch(x: unknown): x is Batch | Schema1Batch {
   if (!record(x) || !keys(x, ['schema','appVersion','build','channel','events']) || (x.schema !== 1 && x.schema !== 2)) return false;
@@ -81,6 +97,7 @@ export function validateBatch(x: unknown): x is Batch | Schema1Batch {
     if (!record(e)) return false;
     if (e.kind === w.hole) return hole(e, w);
     if (e.kind === 'round') return round(e, w);
+    if (e.kind === 'unlock') return x.schema === 2 && unlock(e);
     if (e.kind !== 'milestone') return false;
     if (e.name === 'first_launch') return keys(e, ['kind','name']);
     if (e.name === 'course_unlocked') return keys(e, ['kind','name','course','revision']) && matches(e.course, course) && matches(e.revision, revision);
@@ -102,6 +119,8 @@ export function upgrade(batch: Batch | Schema1Batch): Batch {
 const token = (parts: (string | number)[]) => Buffer.from(JSON.stringify(parts)).toString('base64url');
 export function contentToken(e: Event) {
   if ('context' in e) return token([e.context.course, e.context.revision, e.context.hole, e.context.slug]);
+  // Purchase screen views are kept per course, across revisions; Settings' belong to no course.
+  if (e.kind === 'unlock') return 'course' in e ? token([e.course]) : 'install';
   if ('course' in e) return token([e.course, e.revision]);
   return 'install';
 }
@@ -115,6 +134,7 @@ export function counterUpdates(batch: Batch): Update[] {
   for (const e of batch.events) {
     const c = contentToken(e);
     if (e.kind === 'milestone') { add(c, `milestone.${e.name}`); continue; }
+    if (e.kind === 'unlock') { add(c, `unlock.${e.source}`); if (e.first) add(c, `unlock.${e.source}.first`); continue; }
     if (e.kind === 'round') {
       if (e.action === 'started') { add(c, 'round.started'); if (e.first) add(c, 'round.started.first'); }
       if (e.action === 'left') add(c, `round.left.${e.hole}`);

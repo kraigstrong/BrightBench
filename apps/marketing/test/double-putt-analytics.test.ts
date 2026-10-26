@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
-import {validateBatch,upgrade,counterUpdates,contentToken,handleEvents,handleStats,report,medals,type Batch,type Context,type Event,type DoublePuttStore,type Schema1Batch} from '../src/lib/double-putt-analytics.ts';
+import {validateBatch,upgrade,counterUpdates,contentToken,handleEvents,handleStats,report,medals,unlockSources,type Batch,type Context,type Event,type DoublePuttStore,type Schema1Batch} from '../src/lib/double-putt-analytics.ts';
 type HoleEvent = Extract<Event,{kind:'hole'}>;
 const context = () => ({course:'midway',hole:2,slug:'springboard',revision:'2026-10-15.1'});
 const attempt = (change: Partial<HoleEvent> = {}): HoleEvent => ({kind:'hole',context:context(),mode:'round',outcome:'finished',replay:false,attempt:1,
@@ -17,6 +17,9 @@ const everyKind = (): Event[] => [
   {kind:'round',action:'left',course:'daybreak',revision:'2026-10-15.1',hole:4},
   {kind:'round',action:'finished',course:'daybreak',revision:'2026-10-15.1',strokes:41,par:40,medal:'none',best:true},
 ];
+// The purchase screen, from each place it opens: every one names its course but Settings.
+const everyUnlock = (): Event[] => unlockSources.map((source,i): Event => source==='settings'?{kind:'unlock',source,first:true}
+  :{kind:'unlock',source,course:'midway',first:i%2===0});
 const sample = (events: unknown[] = everyKind()): Batch => ({schema:2,appVersion:'0.1',build:'1',channel:'testflight',events:events as Event[]});
 const store = (): DoublePuttStore => ({write:async()=>true,read:async()=>[]});
 const counts = (...batches: Batch[]) => {
@@ -56,7 +59,7 @@ test('accepts the edges of every range, future courses, and each mode, outcome a
 test('rejects identifiers, timestamps and any unknown field, anywhere in the batch',()=>{
   for (const key of ['installID','deviceID','sessionID','userID','timestamp','date','locale','extra']) {
     assert.equal(validateBatch({...sample(),[key]:'private'}),false,key);
-    everyKind().forEach((e,i)=>assert.equal(validateBatch(sample([{...e,[key]:'private'}])),false,`${key} on event ${i}`));
+    [...everyKind(),...everyUnlock()].forEach((e,i)=>assert.equal(validateBatch(sample([{...e,[key]:'private'}])),false,`${key} on event ${i}`));
     assert.equal(validateBatch(sample([attempt({context:{...context(),[key]:'private'} as HoleEvent['context']})])),false,`${key} in context`);
   }
   // Each kind carries exactly its own fields: none borrowed from another kind or action, none missing.
@@ -297,6 +300,71 @@ test('rejects a batch that mixes the two schemas’ names',()=>{
     assert.equal(validateBatch(sample([e])),false,JSON.stringify(e));
     assert.equal(validateBatch(sample([...everyKind(),e])),false,`with valid events: ${JSON.stringify(e)}`);
   }
+});
+test('accepts the purchase screen from every source, with a course for all but Settings, mixed with every other kind',()=>{
+  for (const e of everyUnlock()) assert.equal(validateBatch(sample([e])),true,JSON.stringify(e));
+  for (const source of unlockSources.filter(s=>s!=='settings')) for (const first of [true,false])
+    for (const course of ['daybreak','starbase','z'+'a'.repeat(31),'x','future-course-2'])
+      assert.equal(validateBatch(sample([{kind:'unlock',source,course,first}])),true,`${source} ${course} ${first}`);
+  assert.equal(validateBatch(sample([{kind:'unlock',source:'settings',first:false}])),true);
+  // Older builds' course_unlocked milestones are still accepted beside it.
+  assert.equal(validateBatch(sample([...everyKind(),...everyUnlock()])),true);
+  assert.equal(validateBatch(sample([...everyUnlock(),...everyKind()].reverse())),true);
+  assert.equal(validateBatch(sample(Array.from({length:25},(_,i)=>everyUnlock()[i%7]))),true);
+});
+test('rejects a purchase screen with a bad source, course or first, a missing or extra field, and the whole batch with it',()=>{
+  const free = {kind:'unlock',source:'free_hole',course:'midway',first:false}, settings = {kind:'unlock',source:'settings',first:true};
+  const bad: unknown[] = [
+    ...['Scorecard','free-hole','freeHole','paywall','shop','unlock','purchase','',null,7,true,['hole']].map(source=>({...free,source})),
+    ...['Midway','1day','day_break','-midway','a'.repeat(33),'',' midway','midway\n',7,null,['midway']].map(course=>({...free,course})),
+    ...['true',1,0,null,'yes'].map(first=>({...free,first})),{...settings,first:'false'},
+    // Every source but Settings names its course; Settings never does.
+    ...unlockSources.filter(s=>s!=='settings').map(source=>({kind:'unlock',source,first:true})),
+    {...settings,course:'midway'},{...settings,course:null},
+    {kind:'unlock',course:'midway',first:true},{kind:'unlock',source:'course',course:'midway'},{kind:'unlock',first:true},{kind:'unlock'},
+    {...free,kind:'Unlock'},{...free,kind:'offer'},{...free,kind:'purchase'},
+    // No outcome, price, revision, hole or anything else rides along.
+    ...['outcome','purchased','price','product','revision','hole','context','slug','installID','deviceID','timestamp','extra']
+      .flatMap(key=>[{...free,[key]:'x'},{...settings,[key]:'x'}]),
+    {...free,context:context()},{...free,hole:2},{...free,revision:'2026-10-15.1'},
+  ];
+  for (const e of bad) {
+    assert.equal(validateBatch(sample([e])),false,JSON.stringify(e));
+    assert.equal(validateBatch(sample([...everyKind(),...everyUnlock(),e])),false,`with valid events: ${JSON.stringify(e)}`);
+  }
+  // Schema 1 builds never had a purchase screen.
+  for (const e of everyUnlock()) {
+    assert.equal(validateBatch(schema1([e])),false,JSON.stringify(e));
+    assert.equal(validateBatch(schema1([...everyKind().map(asSchema1),e])),false,`with valid events: ${JSON.stringify(e)}`);
+  }
+});
+test('counts the purchase screen per course and source, its first views apart, and adds a batch up into one write',async()=>{
+  const midway = contentToken({kind:'unlock',source:'hole',course:'midway',first:false});
+  assert.equal(midway,contentToken({kind:'unlock',source:'scorecard',course:'midway',first:true}),'one content per course, whatever the source');
+  assert.notEqual(midway,contentToken({kind:'round',action:'started',course:'midway',revision:'2026-10-15.1',first:true}),'apart from its rounds');
+  assert.equal(contentToken({kind:'unlock',source:'settings',first:true}),'install','Settings belongs to no course');
+  const c = counts(sample([
+    {kind:'unlock',source:'free_hole',course:'midway',first:true},{kind:'unlock',source:'free_hole',course:'midway',first:false},
+    {kind:'unlock',source:'free_hole',course:'midway',first:false},{kind:'unlock',source:'course',course:'midway',first:false},
+    {kind:'unlock',source:'scorecard',course:'daybreak',first:true},{kind:'unlock',source:'settings',first:true},
+    {kind:'unlock',source:'settings',first:false},{kind:'milestone',name:'first_launch'},
+  ]));
+  const daybreak = contentToken({kind:'unlock',source:'scorecard',course:'daybreak',first:true});
+  assert.deepEqual(c,{
+    [`${midway}|unlock.free_hole`]:3,[`${midway}|unlock.free_hole.first`]:1,[`${midway}|unlock.course`]:1,
+    [`${daybreak}|unlock.scorecard`]:1,[`${daybreak}|unlock.scorecard.first`]:1,
+    'install|unlock.settings':2,'install|unlock.settings.first':1,'install|milestone.first_launch':1,
+  });
+  let written: unknown[] = [];
+  const s=store();s.write=async(...args)=>{written=args;return true;};
+  const events=[...everyKind(),...everyUnlock(),...everyUnlock()];
+  const req=new Request('https://example.test/events',{method:'POST',headers:{'X-App-Key':'key'},body:JSON.stringify(sample(events))});
+  assert.equal((await handleEvents(req,{store:s,appKey:'key',now:()=>new Date('2026-10-26T12:00:00Z')})).status,204);
+  assert.deepEqual(written.slice(0,3),['2026-10-26','testflight:0.1:1',[...new Set(events.map(contentToken))]]);
+  const updates=written[3] as {field:string;by:number}[];
+  assert.equal(new Set(updates.map(u=>u.field)).size,updates.length,'each counter once per write');
+  assert.equal(updates.find(u=>u.field===`${midway}|unlock.trophy`)?.by,2);
+  assert.equal(updates.find(u=>u.field==='install|unlock.settings.first')?.by,2);
 });
 test('first finishes counted before schema 2 still count',()=>{
   const t=contentToken(attempt());
