@@ -205,8 +205,9 @@ count first finishes, not replays, which are mostly trophy chasing; all-finish f
 purchase screen is shown by source (views and first views), per course (with each source's views), and per build;
 first views add up to the installs that reached it. A course's purchase screen writes at most 12 counter fields per
 build and one more content, and Settings' go on the install. A hole
-writes at most about 40 counter fields per build, so the 20,000-field cap and the 500-content cap both allow about
-eight builds' worth of all six courses a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
+writes at most about 40 counter fields per build. A build played through all nine courses writes about 100 contents (81
+holes, 9 courses, their 9 purchase screens and the install) and about 3,500 fields, so the 500-content and 20,000-field
+caps both allow about five such builds a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
 `testflight`), `appVersion`, `build`.
 
 Configure Vercel rate limiting on `/api/double-putt/events` before a build with collection on reaches testers. No
