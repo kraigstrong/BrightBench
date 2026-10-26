@@ -12,7 +12,12 @@ const countsKey = (day: string, build: string) => `dp:v1:counts:${day}:${build}`
 // Fixed bounded daily cardinality, enforced atomically even with a public app key.
 // These are ingest limits, not a finite course/hole registry; beyond-limit batches are discarded.
 // A "content" here is one build's hole, course or install counters (`build|token`).
+// Upstash bills the script call plus every redis.call it makes, so a write costs about 5 + one HINCRBY per counter:
+// one SISMEMBER (build), one SMISMEMBER (contents), one GET (the day's counter total), one HLEN (the build's counters
+// before), and the increments. The rest runs only when something is new to the day (a build, a content, a counter:
+// HLEN again and INCRBY) or near the counter cap. Keys expire 90 days after the day's first write to them.
 export const doublePuttIncrementScript = `
+local unpack = unpack or table.unpack
 local builds = KEYS[1]
 local contentIndex = KEYS[2]
 local counts = KEYS[3]
@@ -20,36 +25,67 @@ local fields = KEYS[4]
 local build = ARGV[1]
 local ttl = tonumber(ARGV[2])
 local n = tonumber(ARGV[3])
-if redis.call('SISMEMBER', builds, build) == 0 and redis.call('SCARD', builds) >= 20 then return 0 end
-local newContents = 0
-local seenContents = {}
-for i=1,n do
-  local content = build .. '|' .. ARGV[3+i]
-  if not seenContents[content] then
-    seenContents[content] = true
-    if redis.call('SISMEMBER', contentIndex, content) == 0 then newContents = newContents + 1 end
-  end
-end
-if redis.call('SCARD', contentIndex) + newContents > 500 then return 0 end
-local newFields = 0
-local seenFields = {}
+local names, seenNames = {}, {}
 for i=4+n,#ARGV,2 do
-  local field = ARGV[i]
-  if not seenFields[field] then
-    seenFields[field] = true
-    if redis.call('HEXISTS', counts, field) == 0 then newFields = newFields + 1 end
-  end
+  if not seenNames[ARGV[i]] then seenNames[ARGV[i]] = true; names[#names+1] = ARGV[i] end
 end
-local fieldCount = tonumber(redis.call('GET', fields) or '0')
-if fieldCount + newFields > 20000 then return 0 end
-redis.call('SADD', builds, build)
-for content,_ in pairs(seenContents) do redis.call('SADD', contentIndex, content) end
-redis.call('INCRBY', fields, newFields)
-for i=4+n,#ARGV,2 do redis.call('HINCRBY', counts, ARGV[i], ARGV[i+1]) end
-redis.call('EXPIRE', builds, ttl)
-redis.call('EXPIRE', contentIndex, ttl)
-redis.call('EXPIRE', fields, ttl)
-redis.call('EXPIRE', counts, ttl)
+if #names == 0 then return 1 end
+local newBuild = redis.call('SISMEMBER', builds, build) == 0
+local buildsBefore = -1
+if newBuild then
+  buildsBefore = redis.call('SCARD', builds)
+  if buildsBefore >= 20 then return 0 end
+end
+local newContents = {}
+if n > 0 then
+  local list, seen = {}, {}
+  for i=1,n do
+    local content = build .. '|' .. ARGV[3+i]
+    if not seen[content] then seen[content] = true; list[#list+1] = content end
+  end
+  local present = redis.call('SMISMEMBER', contentIndex, unpack(list))
+  for i=1,#list do if present[i] == 0 then newContents[#newContents+1] = list[i] end end
+end
+local contentsBefore = -1
+if #newContents > 0 then
+  contentsBefore = redis.call('SCARD', contentIndex)
+  if contentsBefore + #newContents > 500 then return 0 end
+end
+local total = redis.call('GET', fields)
+local fieldCount = tonumber(total or '0')
+if fieldCount + #names > 20000 then
+  -- Near the cap only: count exactly the counters this build's hash doesn't have yet.
+  local unseen = #names
+  if not newBuild then
+    unseen = 0
+    for _,name in ipairs(names) do if redis.call('HEXISTS', counts, name) == 0 then unseen = unseen + 1 end end
+  end
+  if fieldCount + unseen > 20000 then return 0 end
+end
+local before = 0
+if not newBuild then before = redis.call('HLEN', counts) end
+if newBuild then
+  redis.call('SADD', builds, build)
+  if buildsBefore == 0 then redis.call('EXPIRE', builds, ttl) end
+end
+if #newContents > 0 then
+  redis.call('SADD', contentIndex, unpack(newContents))
+  if contentsBefore == 0 then redis.call('EXPIRE', contentIndex, ttl) end
+end
+-- An increment that returns exactly itself may have made a new counter; only then is the hash counted again (exact even
+-- for a counter found at 0).
+local maybeNew = false
+for i=4+n,#ARGV,2 do
+  local by = tonumber(ARGV[i+1])
+  if redis.call('HINCRBY', counts, ARGV[i], by) == by then maybeNew = true end
+end
+local added = 0
+if maybeNew then added = redis.call('HLEN', counts) - before end
+if added > 0 then
+  redis.call('INCRBY', fields, added)
+  if not total then redis.call('EXPIRE', fields, ttl) end
+end
+if newBuild then redis.call('EXPIRE', counts, ttl) end
 return 1`;
 export const doublePuttStore: DoublePuttStore = {
   async write(day, build, contexts, updates) {
