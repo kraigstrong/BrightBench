@@ -3,6 +3,8 @@ import {
   buildDefaultSupportIntro,
 } from '@education/legal-pages';
 
+import { studio } from './studio.ts';
+
 const supportEmail =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@timetutor.app';
 const timeTutorAppStoreUrl =
@@ -117,8 +119,7 @@ export type LearnPage = BaseDiscoveryPage & {
 };
 
 export const siteMeta = {
-  description:
-    'BrightBench builds focused educational apps that help tricky elementary concepts feel clear, calm, and approachable.',
+  description: studio.description,
   origin: siteOrigin,
   supportEmail,
   timeTutorAppStoreUrl,

@@ -1,9 +1,33 @@
 import type { CSSProperties } from 'react';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { productCards, siteMeta } from '@/lib/site';
-import styles from './home.module.css';
+import { learnPages, productCards, siteMeta } from '@/lib/site';
+import styles from './learn.module.css';
+
+const title = 'Learning Apps for Kids | BrightBench';
+const description =
+  'BrightBench builds focused educational apps that help tricky elementary concepts feel clear, calm, and approachable: telling time, math facts, fractions and more.';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: '/learn',
+  },
+  description,
+  openGraph: {
+    description,
+    title,
+    type: 'website',
+    url: '/learn',
+  },
+  title,
+  twitter: {
+    card: 'summary_large_image',
+    description,
+    title,
+  },
+};
 
 const approachItems = [
   {
@@ -29,23 +53,29 @@ const roadmapItems = [
   { name: 'Place Value', status: 'Planned' },
 ] as const;
 
-export default function HomePage() {
+/** The guides teach telling time, alongside Time Tutor: they wear its color. */
+const guideAccent = productCards.find((card) => card.name === 'Time Tutor')?.accent;
+
+export default function LearnPage() {
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.wordmark}>{siteMeta.title}</div>
+        <Link className={styles.wordmark} href="/">
+          {siteMeta.title}
+          <span className={styles.wordmarkTag}>Learn</span>
+        </Link>
         <nav className={styles.nav}>
           <a className={styles.navLink} href="#product-suite">
             Apps
           </a>
+          <a className={styles.navLink} href="#guides">
+            Guides
+          </a>
           <a className={styles.navLink} href="#about">
             About
           </a>
-          <Link className={styles.navLink} href="/learn">
-            Learn
-          </Link>
-          <Link className={styles.navLink} href="/support">
-            Contact
+          <Link className={styles.navLink} href="/play">
+            Games
           </Link>
         </nav>
       </header>
@@ -65,7 +95,7 @@ export default function HomePage() {
             the right interaction, and the right kind of practice.
           </p>
           <p className={styles.body}>
-            Brightbench is building a suite of simple, thoughtful apps that
+            BrightBench is building a suite of simple, thoughtful apps that
             help kids understand tough concepts with clarity and confidence.
           </p>
           <div className={styles.heroCtaRow}>
@@ -106,7 +136,7 @@ export default function HomePage() {
           <div className={styles.eyebrow}>Product suite</div>
           <h2 className={styles.sectionTitle}>Focused apps for key skills</h2>
           <p className={styles.sectionText}>
-            Each Brightbench app is built around one concept and one goal:
+            Each BrightBench app is built around one concept and one goal:
             helping kids truly understand it.
           </p>
         </div>
@@ -166,13 +196,39 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className={styles.section} id="guides">
+        <div className={styles.suiteHeader}>
+          <div className={styles.eyebrow}>Guides</div>
+          <h2 className={styles.sectionTitle}>Guides for parents and teachers</h2>
+          <p className={styles.sectionText}>
+            Short, practical guides to the skills our apps teach. Right now they
+            cover telling time, the skill Time Tutor practices.
+          </p>
+        </div>
+        <div className={styles.guideGrid}>
+          {learnPages.map((page) => (
+            <article
+              className={styles.suiteCard}
+              key={page.slug}
+              style={{ '--card-accent': guideAccent } as CSSProperties}>
+              <h3 className={styles.guideTitle}>
+                <Link className={styles.cardLink} href={`/learn/${page.slug}`}>
+                  {page.h1}
+                </Link>
+              </h3>
+              <p className={styles.guideBody}>{page.metaDescription}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className={styles.section}>
         <div className={styles.roadmap}>
           <div className={styles.roadmapTop}>
             <div className={styles.roadmapIntro}>
               <h2 className={styles.sectionTitle}>More apps are on the way</h2>
               <p className={styles.sectionText}>
-                We’re actively building the next set of Brightbench apps around
+                We’re actively building the next set of BrightBench apps around
                 other tricky elementary concepts, including fractions, early
                 literacy, and place value.
               </p>
@@ -216,14 +272,22 @@ export default function HomePage() {
           <div className={styles.eyebrow}>About</div>
           <h2 className={styles.sectionTitle}>A better kind of learning app</h2>
           <p className={styles.sectionText}>
-            Brightbench is a growing suite of educational apps for elementary
-            learners. We believe the hardest concepts to teach deserve tools
-            that are simpler, more visual, and more thoughtfully designed.
+            BrightBench is an independent studio. On this side of it, we build
+            educational apps for elementary learners, because the hardest
+            concepts to teach deserve tools that are simpler, more visual, and
+            more thoughtfully designed.
           </p>
           <p className={styles.sectionText}>
             Our goal is not to build a giant curriculum platform. It is to
             create focused apps that help important ideas feel clear, intuitive,
             and even fun.
+          </p>
+          <p className={styles.sectionText}>
+            We make games too: see{' '}
+            <Link className={styles.inlineLink} href="/play">
+              BrightBench games
+            </Link>
+            .
           </p>
         </div>
 
@@ -243,7 +307,9 @@ export default function HomePage() {
 
       <footer className={styles.footer}>
         <div className={styles.footerBrand}>
-          <div className={styles.wordmark}>{siteMeta.title}</div>
+          <Link className={styles.wordmark} href="/">
+            {siteMeta.title}
+          </Link>
           <p className={styles.footerLine}>Small apps. Big learning moments.</p>
         </div>
 
@@ -251,11 +317,14 @@ export default function HomePage() {
           <a className={styles.navLink} href="#product-suite">
             Apps
           </a>
+          <a className={styles.navLink} href="#guides">
+            Guides
+          </a>
           <a className={styles.navLink} href="#about">
             About
           </a>
-          <Link className={styles.navLink} href="/learn">
-            Learn
+          <Link className={styles.navLink} href="/play">
+            Games
           </Link>
           <Link className={styles.navLink} href="/support">
             Contact

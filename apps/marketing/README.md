@@ -1,6 +1,15 @@
 # Marketing
 
-Next.js App Router marketing site for the BrightBench app suite.
+Next.js App Router site for BrightBench, the studio: brightbench.app.
+
+- **`/`** is the studio's front door, with two doors: **Play** (`/play`, the games) and **Learn** (`/learn`, the
+  learning apps, their product pages under `/products` and the guides under `/learn`).
+- Play links to each game's own site (biggerfish.app, doubleputt.app), which is where a game is sold from. What it
+  says about them is in `src/lib/studio.ts`; keep it in step with those sites, and switch a game's status line when it
+  launches. Its loops and icons in `public/games/` are copies of theirs.
+- The pages come in two looks, as route groups (no effect on URLs): `app/(studio)` is the dark look of the game sites,
+  for `/` and `/play`; `app/(paper)` is the warm paper look of the learning side and the plain pages (support,
+  privacy, stats). `app/globals.css` paints the page's surroundings to match each.
 
 ## SEO / indexing checklist
 
@@ -8,8 +17,8 @@ After deploy:
 
 1. Set **`NEXT_PUBLIC_SITE_ORIGIN`** on Vercel to the canonical marketing URL (no trailing slash). This drives `metadataBase`, `sitemap.xml`, and `robots.txt` sitemap hints.
 2. Open **`/robots.txt`** and **`/sitemap.xml`** on the live domain and confirm URLs are absolute and correct.
-3. In Google Search Console: add the property, submit the sitemap URL (`https://<your-domain>/sitemap.xml`), and use URL Inspection on `/products/time-tutor` and `/learn/time-telling-games`.
-4. Optional: validate a few pages with [Rich Results Test](https://search.google.com/test/rich-results) (FAQ + product JSON-LD where present).
+3. In Google Search Console: add the property, submit the sitemap URL (`https://<your-domain>/sitemap.xml`), and use URL Inspection on `/`, `/play`, `/learn`, `/products/time-tutor` and `/learn/time-telling-games`.
+4. Optional: validate a few pages with [Rich Results Test](https://search.google.com/test/rich-results) (the home page's organization, FAQ + product JSON-LD where present).
 
 Local quick check:
 

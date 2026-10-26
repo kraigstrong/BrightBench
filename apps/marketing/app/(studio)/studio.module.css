@@ -1,0 +1,59 @@
+/* BrightBench at night: the apps' ink navy, deepened, with their gold and coral for light. */
+.shell {
+  --night: #0b1d33;
+  --night-deep: #071426;
+  --night-raised: #12355b;
+  --gold: #f1bd63;
+  --coral: #e97a5f;
+  --cream: #f4f1ea;
+  --muted: #b7c4d4;
+  --faint: #8092a8;
+  --line: rgb(255 255 255 / 0.1);
+  --card: rgb(255 255 255 / 0.045);
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --shadow-lg: 0 24px 60px rgb(0 0 0 / 0.45);
+  --page-width: 1180px;
+  --gutter: clamp(20px, 5vw, 48px);
+  --font-display: 'Avenir Next', var(--font-nunito), 'Nunito', ui-rounded, system-ui, sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(80% 900px at 15% 0%, rgb(18 53 91 / 0.75) 0%, transparent 70%),
+    radial-gradient(60% 700px at 100% 30%, rgb(233 122 95 / 0.1) 0%, transparent 70%),
+    var(--night);
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.55;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+.shell :where(h1, h2, h3) {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.shell :where(p) {
+  margin: 0;
+}
+
+.shell :where(img, video) {
+  display: block;
+  max-width: 100%;
+}
+
+.shell :where(a:focus-visible, button:focus-visible) {
+  border-radius: 8px;
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.shell ::selection {
+  background: var(--gold);
+  color: var(--night);
+}

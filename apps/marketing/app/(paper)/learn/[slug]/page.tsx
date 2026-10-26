@@ -120,7 +120,7 @@ export default async function LearnPageRoute({
 
   return (
     <main className={styles.page}>
-      <Link className={styles.backLink} href="/learn">
+      <Link className={styles.backLink} href="/learn#guides">
         Back to guides
       </Link>
 
