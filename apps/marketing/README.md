@@ -146,7 +146,11 @@ rejected whole (400). Counters are kept per build (`channel:appVersion:build`) a
 revision, each course at a revision, and the install, so a revision bump never mixes two versions of a hole. Courses
 and hole slugs are bounded patterns, not a list: a new course needs no server change. Limits are Bigger Fish's: 64 KiB
 bodies, 25 events/batch, 20 builds, 500 build/content pairs and 20,000 counter fields per receive-day, enforced
-atomically before any write; keys expire 90 days after their day's last accepted write. Zero sums are not written.
+atomically before any write; keys expire 90 days after their day's first write. Zero sums are not written.
+Upstash bills the script call plus every `redis.call` in it, so the script checks the caps with one `SISMEMBER`, one
+`SMISMEMBER` and one `GET`, and runs `SCARD`, `SADD`, `INCRBY` and `EXPIRE` only when something is new to the day (and
+an exact `HEXISTS` count only near the field cap), and one `HLEN` counts the build's counters before the write (and
+after it when one may be new): a write costs about 5 commands plus one `HINCRBY` per counter.
 TestFlight builds 1–3 send schema 1, which called a hole a pair (`kind: "pair"`, `context.pair`, `pair_finished`,
 `pair` on a round left); it's still accepted, one schema per batch, and renamed on arrival so both count together.
 Counters from before that write a first finish as `milestone.pair_finished`, which the report adds to
