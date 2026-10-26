@@ -77,7 +77,7 @@ function FunnelChart({worlds}:{worlds:RampWorld[]}) {
   </section>;
 }
 const sourceNames: Record<string,string> = {padlocked_level:'Padlocked level',next_level:'Next level onto a padlock',unlock_all:'Unlock all (world map)',
-  locked_world:'Locked world (world map)',conquered:'A world conquered',settings:'Settings (restore only)'};
+  locked_world:'Locked world (world map)',conquered:'A world conquered',open_water_limit:'Open Water runs used up',settings:'Settings (restore only)'};
 const outcomeNames: Record<string,string> = {unlocked:'Unlocked',pending:'Pending',cancelled:'Cancelled',failed:'Failed',restored:'Restored',not_found:'Nothing found'};
 function PaywallChart({funnel}:{funnel:PaywallFunnel}) {
   const anyRuns=funnel.runs.some(w=>w.free.runs+w.unlocked.runs>0);

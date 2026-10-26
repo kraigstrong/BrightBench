@@ -2,8 +2,9 @@
 // Browser-safe: no Node imports. Keep in sync with ArcadeAnalytics.swift (OfferSource, purchase and restore outcomes).
 
 // Where the unlock's screen was opened from: a padlocked level on a level map, Next level onto one, the world map's
-// Unlock all button, a world with no free levels, or a world conquered without the unlock (Shallow Reef, in practice).
-export const offerSources = ['padlocked_level', 'next_level', 'unlock_all', 'locked_world', 'conquered'] as const;
+// Unlock all button, a world with no free levels, a world conquered without the unlock (Shallow Reef, in practice), or
+// the day's free Open Water runs used up (Open Water on the world map, or Unlock all on a run's card).
+export const offerSources = ['padlocked_level', 'next_level', 'unlock_all', 'locked_world', 'conquered', 'open_water_limit'] as const;
 export type OfferSource = typeof offerSources[number];
 // Pending is Ask to Buy, waiting on a parent.
 export const purchaseOutcomes = ['unlocked', 'pending', 'cancelled', 'failed'] as const;
