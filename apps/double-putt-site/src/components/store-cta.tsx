@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import { appStoreBadgeSrc, storeCta } from '@/lib/double-putt-site';
+import { appStoreBadgeSrc, game, storeCta } from '@/lib/site';
 
 import styles from './store-cta.module.css';
 
@@ -24,7 +24,7 @@ export function StoreCta() {
           Join the beta
         </a>
       ) : null}
-      <span className={styles.chip}>Coming soon to iPhone</span>
+      <span className={styles.chip}>Coming soon to {game.platform}</span>
     </div>
   );
 }

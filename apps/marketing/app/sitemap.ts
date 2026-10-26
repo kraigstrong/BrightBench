@@ -17,9 +17,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/math-reef/privacy',
     '/math-reef/support',
     '/learn',
-    '/doubleputt',
-    '/doubleputt/support',
-    '/doubleputt/privacy',
   ];
 
   const productPaths = productPages

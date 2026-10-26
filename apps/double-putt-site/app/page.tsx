@@ -1,21 +1,20 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 
-import { LoopVideo } from '@/components/double-putt/loop-video';
-import { SiteFooter, SiteHeader } from '@/components/double-putt/site-chrome';
-import { StoreCta } from '@/components/double-putt/store-cta';
-import { TrailerPlayer } from '@/components/double-putt/trailer-player';
-import { base, beats, courses, game, storeCta, totalHoles } from '@/lib/double-putt-site';
-import { getPublicSiteOrigin } from '@/lib/site';
+import { LoopVideo } from '@/components/loop-video';
+import { SiteFooter, SiteHeader } from '@/components/site-chrome';
+import { StoreCta } from '@/components/store-cta';
+import { TrailerPlayer } from '@/components/trailer-player';
+import { beats, courses, game, siteOrigin, storeCta, totalHoles } from '@/lib/site';
 
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
-  alternates: { canonical: base },
+  alternates: { canonical: '/' },
 };
 
 function structuredData() {
-  const origin = getPublicSiteOrigin();
+  const origin = siteOrigin();
   const cta = storeCta();
   return {
     '@context': 'https://schema.org',
@@ -23,22 +22,22 @@ function structuredData() {
     applicationCategory: 'GameApplication',
     author: { '@type': 'Person', name: game.developer },
     description: game.oneLiner,
-    gamePlatform: ['iPhone'],
+    gamePlatform: ['iPhone', 'iPad'],
     genre: ['Puzzle', 'Sports'],
-    image: `${origin}${base}/og.png`,
+    image: `${origin}/og.png`,
     name: game.name,
     numberOfPlayers: { '@type': 'QuantitativeValue', value: 1 },
-    operatingSystem: 'iOS 17 or later',
+    operatingSystem: 'iOS 17 or later, iPadOS 17 or later',
     playMode: 'SinglePlayer',
     trailer: {
       '@type': 'VideoObject',
-      contentUrl: `${origin}${base}/trailer.mp4`,
+      contentUrl: `${origin}/trailer.mp4`,
       description: game.oneLiner,
       name: `${game.name} trailer`,
-      thumbnailUrl: `${origin}${base}/trailer-poster.jpg`,
+      thumbnailUrl: `${origin}/trailer-poster.jpg`,
       uploadDate: '2026-10-24',
     },
-    url: `${origin}${base}`,
+    url: `${origin}/`,
     ...(cta.kind === 'download' ? { installUrl: cta.href } : {}),
   };
 }
@@ -99,7 +98,7 @@ export default function DoublePuttPage() {
             </div>
           </div>
           <div className={styles.heroMedia}>
-            <LoopVideo className={styles.heroVideo} eager poster={`${base}/hero-poster.jpg`} src={`${base}/hero.mp4`} />
+            <LoopVideo className={styles.heroVideo} eager poster="/hero-poster.jpg" src="/hero.mp4" />
           </div>
         </section>
 
@@ -156,8 +155,8 @@ export default function DoublePuttPage() {
                   <LoopVideo
                     className={styles.courseVideo}
                     label={course.alt}
-                    poster={`${base}/courses/${course.slug}-poster.jpg`}
-                    src={`${base}/courses/${course.slug}.mp4`}
+                    poster={`/courses/${course.slug}-poster.jpg`}
+                    src={`/courses/${course.slug}.mp4`}
                   />
                 </div>
                 <h3 className={styles.courseName}>
@@ -180,8 +179,8 @@ export default function DoublePuttPage() {
           </div>
           <TrailerPlayer
             length="0:26"
-            poster={`${base}/trailer-poster.jpg`}
-            src={`${base}/trailer.mp4`}
+            poster="/trailer-poster.jpg"
+            src="/trailer.mp4"
             title={`${game.name} trailer`}
           />
         </section>
