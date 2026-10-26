@@ -50,7 +50,7 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: 'Buying All Courses',
     body: [
-      'Double Putt is free to try, with one in-app purchase, All Courses. Apple handles buying it, Restore Purchases, and Family Sharing, under its own privacy policy. Apple doesn't share your name, email address, or payment details with us, and the game sends us nothing from Apple about your purchase.',
+      "Double Putt is free to try, with one in-app purchase, All Courses. Apple handles buying it, Restore Purchases, and Family Sharing, under its own privacy policy. Apple doesn't share your name, email address, or payment details with us, and the game sends us nothing from Apple about your purchase.",
       "The game asks Apple for the price of All Courses and whether you have it, to know which holes to open. What Apple tells it stays on your device. Apple's sales reports show us totals, like how many people bought All Courses in each country, never who they are.",
     ],
   },
