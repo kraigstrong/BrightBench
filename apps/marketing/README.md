@@ -129,9 +129,10 @@ App Store disclosures, then explicitly enable the native client and verify a phy
 build. No production data or deployment is needed for local contract tests.
 
 Storage limiter regressions execute the production Lua script against an in-memory Redis command
-shim: `node test/run-bigger-fish-redis.mjs` from `apps/marketing`. The runner uses a temporary
-Fengari interpreter through npm exec and does not modify dependencies or connect to Redis.
-This checks script behavior; live Upstash validation remains a release check.
+shim (`test/bigger-fish-redis.lua`) under the Fengari interpreter, a dev dependency. They run in
+`npm test` (`test/redis-lua.test.ts`), so `verify` and CI fail on a broken cap or a write that costs
+more commands, and they never connect to Redis. This checks script behavior; live Upstash
+validation remains a release check.
 
 ## Double Putt's site
 
@@ -190,8 +191,8 @@ eight builds' worth of all six courses a day. Query parameters as for Bigger Fis
 `testflight`), `appVersion`, `build`.
 
 Configure Vercel rate limiting on `/api/double-putt/events` before a build with collection on reaches testers. No
-request or error logging in these routes. Storage limiter regressions: `node test/run-double-putt-redis.mjs` from
-`apps/marketing`, as for Bigger Fish.
+request or error logging in these routes. Storage limiter regressions: `test/double-putt-redis.lua`, run in `npm test`
+as for Bigger Fish.
 
 ```bash
 curl -s "https://brightbench.app/api/double-putt/stats?from=2026-10-01&to=2026-10-31" \
