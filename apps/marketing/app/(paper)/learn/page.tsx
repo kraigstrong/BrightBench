@@ -146,7 +146,7 @@ export default function LearnPage() {
           {productCards.map((product) => (
             <article
               className={`${styles.suiteCard} ${
-                product.name === 'Time Tutor' ? styles.timeTutorCard : ''
+                product.availability === 'live' ? styles.liveCard : ''
               }`}
               key={product.name}
               style={{ '--card-accent': product.accent } as CSSProperties}>
@@ -158,14 +158,14 @@ export default function LearnPage() {
               </h3>
               <p className={styles.cardBody}>{product.blurb}</p>
               <div className={styles.cardFooter}>
-                {product.name === 'Time Tutor' && product.appStoreUrl ? (
+                {product.availability === 'live' && product.appStoreUrl ? (
                   <a
                     className={styles.appStoreButton}
                     href={product.appStoreUrl}
                     rel="noreferrer"
                     target="_blank">
                     <Image
-                      alt="Download on the App Store"
+                      alt={`Download ${product.name} on the App Store`}
                       className={styles.appStoreBadge}
                       height={40}
                       src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"

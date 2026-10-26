@@ -10,6 +10,9 @@ const supportEmail =
 const timeTutorAppStoreUrl =
   process.env.NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL ||
   'https://apps.apple.com/app/time-tutor-clock-practice/id6761587276';
+const mathReefAppStoreUrl =
+  process.env.NEXT_PUBLIC_MATH_REEF_APP_STORE_URL ||
+  'https://apps.apple.com/app/math-reef-math-games-for-kids/id6817532623';
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_ORIGIN?.replace(/\/$/, '');
 
 /** Public marketing domain when deployed to Vercel production without env override. */
@@ -126,16 +129,8 @@ export const siteMeta = {
   title: 'BrightBench',
 };
 
+/** The learning apps, those on the App Store first. */
 export const productCards: ProductCard[] = [
-  {
-    accent: '#E97A5F',
-    availability: 'in-progress',
-    blurb:
-      'Build fraction intuition through seeing, estimating, comparing, and creating fractions.',
-    href: '/products/fraction-finder',
-    name: 'Fraction Finder',
-    status: 'In progress',
-  },
   {
     accent: '#E7A54B',
     appStoreUrl: timeTutorAppStoreUrl,
@@ -148,12 +143,22 @@ export const productCards: ProductCard[] = [
   },
   {
     accent: '#2E8B8B',
-    availability: 'in-progress',
+    appStoreUrl: mathReefAppStoreUrl,
+    availability: 'live',
     blurb:
       'Swim into the right answer: math practice from first sums to exponents for grades 1–5.',
     href: '/products/math-reef',
     name: 'Math Reef',
-    status: 'Coming soon to the App Store',
+    status: 'Live on the App Store',
+  },
+  {
+    accent: '#E97A5F',
+    availability: 'in-progress',
+    blurb:
+      'Build fraction intuition through seeing, estimating, comparing, and creating fractions.',
+    href: '/products/fraction-finder',
+    name: 'Fraction Finder',
+    status: 'In progress',
   },
   {
     accent: '#6FA5D8',
@@ -237,8 +242,9 @@ export const productPages: ProductPage[] = [
       'A wrong answer shows the worked math, so a miss turns into practice.',
     ],
     primaryCta: {
-      href: '/math-reef/support',
-      label: 'Math Reef help and FAQ',
+      external: true,
+      href: mathReefAppStoreUrl,
+      label: 'Download Math Reef on the App Store',
     },
     primaryTopic: 'math games for kids',
     proofPoints: ['Grades 1–5', 'Five worlds', 'Stars + crowns', 'Works offline'],
@@ -259,7 +265,7 @@ export const productPages: ProductPage[] = [
       label: 'How Math Reef handles privacy',
     },
     slug: 'math-reef',
-    status: 'Coming soon to the App Store',
+    status: 'Live on the App Store',
     trustItems: [
       {
         body: 'No ads, no accounts, no tracking. Math Reef sends only anonymous counts so the levels can get better.',

@@ -27,9 +27,12 @@ npm run dev -w marketing
 # Visit http://localhost:3000/robots.txt and http://localhost:3000/sitemap.xml
 ```
 
-## Time Tutor links
+## App Store links
 
-- **App Store:** `NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL` (falls back to the default listing in `src/lib/site.ts`).
+- **Time Tutor:** `NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL`
+- **Math Reef:** `NEXT_PUBLIC_MATH_REEF_APP_STORE_URL`
+
+Each falls back to its default listing in `src/lib/site.ts`.
 
 ## Stats viewer
 
