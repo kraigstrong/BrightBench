@@ -178,10 +178,15 @@ Configuration:
   authentication; strict validation and bounded cardinality still apply.
 - `STATS_SECRET`: the stats key, shared by every game (see Stats viewer), never shipped in the app.
 
-Three event kinds: `milestone` (`first_launch`, `course_unlocked`, `hole_finished`, `trophy_won`), `hole` (one per
-attempt) and `round` (`started`, `left`, `finished`). A batch with any field or value the contract doesn't allow is
+Four event kinds: `milestone` (`first_launch`, `course_unlocked`, `hole_finished`, `trophy_won`), `hole` (one per
+attempt), `round` (`started`, `left`, `finished`) and `unlock` (the All Courses purchase screen shown: its `source`,
+the `course` for every source but `settings`, and `first`, the install's first view). `unlock` is schema 2 only, and no
+purchase outcome is ever sent: App Store Connect counts sales. `course_unlocked` is still accepted from builds before
+1.0, which open courses with medals. A batch with any field or value the contract doesn't allow is
 rejected whole (400). Counters are kept per build (`channel:appVersion:build`) and content: each hole at a course
-revision, each course at a revision, and the install, so a revision bump never mixes two versions of a hole. Courses
+revision, each course at a revision, each course's purchase screen views (`unlock.<source>`, `unlock.<source>.first`;
+across revisions), and the install (which also holds Settings' views), so a revision bump never mixes two versions of a
+hole. Courses
 and hole slugs are bounded patterns, not a list: a new course needs no server change. Limits are Bigger Fish's: 64 KiB
 bodies, 25 events/batch, 20 builds, 500 build/content pairs and 20,000 counter fields per receive-day, enforced
 atomically before any write; keys expire 90 days after their day's first write. Zero sums are not written.
@@ -196,9 +201,13 @@ Counters from before that write a first finish as `milestone.pair_finished`, whi
 
 The report pools every build in the selection (filter by `build` or `appVersion` to compare) and keeps revisions
 apart. Strokes over par, at-or-under-par, green strokes and tries (mean, and a median from the `attempt.*` buckets)
-count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. A hole
-writes at most about 40 counter fields per build, so the 20,000-field cap and the 500-content cap both allow about
-eight builds' worth of all six courses a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
+count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. The
+purchase screen is shown by source (views and first views), per course (with each source's views), and per build;
+first views add up to the installs that reached it. A course's purchase screen writes at most 12 counter fields per
+build and one more content, and Settings' go on the install. A hole
+writes at most about 40 counter fields per build. A build played through all nine courses writes about 100 contents (81
+holes, 9 courses, their 9 purchase screens and the install) and about 3,500 fields, so the 500-content and 20,000-field
+caps both allow about five such builds a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
 `testflight`), `appVersion`, `build`.
 
 Configure Vercel rate limiting on `/api/double-putt/events` before a build with collection on reaches testers. No
