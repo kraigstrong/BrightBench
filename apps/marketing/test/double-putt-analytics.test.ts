@@ -200,7 +200,8 @@ test('report pools builds per hole and revision, and computes what the stats pag
     [2,1,[0,0,1,0,0,0,0,0,0],1,1,4,1]);
   assert.deepEqual(midway.medals,{none:0,bronze:1,silver:0,gold:0});
   assert.equal(report1.courses[0]!.medals.gold,1);
-  assert.deepEqual(report([]),{builds:[],firstLaunches:0,holes:[],courses:[]});
+  assert.deepEqual(report([]),{builds:[],firstLaunches:0,holes:[],courses:[],
+    unlock:{views:0,firstViews:0,sources:unlockSources.map(source=>({source,views:0,first:0})),courses:[]}});
 });
 test('ingestion fails closed without the key, and rejects oversized or unvalidated payloads',async()=>{
   const req=(body:unknown,key='key')=>new Request('https://example.test/events',{method:'POST',headers:{'X-App-Key':key},body:typeof body==='string'?body:JSON.stringify(body)});
@@ -365,6 +366,32 @@ test('counts the purchase screen per course and source, its first views apart, a
   assert.equal(new Set(updates.map(u=>u.field)).size,updates.length,'each counter once per write');
   assert.equal(updates.find(u=>u.field===`${midway}|unlock.trophy`)?.by,2);
   assert.equal(updates.find(u=>u.field==='install|unlock.settings.first')?.by,2);
+});
+test('report shows purchase screen views by source, by course and first views, pooled across builds',()=>{
+  const day='2026-10-26', u=(source: string, course: string|null, first=false) => ({kind:'unlock',source,...course?{course}:{},first});
+  const r=report([
+    {day,build:'appstore:1.0:6',counts:counts(sample([u('free_hole','midway',true),u('free_hole','midway'),u('course','starbase',true),
+      u('settings',null,true),u('settings',null),u('scorecard','daybreak'),{kind:'milestone',name:'first_launch'},attempt()]))},
+    {day,build:'appstore:1.0:7',counts:counts(sample([u('free_hole','midway'),u('trophy','midway',true),u('round','future-course'),u('hole','fireworks')]))},
+    // Older builds' course_unlocked milestones still count on the course's own row.
+    {day,build:'testflight:0.1:5',counts:counts(sample([{kind:'milestone',name:'course_unlocked',course:'midway',revision:'2026-10-15.1'}]))},
+  ]);
+  assert.deepEqual([r.unlock.views,r.unlock.firstViews],[10,4]);
+  assert.deepEqual(r.unlock.sources,[{source:'scorecard',views:1,first:0},{source:'free_hole',views:3,first:1},{source:'course',views:1,first:1},
+    {source:'hole',views:1,first:0},{source:'trophy',views:1,first:1},{source:'settings',views:2,first:1},{source:'round',views:1,first:0}]);
+  // Game order, then courses the page doesn't know, alphabetically. Settings belongs to no course.
+  assert.deepEqual(r.unlock.courses.map(c=>[c.course,c.views,c.first]),[['daybreak',1,0],['midway',4,2],['fireworks',1,0],['future-course',1,0],['starbase',1,1]]);
+  assert.deepEqual(r.unlock.courses[1]!.sources,{scorecard:0,free_hole:3,course:0,hole:0,trophy:1,settings:0,round:0});
+  assert.deepEqual(r.builds.map(b=>[b.build,b.unlockViews,b.firstLaunches,b.attempts]),[['appstore:1.0:7',4,0,0],['appstore:1.0:6',6,1,1],['testflight:0.1:5',0,0,0]]);
+  assert.deepEqual(r.courses.map(c=>[c.course,c.unlocks]),[['midway',1]]);
+  assert.equal(r.firstLaunches,1);assert.equal(r.holes.length,1);
+});
+test('the stats endpoint returns the purchase screen report with its note',async()=>{
+  const rows=[{day:'2026-10-26',build:'appstore:1.0:6',counts:counts(sample([{kind:'unlock',source:'hole',course:'midway',first:true},{kind:'unlock',source:'settings',first:false}]))}];
+  const s=store();s.read=async()=>rows;
+  const body=await (await handleStats(new Request('https://example.test/stats?channel=appstore&to=2026-10-26',{headers:{Authorization:'Bearer secret'}}),{store:s,secret:'secret'})).json();
+  assert.deepEqual(body.unlock,report(rows).unlock);assert.deepEqual([body.unlock.views,body.unlock.firstViews],[2,1]);
+  assert.equal(body.notes.some((n:string)=>n.startsWith('Purchase screen views')),true);
 });
 test('first finishes counted before schema 2 still count',()=>{
   const t=contentToken(attempt());

@@ -201,7 +201,10 @@ Counters from before that write a first finish as `milestone.pair_finished`, whi
 
 The report pools every build in the selection (filter by `build` or `appVersion` to compare) and keeps revisions
 apart. Strokes over par, at-or-under-par, green strokes and tries (mean, and a median from the `attempt.*` buckets)
-count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. A hole
+count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. The
+purchase screen is shown by source (views and first views), per course (with each source's views), and per build;
+first views add up to the installs that reached it. A course's purchase screen writes at most 12 counter fields per
+build and one more content, and Settings' go on the install. A hole
 writes at most about 40 counter fields per build, so the 20,000-field cap and the 500-content cap both allow about
 eight builds' worth of all six courses a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
 `testflight`), `appVersion`, `build`.

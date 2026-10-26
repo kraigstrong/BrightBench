@@ -201,13 +201,14 @@ function newerBuildFirst(a: string, b: string) {
   for (let i = 0; i < Math.max(pa.version.length,pb.version.length); i++) { const d = (pb.version[i] ?? 0) - (pa.version[i] ?? 0); if (d) return d; }
   return pb.build - pa.build || a.localeCompare(b);
 }
-type Content = { kind: 'hole'; context: Context } | { kind: 'course'; course: string; revision: string } | { kind: 'install' };
+type Content = { kind: 'hole'; context: Context } | { kind: 'course'; course: string; revision: string } | { kind: 'unlock'; course: string } | { kind: 'install' };
 function decode(t: string): Content | null {
   if (t === 'install') return {kind: 'install'};
   try {
     const p: unknown = JSON.parse(Buffer.from(t, 'base64url').toString());
     if (Array.isArray(p) && p.length === 4) return {kind: 'hole', context: {course: String(p[0]), revision: String(p[1]), hole: Number(p[2]), slug: String(p[3])}};
     if (Array.isArray(p) && p.length === 2) return {kind: 'course', course: String(p[0]), revision: String(p[1])};
+    if (Array.isArray(p) && p.length === 1) return {kind: 'unlock', course: String(p[0])};
   } catch { /* not a token this file wrote */ }
   return null;
 }
@@ -246,15 +247,31 @@ function courseRow(course: string, revision: string, counts: Record<string, numb
     medals: Object.fromEntries(medals.map(m => [m, n(`medal.${m}`)])) as Record<typeof medals[number], number>,
     overPar: ratio(n('sum.round.strokes') - n('sum.round.par'), finished), unlocks: n('milestone.course_unlocked'), counts};
 }
+// Purchase screen views: every view and first view (one per install) by source, and per course (Settings has none).
+function unlockReport(rows: { course: string | null; counts: Record<string, number> }[]) {
+  const sources = unlockSources.map(source => ({source, views: 0, first: 0}));
+  const courses: { course: string; views: number; first: number; sources: Record<UnlockSource, number> }[] = [];
+  for (const {course, counts} of rows) {
+    const row = {views: 0, first: 0, sources: {} as Record<UnlockSource, number>};
+    for (const s of sources) {
+      const views = counts[`unlock.${s.source}`] ?? 0, first = counts[`unlock.${s.source}.first`] ?? 0;
+      s.views += views; s.first += first; row.views += views; row.first += first; row.sources[s.source] = views;
+    }
+    if (course !== null && (row.views || row.first)) courses.push({course, ...row});
+  }
+  return {views: sources.reduce((a,s) => a + s.views, 0), firstViews: sources.reduce((a,s) => a + s.first, 0), sources,
+    courses: courses.sort((a,b) => courseRank(a.course) - courseRank(b.course) || a.course.localeCompare(b.course))};
+}
 export type HoleRow = ReturnType<typeof holeRow>;
 export type CourseRow = ReturnType<typeof courseRow>;
-export type BuildRow = { build: string; firstLaunches: number; attempts: number; roundsStarted: number; roundsFinished: number };
+export type UnlockReport = ReturnType<typeof unlockReport>;
+export type BuildRow = { build: string; firstLaunches: number; attempts: number; roundsStarted: number; roundsFinished: number; unlockViews: number };
 // Every build in `rows` pooled per hole and per course at one revision, so counts never mix two versions of a hole;
 // `builds` keeps a few totals per build. Holes sort by course (game order), newest revision, then hole.
 export function report(rows: Awaited<ReturnType<DoublePuttStore['read']>>) {
   const contents = new Map<string, Record<string, number>>(), builds = new Map<string, BuildRow>();
   for (const row of rows) {
-    const b = builds.get(row.build) ?? {build: row.build, firstLaunches: 0, attempts: 0, roundsStarted: 0, roundsFinished: 0};
+    const b = builds.get(row.build) ?? {build: row.build, firstLaunches: 0, attempts: 0, roundsStarted: 0, roundsFinished: 0, unlockViews: 0};
     builds.set(row.build, b);
     for (const [field,value] of Object.entries(row.counts)) {
       const [t,metric] = field.split('|'); if (!t || !metric) continue;
@@ -264,19 +281,23 @@ export function report(rows: Awaited<ReturnType<DoublePuttStore['read']>>) {
       if (metric.startsWith('outcome.')) b.attempts += value;
       if (metric === 'round.started') b.roundsStarted += value;
       if (metric === 'round.finished') b.roundsFinished += value;
+      if (/^unlock\.[a-z_]+$/.test(metric)) b.unlockViews += value;
     }
   }
-  const holes: HoleRow[] = [], courses: CourseRow[] = [];
+  const holes: HoleRow[] = [], courses: CourseRow[] = [], unlocks: { course: string | null; counts: Record<string, number> }[] = [];
   for (const [t,counts] of contents) {
     const c = decode(t);
     if (c?.kind === 'hole') holes.push(holeRow(c.context, counts));
     if (c?.kind === 'course') courses.push(courseRow(c.course, c.revision, counts));
+    if (c?.kind === 'unlock') unlocks.push({course: c.course, counts});
+    if (c?.kind === 'install') unlocks.push({course: null, counts});
   }
   return {
     builds: [...builds.values()].sort((a,b) => newerBuildFirst(a.build,b.build)),
     firstLaunches: contents.get('install')?.['milestone.first_launch'] ?? 0,
     holes: holes.sort((a,b) => byCourse(a,b) || a.hole - b.hole || a.slug.localeCompare(b.slug)),
     courses: courses.sort(byCourse),
+    unlock: unlockReport(unlocks),
   };
 }
 export type Report = ReturnType<typeof report> & { from: string; to: string; notes: string[] };
@@ -295,7 +316,7 @@ export async function handleStats(request: Request, deps: {store: DoublePuttStor
       const [channel,version,build] = r.build.split(':');
       return (url.searchParams.get('channel') ?? 'testflight') === channel && (!url.searchParams.has('appVersion') || url.searchParams.get('appVersion') === version) && (!url.searchParams.has('build') || url.searchParams.get('build') === build);
     });
-    const body: Report = {from,to, notes: ['Anonymous aggregate attempts, not unique people; installs are counted only by once-per-install reports (first launches, first starts, first finishes, trophies, unlocks).', 'Every build in this selection is pooled; filter by build to compare builds. Content revisions stay separate.', 'Strokes over par, at or under par and tries to a first finish count first finishes (not replays) only; read them beside quits.', 'Failed deliveries are dropped; receive-day is not play-day.'], ...report(selected)};
+    const body: Report = {from,to, notes: ['Anonymous aggregate attempts, not unique people; installs are counted only by once-per-install reports (first launches, first starts, first finishes, trophies, unlocks, first purchase screen views).', 'Every build in this selection is pooled; filter by build to compare builds. Content revisions stay separate.', 'Strokes over par, at or under par and tries to a first finish count first finishes (not replays) only; read them beside quits.', 'Purchase screen views count every time it opened; first views count installs, by where they first saw it. Sales are in App Store Connect, never here.', 'Failed deliveries are dropped; receive-day is not play-day.'], ...report(selected)};
     return Response.json(body, {headers});
   } catch { return status(503); }
 }

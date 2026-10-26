@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useEffectEvent, useRef, useState, type FormEvent } from 'react';
-import type { CourseRow, HoleRow, Report } from '@/lib/double-putt-analytics';
+import type { CourseRow, HoleRow, Report, UnlockReport, UnlockSource } from '@/lib/double-putt-analytics';
 const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)}%`;
 const decimal = (x:number|null,digits=1) => x === null ? '—' : x.toFixed(digits);
 const signed = (x:number|null) => x === null ? '—' : `${x > 0 ? '+' : ''}${x.toFixed(2)}`;
@@ -66,7 +66,7 @@ function HolesTable({holes}:{holes:HoleRow[]}) {
 function CoursesTable({courses}:{courses:CourseRow[]}) {
   return <section aria-labelledby="courses-heading">
     <h2 id="courses-heading">Courses</h2>
-    <p><small>Course rounds by revision. Left counts rounds left unfinished (Leave Round, or a new round started over one), by the hole the round was on, to show where players stop. Unlocks count installs whose medal opened the course (Daybreak and Nightfall are open from the start).</small></p>
+    <p><small>Course rounds by revision. Left counts rounds left unfinished (Leave Round, or a new round started over one), by the hole the round was on, to show where players stop. Unlocks count installs whose medal opened the course, in builds before 1.0 (Daybreak and Nightfall are open from the start).</small></p>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',textAlign:'left',borderSpacing:12}}>
       <caption>Rounds, medals and unlocks per course</caption>
       <thead><tr>{['Course','Rounds started (first time)','Left, by hole','Finished (personal bests)','Medals: gold / silver / bronze / none','Strokes over par','Unlocks'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
@@ -81,6 +81,30 @@ function CoursesTable({courses}:{courses:CourseRow[]}) {
       </tr>;})}</tbody>
     </table></div>
     {courses.length===0&&<p>No rounds or unlocks in this selection.</p>}
+  </section>;
+}
+// Where the game opens its purchase screen (unlockSources in double-putt-analytics.ts).
+const unlockSourceNames: Record<UnlockSource,string> = {scorecard:'A round’s scorecard',free_hole:'A free hole’s result card',
+  course:'A locked course (Courses)',hole:'A locked hole (Free Play)',trophy:'A locked hole (Trophy Shelf)',settings:'Unlock in Settings',
+  round:'Continue on a saved round'};
+function UnlockTables({unlock,course}:{unlock:UnlockReport;course:string}) {
+  // Settings belongs to no course, so the per-course table leaves it out.
+  const sources=unlock.sources.map(s=>s.source).filter(s=>s!=='settings'),courses=unlock.courses.filter(c=>!course||c.course===course);
+  return <section aria-labelledby="unlock-heading">
+    <h2 id="unlock-heading">Purchase screen</h2>
+    <p><small>Every time the All Courses purchase screen opened, by where it opened from. First views count installs seeing it for the first time, by where that was. No purchase outcome is sent: compare against App Store Connect&rsquo;s sales. The course filter narrows the per-course table only.</small></p>
+    <p><strong>{unlock.views}</strong> views; <strong>{unlock.firstViews}</strong> installs reached it.</p>
+    <div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
+      <caption>Where the purchase screen opened</caption>
+      <thead><tr>{['Opened from','Views','First views'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+      <tbody>{unlock.sources.map(s=><tr key={s.source}><th scope="row">{unlockSourceNames[s.source]??s.source}</th><td>{s.views}</td><td>{s.first}</td></tr>)}</tbody>
+    </table></div>
+    <div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
+      <caption>Purchase screen views per course, across revisions</caption>
+      <thead><tr>{['Course','Views (first views)',...sources.map(s=>unlockSourceNames[s]??s)].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+      <tbody>{courses.map(c=><tr key={c.course}><th scope="row">{courseName(c.course)}</th><td>{c.views} ({c.first})</td>{sources.map(s=><td key={s}>{c.sources[s]}</td>)}</tr>)}</tbody>
+    </table></div>
+    {courses.length===0&&<p>No purchase screen views for a course in this selection.</p>}
   </section>;
 }
 // The report, 401 for a rejected key, or null when it's unavailable.
@@ -109,7 +133,7 @@ export default function DoublePuttStats({secret,onUnauthorized}:{secret:string;o
   }
   const loadFirst=useEffectEvent(requestReport);
   useEffect(()=>{loadFirst();return()=>pending.current?.abort();},[]);
-  const courseIds=[...new Set([...(data?.holes??[]),...(data?.courses??[])].map(r=>r.course))].sort((a,b)=>courseRank(a)-courseRank(b)||a.localeCompare(b));
+  const courseIds=[...new Set([...(data?.holes??[]),...(data?.courses??[]),...(data?.unlock?.courses??[])].map(r=>r.course))].sort((a,b)=>courseRank(a)-courseRank(b)||a.localeCompare(b));
   const holes=(data?.holes??[]).filter(p=>!course||p.course===course),courses=(data?.courses??[]).filter(c=>!course||c.course===course);
   return <>
     <p>Anonymous aggregate attempts and rounds by receive-day. Daily totals are kept for 90 days. Every build in the selection is pooled; content revisions stay separate.</p>
@@ -125,15 +149,17 @@ export default function DoublePuttStats({secret,onUnauthorized}:{secret:string;o
       <p>Showing receive-days {data.from} to {data.to} (UTC). <strong>{data.firstLaunches}</strong> first launches.</p>
       <div style={{overflowX:'auto'}}><table style={{textAlign:'left',borderSpacing:12}}>
         <caption>Builds in this selection, newest first</caption>
-        <thead><tr>{['Build','First launches','Hole attempts','Rounds started','Rounds finished'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
-        <tbody>{data.builds.map(b=><tr key={b.build}><th scope="row">{b.build}</th><td>{b.firstLaunches}</td><td>{b.attempts}</td><td>{b.roundsStarted}</td><td>{b.roundsFinished}</td></tr>)}</tbody>
+        <thead><tr>{['Build','First launches','Hole attempts','Rounds started','Rounds finished','Purchase screen views'].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>
+        <tbody>{data.builds.map(b=><tr key={b.build}><th scope="row">{b.build}</th><td>{b.firstLaunches}</td><td>{b.attempts}</td><td>{b.roundsStarted}</td><td>{b.roundsFinished}</td><td>{b.unlockViews}</td></tr>)}</tbody>
       </table></div>
       {data.builds.length===0&&<p>No reports in this selection.</p>}
       <label>Course <select value={course} onChange={e=>setCourse(e.target.value)}><option value="">All courses</option>{courseIds.map(c=><option key={c} value={c}>{courseName(c)}</option>)}</select></label>
       <HolesTable holes={holes}/>
       <CoursesTable courses={courses}/>
+      {/* Reports from before the purchase screen have no `unlock`, which a rollback could serve. */}
+      {data.unlock&&<UnlockTables unlock={data.unlock} course={course}/>}
       <ul>{data.notes.map(n=><li key={n}>{n}</li>)}</ul>
-      <details><summary>Raw counters</summary><pre style={{overflowX:'auto'}}>{JSON.stringify({holes:data.holes,courses:data.courses},null,2)}</pre></details>
+      <details><summary>Raw counters</summary><pre style={{overflowX:'auto'}}>{JSON.stringify({holes:data.holes,courses:data.courses,unlock:data.unlock},null,2)}</pre></details>
     </>}
   </>;
 }
