@@ -32,8 +32,13 @@ and keeps it, filters and all, until the page is locked. The key lives only in t
 (`noindex` and `robots.txt`) and out of the sitemap.
 
 - `STATS_SECRET`: the one private key for reading every game's stats (`GET /api/{bigger-fish,double-putt,math-reef}/stats`).
-  Never put it in an app. Keep it in the password manager under the username `brightbench-stats`, which the sign-in
-  form offers. Until it's set, the stats endpoints answer 401.
+  Never put it in an app. Until it's set, the stats endpoints answer 401.
+
+The sign-in form calls the key a password, so 1Password fills it: a 1Password login for `brightbench.app` with username
+`brightbench-stats` (the form's hidden, prefilled username) and `STATS_SECRET` as its password. The form follows
+1Password's [website design guide](https://www.1password.dev/web/compatible-website-design): POST, a `<label for>` on
+each field, `autocomplete` values, and the username hidden with `display: none` and `aria-hidden`. The tabs' filter
+text fields carry `data-1p-ignore`, so 1Password doesn't offer logins there.
 
 The old per-game pages, `/bigger-fish/stats`, `/doubleputt/stats` and `/math-reef/stats`, redirect to their tab
 (`next.config.ts`; not permanent, so browsers don't cache them). `/double-putt/stats` gets there in two hops.

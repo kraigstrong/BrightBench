@@ -115,20 +115,22 @@ export function StatsViewer({ initialGame }: { initialGame: StatsGameId }) {
   if (!secret) {
     return (
       <main>
-        {/* POST so a submit before the page's script loads can't put the key in the URL. */}
-        <form onSubmit={unlock} method="post" style={{ ...card, margin: '0 auto', maxWidth: 440 }}>
+        {/* A sign-in form as 1Password's website design guide describes one (1password.dev/web/compatible-website-design):
+            POST, so a submit before the page's script loads, or 1Password clicking the button, can't put the key in the
+            URL; a label tied to each field by `for`; and the key called a password, which is what a password manager
+            looks for. */}
+        <form id="stats-sign-in" onSubmit={unlock} method="post" style={{ ...card, margin: '0 auto', maxWidth: 440 }}>
           <h1 style={{ fontSize: 32, margin: 0 }}>Stats</h1>
-          <p style={{ color: palette.inkMuted, margin: 0 }}>Enter the stats key to see each game’s anonymous usage counts.</p>
-          {/* A username field helps password managers match one saved item for every game; the key is its password. */}
-          <input type="text" name="username" autoComplete="username" value="brightbench-stats" readOnly hidden />
-          <label style={{ display: 'grid', gap: spacing.xs, fontWeight: 700 }}>
-            Stats key
-            <input type="password" name="password" id="password" autoComplete="current-password" required style={field} />
-          </label>
+          <p style={{ color: palette.inkMuted, margin: 0 }}>Sign in to see each game’s anonymous usage counts.</p>
+          {/* A username, prefilled and hidden the way the guide's example hides one, so the password manager saves and
+              matches one item for every game. */}
+          <input type="text" name="username" id="username" autoComplete="username" defaultValue="brightbench-stats" aria-hidden="true" tabIndex={-1} style={{ display: 'none' }} />
+          <label htmlFor="password" style={{ fontWeight: 700 }}>Password</label>
+          <input type="password" name="password" id="password" autoComplete="current-password" required style={field} />
           {error && <p role="alert" style={{ color: palette.danger, margin: 0 }}>{error}</p>}
-          <button type="submit" style={{ ...button, justifySelf: 'start' }}>Show stats</button>
+          <button type="submit" style={{ ...button, justifySelf: 'start' }}>Sign in</button>
           <p style={{ color: palette.inkMuted, fontSize: 14, margin: 0 }}>
-            The key stays in this page’s memory and is sent in an authorization header, never a URL or local storage.
+            The password stays in this page’s memory and is sent in an authorization header, never a URL or local storage.
           </p>
         </form>
       </main>
@@ -167,7 +169,7 @@ export function StatsViewer({ initialGame }: { initialGame: StatsGameId }) {
         return (
           // minWidth 0: a grid item otherwise grows to its widest chart, and every paragraph with it.
           <div key={id} role="tabpanel" id={panelId(id)} aria-labelledby={tabId(id)} hidden={id !== game} style={{ minWidth: 0 }}>
-            {opened.includes(id) && <Panel secret={secret} onUnauthorized={() => lock('That key didn’t work.')} />}
+            {opened.includes(id) && <Panel secret={secret} onUnauthorized={() => lock('That password didn’t work.')} />}
           </div>
         );
       })}

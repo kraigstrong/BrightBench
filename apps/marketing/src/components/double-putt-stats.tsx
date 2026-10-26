@@ -116,8 +116,8 @@ export default function DoublePuttStats({secret,onUnauthorized}:{secret:string;o
     <form onSubmit={load} style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
       <label>Channel<br/><select value={channel} onChange={e=>setChannel(e.target.value)}><option value="testflight">TestFlight</option><option value="appstore">App Store</option><option value="debug">Debug</option></select></label>
       <label>Range<br/><select value={days} onChange={e=>setDays(Number(e.target.value))}>{ranges.map(n=><option key={n} value={n}>Last {n} days</option>)}</select></label>
-      <label>App version (optional)<br/><input value={appVersion} onChange={e=>setAppVersion(e.target.value)} inputMode="decimal" placeholder="0.1"/></label>
-      <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric"/></label>
+      <label>App version (optional)<br/><input value={appVersion} onChange={e=>setAppVersion(e.target.value)} inputMode="decimal" placeholder="0.1" data-1p-ignore/></label>
+      <label>Build number (optional)<br/><input value={build} onChange={e=>setBuild(e.target.value)} inputMode="numeric" data-1p-ignore/></label>
       <button disabled={loading}>{loading?'Loading…':'Load report'}</button>
     </form>
     {error&&<p role="alert">{error}</p>}

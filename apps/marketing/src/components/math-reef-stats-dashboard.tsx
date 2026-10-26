@@ -163,7 +163,7 @@ export function MathReefStatsDashboard({ secret, onUnauthorized }: { secret: str
         </label>
         <label style={{ display: 'grid', gap: 4, fontSize: 14 }}>
           App version
-          <input placeholder="All" value={filters.appVersion} onChange={(event) => update('appVersion', event.target.value)} style={{ ...field, width: 90 }} />
+          <input placeholder="All" value={filters.appVersion} onChange={(event) => update('appVersion', event.target.value)} style={{ ...field, width: 90 }} data-1p-ignore />
         </label>
         <button type="submit" style={button} disabled={loading}>{loading ? 'Loading…' : 'Update'}</button>
       </form>
