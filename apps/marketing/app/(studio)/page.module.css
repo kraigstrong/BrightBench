@@ -131,9 +131,9 @@
 .learnFox {
   inset: 0;
   position: absolute;
-  scale: 1.18;
+  scale: 1.08;
   transition: scale 400ms ease;
-  translate: 0 5%;
+  translate: 0 7%;
 }
 
 .learnFox img {
@@ -207,7 +207,7 @@
 }
 
 .doorMain:hover .learnFox {
-  scale: 1.23;
+  scale: 1.13;
 }
 
 .learn .doorCta:focus-visible {
