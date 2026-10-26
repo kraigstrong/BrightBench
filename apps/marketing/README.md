@@ -136,27 +136,17 @@ validation remains a release check.
 
 ## Double Putt's site
 
-`/doubleputt` is Double Putt's own site, in the spirit of biggerfish.app: the pitch (a gameplay loop, a swing in three
-steps, the nine courses, the trailer), `/doubleputt/support` (the App Store listing's Support URL), and
-`/doubleputt/privacy` (its Privacy Policy URL, and the game's Settings link). The old `/double-putt/...` addresses
-redirect there. The pages live in `app/doubleputt/(site)/`, whose layout steps out of the root layout's centred column
-to fill the window in the game's own colors; its words and settings are `src/lib/double-putt-site.ts`, and its
-components `src/components/double-putt/`. They follow the game's wording: a hole is two greens side by side, never a
-pair, never "hole A" and "hole B".
-
-- **The button** says "Coming soon to iPhone" until `testFlightUrl` in `src/lib/double-putt-site.ts` is set (then
-  "Join the beta" too), and becomes Apple's App Store badge once `appStoreUrl` is.
-- **Media** (`public/doubleputt/`) is all real play, recorded from the game a frame at a time, HUD and all, by its
-  capture tools. In kraigstrong/double-putt, `Tools/capture/site.sh <this repo>/apps/marketing/public/doubleputt`
-  makes every file: the hero loop, a loop per course, the three stills, the trailer (portrait, with the game's
-  sounds), its poster, the icon and the link preview. Rerun it after re-recording, or once the trailer has its music.
+Double Putt's site is its own app now, `apps/double-putt-site`, at doubleputt.app. Its old pages here, `/doubleputt`
+and before that `/double-putt` (with their media), redirect there, since the App Store listing and the game's Settings
+in builds already out link to them. Its stats report (`/doubleputt/stats`) and analytics endpoint stay here. The
+redirects are in `next.config.ts`, with tests in `test/double-putt-redirects.test.ts`.
 
 ## Double Putt gameplay analytics
 
 Double Putt (the mini golf puzzle game, kraigstrong/double-putt; client in `MiniGolf/Game/Analytics.swift`) posts
 anonymous schema-2 batches to `POST /api/double-putt/events`. The contract is `docs/analytics.md` in that repo: change
 both together. `GET /api/double-putt/stats` and `/doubleputt/stats` provide protected aggregate reporting;
-`/doubleputt/privacy` is the app's privacy policy (see Double Putt's site, above). Logic and validation live in
+doubleputt.app/privacy is the app's privacy policy (see Double Putt's site, above). Logic and validation live in
 `src/lib/double-putt-analytics.ts`, storage in `src/lib/double-putt-redis.ts` (keys under `dp:v1:`), tests in
 `test/double-putt-analytics.test.ts`. It is a copy of the Bigger Fish backend above, with the same safeguards and caps.
 

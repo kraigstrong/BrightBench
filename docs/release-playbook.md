@@ -20,6 +20,7 @@ CI verifies the workspaces a change touches and their declared consumers (typech
 ### Current Root Directories
 - `apps/marketing` → Next.js marketing site (brightbench.app)
 - `apps/bigger-fish-site` → Next.js site for Bigger Fish (biggerfish.app)
+- `apps/double-putt-site` → Next.js site for Double Putt (doubleputt.app)
 - `apps/fraction-finder` → Expo static web export
 - `apps/time-tutor` → Expo static web export
 
@@ -31,6 +32,10 @@ CI verifies the workspaces a change touches and their declared consumers (typech
   - Framework preset: Next.js
   - Build command: default (`npm run build`, whose `prebuild` packs the press kit zip)
   - Domain: `biggerfish.app`
+- `double-putt-site`
+  - Framework preset: Next.js
+  - Build command: default (`npm run build`)
+  - Domain: `doubleputt.app` (`www.doubleputt.app` redirects to it)
 - `fraction-finder`
   - Build command: `npm run web:export -w fraction-finder`
   - Output directory: `apps/fraction-finder/dist`
@@ -69,9 +74,17 @@ Shared code should not force every app to release together.
 - Use monorepo project linking rather than one combined deployment target
 - Project naming standard: use the workspace slug as the Vercel project name when possible
 - Current repo still needs dashboard or CLI linking per project
-- Every project has "Skip deployments when there are no changes to the root directory or its dependencies" on, so a push builds only the projects whose directory or workspace dependencies changed. Turn it on for any new project; it needs that project's Root Directory set to its workspace.
+- Only `main` deploys automatically. Each project's Root Directory has a `vercel.json` with `"git": { "deploymentEnabled": { "main": true, "**": false } }`, so a push to `main` deploys production and a push to any other branch creates no deployment. Give any new project the same file. Keep `**`, not `*`: branch names here contain slashes, `*` doesn't match `/`, and a branch that matches no pattern deploys.
+- Vercel reads `vercel.json` from the commit being pushed, so a branch cut before a project had the file keeps deploying that project until it merges `main`.
+- Every project has "Skip deployments when there are no changes to the root directory or its dependencies" on, so a push to `main` builds only the projects whose directory or workspace dependencies changed. Turn it on for any new project; it needs that project's Root Directory set to its workspace.
 - A change to any file outside every workspace (`docs/`, root Markdown, `.agents/`, `scripts/`, `package.json`, the lockfile) counts as a change to every project, so all of them build
-- Vercel compares a push with the branch's previous commit, not with `main`, so merging `main` into a branch builds every project `main` changed since then
+
+### Previews On Demand
+Vercel documents `git.deploymentEnabled` as applying to the deployments that commits trigger, so a preview you create yourself should still build. To get one for a branch:
+- Ask Claude to create it through the Vercel connector: `create_deployment` with the project's name and a GitHub `gitSource` (`org` `kraigstrong`, `repo` `BrightBench`, `ref` the branch).
+- Or open the project's Deployments page in the Vercel dashboard, choose Create Deployment and give the branch name.
+- Both build the branch's latest commit from GitHub. Each is one deployment for one project and counts against the daily limit, so ask only for the projects the branch changes.
+- Don't use `vercel deploy` from a checkout: it uploads the working tree, and nothing here keeps it from sending the Expo apps' `ios/Pods`, build output and the `.turbo` cache.
 
 ## Environment Variable Strategy
 - Do not hardcode future suite-wide domains in product code
@@ -111,3 +124,8 @@ Shared code should not force every app to release together.
 ### Bigger Fish Site
 1. `npm run verify -w bigger-fish-site`
 2. Deploy the `bigger-fish-site` workspace as its own Vercel project (named `bigger-fish-site`) with Root Directory set to `apps/bigger-fish-site`, and add the `biggerfish.app` domain to it
+
+### Double Putt Site
+1. `npm run verify -w double-putt-site`
+2. Deploys as its own Vercel project (named `double-putt-site`) with Root Directory set to `apps/double-putt-site`, serving `doubleputt.app`
+3. The game's analytics endpoint and stats report stay on brightbench.app (`apps/marketing`); brightbench.app's old `/doubleputt` and `/double-putt` pages redirect to doubleputt.app
