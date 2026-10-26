@@ -70,6 +70,7 @@ Shared code should not force every app to release together.
 - Project naming standard: use the workspace slug as the Vercel project name when possible
 - Current repo still needs dashboard or CLI linking per project
 - Every project has "Skip deployments when there are no changes to the root directory or its dependencies" on, so a push builds only the projects whose directory or workspace dependencies changed. Turn it on for any new project; it needs that project's Root Directory set to its workspace.
+- A change to any file outside every workspace (`docs/`, root Markdown, `.agents/`, `scripts/`, `package.json`, the lockfile) counts as a change to every project, so all of them build
 - Vercel compares a push with the branch's previous commit, not with `main`, so merging `main` into a branch builds every project `main` changed since then
 
 ## Environment Variable Strategy
