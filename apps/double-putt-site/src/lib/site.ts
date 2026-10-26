@@ -28,12 +28,12 @@ export const game = {
   name: 'Double Putt',
   tagline: 'One swing. Two greens.',
   /** One sentence, for previews. */
-  oneLiner: 'A mini golf puzzle game for iPhone: one swing plays two greens at once. Find the putt that drops both.',
+  oneLiner: 'A mini golf puzzle game for iPhone and iPad: one swing plays two greens at once. Find the putt that drops both.',
   /** The home page's lines under the logo. */
   pitch: ['Every swing plays two greens at once.', 'Find the one putt that drops both.'],
   developer: 'Kraig Strong',
-  platform: 'iPhone',
-  requirements: 'iPhone with iOS 17 or later.',
+  platform: 'iPhone and iPad',
+  requirements: 'iPhone with iOS 17 or later, or an iPad with iPadOS 17 or later.',
   courseCount: 9,
   holesPerCourse: 9,
 } as const;
@@ -189,7 +189,7 @@ export const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'How do I turn the sound off?',
-    answer: "Tap the gear on the title screen for Settings. Sound also follows your iPhone's silent switch.",
+    answer: "Tap the gear on the title screen for Settings. Sound also follows Silent mode on your iPhone or iPad.",
   },
   {
     question: 'Does it need an internet connection?',

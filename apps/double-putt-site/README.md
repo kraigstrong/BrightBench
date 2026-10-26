@@ -1,6 +1,6 @@
 # Double Putt site
 
-The marketing site for **Double Putt**, a mini golf puzzle game for iPhone, served at **doubleputt.app**. The game
+The marketing site for **Double Putt**, a mini golf puzzle game for iPhone and iPad, served at **doubleputt.app**. The game
 itself is a native iOS app in its own repository (`kraigstrong/double-putt`); this is only its website. Its analytics
 backend and stats report stay on brightbench.app (`apps/marketing`, `/api/double-putt/*` and `/doubleputt/stats`),
 since the game posts there.
@@ -26,7 +26,7 @@ npm run verify -w double-putt-site   # typecheck, lint, tests, production build
 What the site says about the game is in `src/lib/site.ts`. It follows the game's wording: a hole is two greens side by
 side, never a pair, never "hole A" and "hole B" (a test checks).
 
-- **The button** says "Coming soon to iPhone" until `testFlightUrl` in `src/lib/site.ts` is set (then "Join the beta"
+- **The button** says "Coming soon to iPhone and iPad" until `testFlightUrl` in `src/lib/site.ts` is set (then "Join the beta"
   too), and becomes Apple's App Store badge once `appStoreUrl` is.
 - `NEXT_PUBLIC_SITE_ORIGIN` overrides the canonical origin (see `.env.example`); production falls back to
   `https://doubleputt.app`.
