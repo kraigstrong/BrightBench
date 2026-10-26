@@ -37,7 +37,7 @@ const sections: { title: string; body: string[] }[] = [
     body: [
       'Each report is checked and immediately added to running totals for each day, grouped by hole or course and game version. Individual reports are not stored, and the totals cannot be traced back to a player or a device. Daily totals are deleted after 90 days.',
       "The totals are used only to improve Double Putt's holes and courses and how hard they are. They are never used for advertising or tracking, and never sold or shared.",
-      'Reports wait on the device and are sent when you finish a hole or a round, when you leave the app, and when it next opens. Double Putt works without an internet connection; a report that fails to send is discarded rather than retried.',
+      'Reports wait on the device and are sent together in small batches: when enough have collected, when you leave the app, and when it next opens. Double Putt works without an internet connection; a batch that fails to send is discarded rather than retried.',
     ],
   },
   {
