@@ -14,7 +14,8 @@ const description =
 export const metadata: Metadata = {
   alternates: { canonical: '/play' },
   description,
-  openGraph: { description, title, type: 'website', url: '/play' },
+  // A page's openGraph replaces the root's whole, so it names the site again.
+  openGraph: { description, siteName: studio.name, title, type: 'website', url: '/play' },
   title,
   twitter: { card: 'summary_large_image', description, title },
 };

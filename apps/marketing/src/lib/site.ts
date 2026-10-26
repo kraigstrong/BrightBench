@@ -1077,6 +1077,11 @@ export const roadmapProductCards = productCards.filter(
   (product) => product.availability !== 'live',
 );
 
+/** The learning apps with a full page of their own: the ones the studio's front door links to. */
+export const featuredProductCards = productCards.filter((card) =>
+  productPages.some((page) => page.kind === 'app' && card.href === `/products/${page.slug}`),
+);
+
 export const supportConfig = {
   appName: siteMeta.title,
   supportEmail: siteMeta.supportEmail,

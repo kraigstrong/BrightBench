@@ -13,6 +13,10 @@ export const studio = {
   developer: 'Kraig Strong',
 } as const;
 
+/** The studio's mark, a four-point spark, on a 24-unit square: for the header, the footer and the share images. */
+export const sparkPath =
+  'M12 1.5c.9 5.4 3.6 8.6 10.5 10.5-6.9 1.9-9.6 5.1-10.5 10.5-.9-5.4-3.6-8.6-10.5-10.5C8.4 10.1 11.1 6.9 12 1.5Z';
+
 export type Game = {
   slug: string;
   name: string;

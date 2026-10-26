@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { LoopVideo } from '@/components/loop-video';
-import { getPublicSiteOrigin, productCards, productPages } from '@/lib/site';
+import { featuredProductCards, getPublicSiteOrigin } from '@/lib/site';
 import { games, studio } from '@/lib/studio';
 
 import styles from './page.module.css';
@@ -12,11 +12,6 @@ import styles from './page.module.css';
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
-
-/** The learning apps with a full page of their own: the ones worth a link from the front door. */
-const learningApps = productCards.filter((card) =>
-  productPages.some((page) => page.kind === 'app' && card.href === `/products/${page.slug}`),
-);
 
 function structuredData() {
   const origin = getPublicSiteOrigin();
@@ -149,7 +144,7 @@ export default function StudioHomePage() {
             </div>
           </div>
           <ul aria-label="Our learning apps" className={styles.titles}>
-            {learningApps.map((app) => (
+            {featuredProductCards.map((app) => (
               <li key={app.name}>
                 <Link
                   className={styles.title}
