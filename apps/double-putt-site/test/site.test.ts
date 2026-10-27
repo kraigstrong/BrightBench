@@ -46,7 +46,7 @@ test('support says what is free, what All Courses opens, and where to restore it
   const copy = JSON.stringify(faqs);
   assert.match(copy, /all of Daybreak, plus one hole from every other course/);
   assert.match(copy, /All Courses for \$4\.99, opens all 81 holes, and every course added later/);
-  assert.match(copy, /Restore Purchases/);
+  assert.match(copy, /Settings, then Restore Purchase\./);
   assert.match(copy, /Family Sharing/);
   assert.doesNotMatch(copy, /beta|TestFlight/i);
 });

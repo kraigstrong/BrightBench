@@ -190,7 +190,7 @@ export const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'Is there a hint?',
-    answer: "Tap the hole's name at the top of the screen. To see the tips again, pause and choose How to Play.",
+    answer: "Tap the hole's name at the top of the screen. To replay How to Play's practice holes, tap the gear on the title screen for Settings.",
   },
   {
     question: 'Is it free?',
@@ -198,7 +198,7 @@ export const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'How do I restore my purchase?',
-    answer: `Tap the gear on the title screen for Settings, then Restore Purchases. It brings ${game.unlock.name} back on a new device or after reinstalling, with the same Apple Account you bought it with.`,
+    answer: `Tap the gear on the title screen for Settings, then Restore Purchase. It brings ${game.unlock.name} back on a new device or after reinstalling, with the same Apple Account you bought it with.`,
   },
   {
     question: 'Can my family play every course too?',
