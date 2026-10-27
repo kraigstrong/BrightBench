@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPaths = [
     '/',
+    '/play',
     '/support',
     '/privacy',
     '/math-reef/privacy',

@@ -173,8 +173,8 @@ export default async function ProductPageRoute({
 
   return (
     <main className={styles.page}>
-      <Link className={styles.backLink} href="/">
-        Back to BrightBench
+      <Link className={styles.backLink} href="/learn">
+        Back to learning apps
       </Link>
 
       <section className={styles.hero}>

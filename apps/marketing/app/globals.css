@@ -3,11 +3,22 @@
 }
 
 html {
+  background: var(--paper);
+  color: var(--ink);
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
 }
 
+/* The studio's pages (the home page and Play) are dark: so is everything around them. */
+html:has([data-studio]) {
+  background: #0b1d33;
+  color: #f4f1ea;
+  color-scheme: dark;
+}
+
 body {
+  font-family: 'Avenir Next', 'Avenir Next Rounded', ui-rounded, 'SF Pro Rounded', var(--font-nunito), 'Trebuchet MS',
+    sans-serif;
   line-height: 1.5;
   margin: 0;
   min-height: 100vh;
@@ -21,4 +32,10 @@ a {
 img {
   max-width: 100%;
   display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

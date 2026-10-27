@@ -1,6 +1,15 @@
 # Marketing
 
-Next.js App Router marketing site for the BrightBench app suite.
+Next.js App Router site for BrightBench, the studio: brightbench.app.
+
+- **`/`** is the studio's front door, with two doors: **Play** (`/play`, the games) and **Learn** (`/learn`, the
+  learning apps, their product pages under `/products` and the guides under `/learn`).
+- Play links to each game's own site (biggerfish.app, doubleputt.app), which is where a game is sold from. What it
+  says about them is in `src/lib/studio.ts`; keep it in step with those sites, and switch a game's status line when it
+  launches. Its loops and icons in `public/games/` are copies of theirs.
+- The pages come in two looks, as route groups (no effect on URLs): `app/(studio)` is the dark look of the game sites,
+  for `/` and `/play`; `app/(paper)` is the warm paper look of the learning side and the plain pages (support,
+  privacy, stats). `app/globals.css` paints the page's surroundings to match each.
 
 ## SEO / indexing checklist
 
@@ -8,8 +17,8 @@ After deploy:
 
 1. Set **`NEXT_PUBLIC_SITE_ORIGIN`** on Vercel to the canonical marketing URL (no trailing slash). This drives `metadataBase`, `sitemap.xml`, and `robots.txt` sitemap hints.
 2. Open **`/robots.txt`** and **`/sitemap.xml`** on the live domain and confirm URLs are absolute and correct.
-3. In Google Search Console: add the property, submit the sitemap URL (`https://<your-domain>/sitemap.xml`), and use URL Inspection on `/products/time-tutor` and `/learn/time-telling-games`.
-4. Optional: validate a few pages with [Rich Results Test](https://search.google.com/test/rich-results) (FAQ + product JSON-LD where present).
+3. In Google Search Console: add the property, submit the sitemap URL (`https://<your-domain>/sitemap.xml`), and use URL Inspection on `/`, `/play`, `/learn`, `/products/time-tutor` and `/learn/time-telling-games`.
+4. Optional: validate a few pages with [Rich Results Test](https://search.google.com/test/rich-results) (the home page's organization, FAQ + product JSON-LD where present).
 
 Local quick check:
 
@@ -18,9 +27,12 @@ npm run dev -w marketing
 # Visit http://localhost:3000/robots.txt and http://localhost:3000/sitemap.xml
 ```
 
-## Time Tutor links
+## App Store links
 
-- **App Store:** `NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL` (falls back to the default listing in `src/lib/site.ts`).
+- **Time Tutor:** `NEXT_PUBLIC_TIME_TUTOR_APP_STORE_URL`
+- **Math Reef:** `NEXT_PUBLIC_MATH_REEF_APP_STORE_URL`
+
+Each falls back to its default listing in `src/lib/site.ts`.
 
 ## Stats viewer
 
@@ -178,10 +190,15 @@ Configuration:
   authentication; strict validation and bounded cardinality still apply.
 - `STATS_SECRET`: the stats key, shared by every game (see Stats viewer), never shipped in the app.
 
-Three event kinds: `milestone` (`first_launch`, `course_unlocked`, `hole_finished`, `trophy_won`), `hole` (one per
-attempt) and `round` (`started`, `left`, `finished`). A batch with any field or value the contract doesn't allow is
+Four event kinds: `milestone` (`first_launch`, `course_unlocked`, `hole_finished`, `trophy_won`), `hole` (one per
+attempt), `round` (`started`, `left`, `finished`) and `unlock` (the All Courses purchase screen shown: its `source`,
+the `course` for every source but `settings`, and `first`, the install's first view). `unlock` is schema 2 only, and no
+purchase outcome is ever sent: App Store Connect counts sales. `course_unlocked` is still accepted from builds before
+1.0, which open courses with medals. A batch with any field or value the contract doesn't allow is
 rejected whole (400). Counters are kept per build (`channel:appVersion:build`) and content: each hole at a course
-revision, each course at a revision, and the install, so a revision bump never mixes two versions of a hole. Courses
+revision, each course at a revision, each course's purchase screen views (`unlock.<source>`, `unlock.<source>.first`;
+across revisions), and the install (which also holds Settings' views), so a revision bump never mixes two versions of a
+hole. Courses
 and hole slugs are bounded patterns, not a list: a new course needs no server change. Limits are Bigger Fish's: 64 KiB
 bodies, 25 events/batch, 20 builds, 500 build/content pairs and 20,000 counter fields per receive-day, enforced
 atomically before any write; keys expire 90 days after their day's first write. Zero sums are not written.
@@ -196,9 +213,13 @@ Counters from before that write a first finish as `milestone.pair_finished`, whi
 
 The report pools every build in the selection (filter by `build` or `appVersion` to compare) and keeps revisions
 apart. Strokes over par, at-or-under-par, green strokes and tries (mean, and a median from the `attempt.*` buckets)
-count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. A hole
-writes at most about 40 counter fields per build, so the 20,000-field cap and the 500-content cap both allow about
-eight builds' worth of all six courses a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
+count first finishes, not replays, which are mostly trophy chasing; all-finish figures are shown beside them. The
+purchase screen is shown by source (views and first views), per course (with each source's views), and per build;
+first views add up to the installs that reached it. A course's purchase screen writes at most 12 counter fields per
+build and one more content, and Settings' go on the install. A hole
+writes at most about 40 counter fields per build. A build played through all nine courses writes about 100 contents (81
+holes, 9 courses, their 9 purchase screens and the install) and about 3,500 fields, so the 500-content and 20,000-field
+caps both allow about five such builds a day. Query parameters as for Bigger Fish: `from`, `to` (up to 90 days), `channel` (default
 `testflight`), `appVersion`, `build`.
 
 Configure Vercel rate limiting on `/api/double-putt/events` before a build with collection on reaches testers. No

@@ -1,7 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { palette, radii, spacing } from '@education/design';
 
 import { supportConfig } from '@/lib/site';
+
+export const metadata: Metadata = {
+  title: 'BrightBench Support',
+};
 
 export default function SupportPage() {
   return (

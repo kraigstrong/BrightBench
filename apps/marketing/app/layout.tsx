@@ -1,8 +1,14 @@
+import type { CSSProperties } from 'react';
 import type { Metadata } from 'next';
-import { palette, spacing } from '@education/design';
+import { Nunito } from 'next/font/google';
+import { palette } from '@education/design';
 
 import './globals.css';
 import { getPublicSiteOrigin, siteMeta } from '@/lib/site';
+import { studio } from '@/lib/studio';
+
+// Apple devices show Avenir Next, the apps' own typeface; everyone else gets Nunito, its closest rounded cousin.
+const nunito = Nunito({ display: 'swap', subsets: ['latin'], variable: '--font-nunito', weight: ['600', '800', '900'] });
 
 export const metadata: Metadata = {
   description: siteMeta.description,
@@ -10,16 +16,23 @@ export const metadata: Metadata = {
   openGraph: {
     description: siteMeta.description,
     siteName: siteMeta.title,
-    title: siteMeta.title,
+    title: studio.title,
     type: 'website',
   },
-  title: siteMeta.title,
+  title: studio.title,
   twitter: {
     card: 'summary_large_image',
     description: siteMeta.description,
-    title: siteMeta.title,
+    title: studio.title,
   },
 };
+
+// The page's colors live on <html> as variables, so globals.css can paint the canvas (what shows past the page's
+// edges when it bounces) and switch it for the studio's dark pages.
+const rootColors = {
+  '--ink': palette.ink,
+  '--paper': palette.background,
+} as CSSProperties;
 
 export default function RootLayout({
   children,
@@ -27,25 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        style={{
-          background: palette.background,
-          color: palette.ink,
-          fontFamily:
-            '"Avenir Next", "Avenir Next Rounded", ui-rounded, "SF Pro Rounded", "Trebuchet MS", sans-serif',
-          margin: 0,
-        }}>
-        <div
-          style={{
-            margin: '0 auto',
-            maxWidth: 1180,
-            minHeight: '100vh',
-            padding: `${spacing.xl}px 20px ${spacing.xxl * 2}px`,
-          }}>
-          {children}
-        </div>
-      </body>
+    <html className={nunito.variable} lang="en" style={rootColors}>
+      <body>{children}</body>
     </html>
   );
 }
