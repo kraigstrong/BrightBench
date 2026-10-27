@@ -33,8 +33,8 @@ export default function DoublePuttSupportPage() {
         </ProseSection>
       ))}
       <p className={styles.footnote}>
-        {game.name} needs an {game.requirements} See the <Link href="/privacy">privacy policy</Link> for what
-        the game sends and keeps.
+        {game.name} plays on {game.platform}. It needs {game.requirements} See the{' '}
+        <Link href="/privacy">privacy policy</Link> for what the game sends and keeps.
       </p>
     </ProsePage>
   );

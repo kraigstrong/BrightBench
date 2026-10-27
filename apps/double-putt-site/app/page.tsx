@@ -22,7 +22,7 @@ function structuredData() {
     applicationCategory: 'GameApplication',
     author: { '@type': 'Person', name: game.developer },
     description: game.oneLiner,
-    gamePlatform: ['iPhone', 'iPad'],
+    gamePlatform: ['iPhone', 'iPad', 'iPhone Duo'],
     genre: ['Puzzle', 'Sports'],
     image: `${origin}/og.png`,
     name: game.name,

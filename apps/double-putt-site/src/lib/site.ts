@@ -28,14 +28,19 @@ export const game = {
   name: 'Double Putt',
   tagline: 'One swing. Two greens.',
   /** One sentence, for previews. */
-  oneLiner: 'A mini golf puzzle game for iPhone and iPad: one swing plays two greens at once. Find the putt that drops both.',
+  oneLiner: 'A mini golf puzzle game for iPhone, iPad and iPhone Duo: one swing plays two greens at once. Find the putt that drops both.',
   /** The home page's lines under the logo. */
   pitch: ['Every swing plays two greens at once.', 'Find the one putt that drops both.'],
   developer: 'Kraig Strong',
-  platform: 'iPhone and iPad',
-  requirements: 'iPhone with iOS 17 or later, or an iPad with iPadOS 17 or later.',
+  platform: 'iPhone, iPad and iPhone Duo',
+  /** iPhone Duo is an iPhone, so the iPhone's line covers it. */
+  requirements: 'an iPhone with iOS 17 or later, or an iPad with iPadOS 17 or later.',
   courseCount: 9,
   holesPerCourse: 9,
+  /** Free to try: the first course whole, and one hole from each of the others. */
+  freeCourse: 'Daybreak',
+  /** The one in-app purchase (non-consumable, Family Sharing on): every hole, and every course added later. */
+  unlock: { name: 'All Courses', price: '$4.99' },
 } as const;
 
 export const totalHoles = game.courseCount * game.holesPerCourse;
@@ -185,7 +190,19 @@ export const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'Is there a hint?',
-    answer: "Tap the hole's name at the top of the screen. To see the tips again, pause and choose How to Play.",
+    answer: "Tap the hole's name at the top of the screen. To replay How to Play's practice holes, tap the gear on the title screen for Settings.",
+  },
+  {
+    question: 'Is it free?',
+    answer: `It's free to try: play all of ${game.freeCourse}, plus one hole from every other course. One purchase, ${game.unlock.name} for ${game.unlock.price}, opens all ${totalHoles} holes, and every course added later.`,
+  },
+  {
+    question: 'How do I restore my purchase?',
+    answer: `Tap the gear on the title screen for Settings, then Restore Purchase. It brings ${game.unlock.name} back on a new device or after reinstalling, with the same Apple Account you bought it with.`,
+  },
+  {
+    question: 'Can my family play every course too?',
+    answer: `Yes. ${game.unlock.name} works with Family Sharing, so once it's bought, everyone in your family group can play every course on their own devices.`,
   },
   {
     question: 'How do I turn the sound off?',
@@ -193,12 +210,6 @@ export const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'Does it need an internet connection?',
-    answer:
-      'No. It sends anonymous gameplay counts when it can, to help tune the courses, and works the same without them. The privacy policy has the details.',
-  },
-  {
-    question: "I'm testing the beta. How do I send feedback?",
-    answer:
-      'Take a screenshot while playing and share it with TestFlight, or use Send Beta Feedback in the TestFlight app. Email works too.',
+    answer: `Only to buy or restore ${game.unlock.name}. It sends anonymous gameplay counts when it can, to help tune the courses, and plays the same without them. The privacy policy has the details.`,
   },
 ];
