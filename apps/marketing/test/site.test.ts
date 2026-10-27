@@ -3,12 +3,20 @@ import test from 'node:test';
 
 import { getProductPageBySlug, getPublicSiteOrigin, productCards } from '../src/lib/site.ts';
 
-test('marketing content keeps one live Time Tutor card with an App Store URL', () => {
+test('Time Tutor and Math Reef are live, each card and page leading to its App Store listing', () => {
   const liveCards = productCards.filter((card) => card.availability === 'live');
 
-  assert.equal(liveCards.length, 1);
-  assert.equal(liveCards[0]?.name, 'Time Tutor');
-  assert.match(liveCards[0]?.appStoreUrl ?? '', /^https:\/\/apps\.apple\.com\//);
+  assert.deepEqual(
+    liveCards.map((card) => card.name),
+    ['Time Tutor', 'Math Reef'],
+  );
+  for (const card of liveCards) {
+    assert.match(card.appStoreUrl ?? '', /^https:\/\/apps\.apple\.com\//);
+    const page = getProductPageBySlug(card.href.replace(/^\/products\//, ''));
+    assert.equal(page?.primaryCta.href, card.appStoreUrl, `${card.name}'s page leads with its App Store link`);
+    assert.equal(page?.primaryCta.external, true);
+  }
+  assert.match(liveCards[1]?.appStoreUrl ?? '', /\/id6817532623$/);
 });
 
 test('canonical origin has a safe absolute fallback', () => {

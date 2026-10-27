@@ -3,6 +3,9 @@ export const productionOrigin = 'https://biggerfish.app';
 
 const defaultContactEmail = 'support@brightbench.app';
 
+/** The studio's site, which the footer credits. */
+export const brightBenchUrl = 'https://brightbench.app';
+
 /** The public TestFlight group for players who find the site (limited to 1,000). An empty setting hides it. */
 const defaultTestFlightUrl = 'https://testflight.apple.com/join/qQ2FCuPa';
 

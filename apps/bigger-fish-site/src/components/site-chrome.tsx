@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { game } from '@/lib/game';
-import { contactEmail } from '@/lib/site';
+import { brightBenchUrl, contactEmail } from '@/lib/site';
 
 import { AppleTrademarkNotice } from './store-cta';
 import styles from './site-chrome.module.css';
@@ -39,7 +39,8 @@ export function SiteFooter() {
         </nav>
       </div>
       <p className={styles.legal}>
-        © {new Date().getFullYear()} {game.developer}. A one-touch arcade game for iPhone and iPad.
+        © {new Date().getFullYear()} {game.developer}. A one-touch arcade game for iPhone and iPad. Part of{' '}
+        <a href={brightBenchUrl}>BrightBench</a>.
       </p>
       <AppleTrademarkNotice />
     </footer>

@@ -1,7 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { palette, radii, spacing } from '@education/design';
 
 import { privacyConfig } from '@/lib/site';
+
+export const metadata: Metadata = {
+  title: 'BrightBench Privacy Policy',
+};
 
 export default function PrivacyPage() {
   return (

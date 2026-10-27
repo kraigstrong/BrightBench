@@ -13,9 +13,24 @@
 }
 
 .wordmark {
+  align-items: center;
+  display: inline-flex;
   font-size: 1.12rem;
   font-weight: 800;
+  gap: 0.5rem;
   letter-spacing: 0.01em;
+}
+
+/* This is the learning side of the studio; the wordmark goes back to its front door. */
+.wordmarkTag {
+  background: #12355b;
+  border-radius: 999px;
+  color: #fff9f2;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.6rem;
+  text-transform: uppercase;
 }
 
 .nav {
@@ -348,7 +363,7 @@
   transform: translateY(-3px);
 }
 
-.timeTutorCard {
+.liveCard {
   box-shadow: 0 16px 34px rgba(18, 53, 91, 0.1);
 }
 
@@ -394,6 +409,36 @@
   line-height: 1.65;
   margin: 0;
   min-height: 5.1rem;
+}
+
+.guideGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.guideTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.guideBody {
+  color: #5b6c7d;
+  font-size: 0.93rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.inlineLink {
+  color: #12355b;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: #e97a5f;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 .cardFooter {
@@ -711,7 +756,8 @@
 }
 
 @media (max-width: 1120px) {
-  .cardGrid {
+  .cardGrid,
+  .guideGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -826,7 +872,8 @@
     max-width: 100%;
   }
 
-  .cardGrid {
+  .cardGrid,
+  .guideGrid {
     grid-template-columns: 1fr;
   }
 
