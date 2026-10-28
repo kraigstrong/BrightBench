@@ -34,7 +34,7 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
-  { label: 'Developer', value: `${game.developer}, independent` },
+  { label: 'Developer', value: `${game.developer}, BrightBench (independent)` },
   { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear}, on the App Store` },
   { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later. Made for iPhone Duo.' },
   {
@@ -76,27 +76,20 @@ export const beats = [
 export const adventure = {
   name: 'Adventure',
   title: `Five worlds. ${totalLevels} levels.`,
-  lede: 'A classic arcade challenge. Every level is built by hand and plays out the same way every time, so you learn the safe route and conquer each world. Then dive into its Deep End.',
+  lede: 'A classic arcade challenge: hand-built levels that play out the same way every time.',
 } as const;
 
-/** The Open Water, the second way to play, and the pearl shop that goes with it. */
+/**
+ * The Open Water, the second way to play, and the pearl shop that goes with it. The home page keeps these short
+ * (its copy budget is in AGENTS.md); the support page and press kit explain them in full.
+ */
 export const openWater = {
   name: 'Open Water',
   title: 'An endless run.',
-  lede: 'All five worlds, one after another, with a new level every time. How far can you get?',
+  lede: 'All five worlds, a new level every time.',
   cards: [
-    {
-      name: 'Gather pearls',
-      motto: 'Never far from a bigger fish.',
-      line: 'Pearls wait along the way, close to danger. Every one you take is yours to keep.',
-      slug: 'open-water',
-    },
-    {
-      name: 'Spend them on looks',
-      motto: 'Colors, patterns, hats, faces, trails.',
-      line: 'Dress up your fish in the pearl shop. Pearls are earned by playing, never sold.',
-      slug: 'pearl-shop',
-    },
+    { name: 'Gather pearls', motto: 'Never far from a bigger fish.', slug: 'open-water' },
+    { name: 'Spend them on looks', motto: 'Pearls are earned by playing, never sold.', slug: 'pearl-shop' },
   ],
 } as const;
 
