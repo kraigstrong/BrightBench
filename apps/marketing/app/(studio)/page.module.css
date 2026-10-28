@@ -1,0 +1,319 @@
+/* The studio's front door: its name, then two doors, Play and Learn. */
+.hero {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: clamp(24px, 4.5vw, 56px) var(--gutter) clamp(30px, 4vw, 48px);
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--coral);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.wordmark {
+  font-size: clamp(54px, 8.4vw, 108px);
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-shadow: 0 6px 30px rgb(0 0 0 / 0.35);
+}
+
+.tagline {
+  color: var(--gold);
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: clamp(18px, 1.6vw, 21px);
+  max-width: 36ch;
+  text-wrap: balance;
+}
+
+/* The doors */
+.doors {
+  display: grid;
+  gap: clamp(18px, 2.4vw, 28px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: 0 var(--gutter);
+}
+
+.door {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+}
+
+.play {
+  --door-ink: var(--cream);
+  --door-muted: var(--muted);
+  --door-tile: rgb(255 255 255 / 0.06);
+  --door-tile-hover: rgb(255 255 255 / 0.11);
+  background: linear-gradient(180deg, #12355b 0%, #0d2846 100%);
+  border: 1px solid var(--line);
+}
+
+.learn {
+  --door-ink: #12355b;
+  --door-muted: #4f6275;
+  --door-tile: rgb(18 53 91 / 0.06);
+  --door-tile-hover: rgb(18 53 91 / 0.11);
+  background: #fff9f2;
+}
+
+/* The door's call to action stretches over its picture and words: the whole upper door opens it. */
+.doorMain {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  position: relative;
+}
+
+.playMedia,
+.learnMedia {
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.playMedia {
+  background: radial-gradient(70% 90% at 50% 40%, #1b4672 0%, #0b1d33 100%);
+}
+
+/* Each game as its own card, in its own key art: two cards laid on the table, the second over the first's corner. */
+.keyArt {
+  aspect-ratio: 1200 / 630;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.5);
+  overflow: hidden;
+  position: absolute;
+  transition: rotate 400ms ease, translate 400ms ease;
+  width: 56%;
+}
+
+.keyArt:nth-child(1) {
+  left: 6%;
+  rotate: -5deg;
+  top: 9%;
+}
+
+.keyArt:nth-child(2) {
+  bottom: 9%;
+  right: 6%;
+  rotate: 4deg;
+}
+
+.keyArt img {
+  object-fit: cover;
+}
+
+.learnMedia {
+  background:
+    radial-gradient(60% 75% at 50% 62%, #fbe0c8 0%, rgb(251 224 200 / 0) 100%),
+    linear-gradient(180deg, #f6efe3 0%, #fff9f2 100%);
+}
+
+/* The whole picture, scaled so the fox (the middle 70% of its height, a little high) fills the frame with a little
+   room above its ears and below its paws, and nudged down to sit centred. */
+.learnFox {
+  inset: 0;
+  position: absolute;
+  scale: 1.19;
+  transition: scale 400ms ease;
+  translate: 0 5.8%;
+}
+
+.learnFox img {
+  object-fit: contain;
+}
+
+.doorCopy {
+  color: var(--door-ink);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 24px clamp(22px, 2.6vw, 32px) 26px;
+}
+
+.doorTitle {
+  font-size: clamp(44px, 5vw, 64px);
+  letter-spacing: -0.03em;
+}
+
+.doorLine {
+  font-size: clamp(19px, 1.7vw, 22px);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.doorNote {
+  color: var(--door-muted);
+}
+
+.doorCta {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 17px;
+  font-weight: 900;
+  gap: 8px;
+  height: 50px;
+  justify-self: start;
+  margin-top: 12px;
+  padding: 0 22px;
+  transition: filter 150ms ease, translate 150ms ease;
+}
+
+.doorCta::after {
+  content: '';
+  inset: 0;
+  position: absolute;
+}
+
+.play .doorCta {
+  background: var(--gold);
+  color: var(--night);
+}
+
+.learn .doorCta {
+  background: #12355b;
+  color: #fff;
+}
+
+.doorMain:hover .doorCta {
+  filter: brightness(1.06);
+  translate: 0 -1px;
+}
+
+.doorMain:hover .keyArt:nth-child(1) {
+  rotate: -7deg;
+  translate: -3% -2%;
+}
+
+.doorMain:hover .keyArt:nth-child(2) {
+  rotate: 6deg;
+  translate: 3% 2%;
+}
+
+.doorMain:hover .learnFox {
+  scale: 1.23;
+}
+
+.learn .doorCta:focus-visible {
+  outline-color: #12355b;
+}
+
+.arrow,
+.outArrow {
+  flex: none;
+  height: 18px;
+  width: 18px;
+}
+
+/* Under each door, its titles. */
+.titles {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0 clamp(14px, 1.8vw, 20px) clamp(14px, 1.8vw, 20px);
+}
+
+.title {
+  align-items: center;
+  background: var(--door-tile);
+  border-radius: var(--radius-md);
+  color: var(--door-ink);
+  display: flex;
+  gap: 12px;
+  height: 100%;
+  padding: 12px 14px;
+  transition: background 150ms ease;
+}
+
+.title:hover,
+.title:focus-visible {
+  background: var(--door-tile-hover);
+}
+
+.learn .title:focus-visible {
+  outline-color: #12355b;
+}
+
+.titleIcon {
+  border-radius: 22%;
+  flex: none;
+}
+
+.titleDot {
+  background: var(--accent);
+  border: 3px solid #fff;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgb(18 53 91 / 0.12);
+  flex: none;
+  height: 22px;
+  margin: 0 9px;
+  width: 22px;
+}
+
+.titleText {
+  display: grid;
+  flex: 1;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.titleName {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.titleMeta {
+  color: var(--door-muted);
+  font-size: 14px;
+}
+
+.title .arrow,
+.title .outArrow {
+  color: var(--door-muted);
+}
+
+@media (max-width: 860px) {
+  .doors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (max-width: 420px) {
+  .titles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keyArt,
+  .learnFox,
+  .doorCta {
+    transition: none;
+  }
+}

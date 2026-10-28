@@ -41,14 +41,22 @@ export type WorldSummary = {
 export type Dashboard = {
   installs: number;
   firstRounds: number;
-  /** Installs that saw the unlock screen, and installs that unlocked the full game. */
+  /**
+   * The unlock funnel, in installs: a kid tapped a locked level and was asked to get a grown-up
+   * (before the parental gate), a grown-up got past the gate to the unlock screen (from that
+   * prompt or from Settings), and the full game was unlocked.
+   */
   paywallShown: number;
+  unlockScreenShown: number;
   unlocked: number;
   /**
-   * unlocked / paywallShown for the same filters, or null with no unlock-screen views. A raw ratio,
-   * not a true conversion rate: the two milestones are counted separately, so an install can see
-   * the screen in one range or version and unlock in another (it can even exceed 100%).
+   * unlockScreenShown / paywallShown, and unlocked / paywallShown, for the same filters, or null
+   * when no kid hit a locked level. Raw ratios, not true conversion rates: the milestones are
+   * counted separately, so an install can hit the lock in one range or version and unlock in
+   * another, or reach the unlock screen from Settings without hitting it at all (a ratio can even
+   * exceed 100%).
    */
+  unlockScreenRatio: number | null;
   unlockRatio: number | null;
   rounds: number;
   worlds: WorldSummary[];
@@ -131,12 +139,15 @@ export function summarize(stats: Pick<StatsResponse, 'milestones' | 'rounds'>): 
   }));
 
   const paywallShown = milestone('paywall_shown');
+  const unlockScreenShown = milestone('unlock_screen_shown');
   const unlocked = milestone('unlocked');
   return {
     installs: milestone('first_launch'),
     firstRounds: milestone('first_round'),
     paywallShown,
+    unlockScreenShown,
     unlocked,
+    unlockScreenRatio: paywallShown > 0 ? unlockScreenShown / paywallShown : null,
     unlockRatio: paywallShown > 0 ? unlocked / paywallShown : null,
     rounds,
     worlds,

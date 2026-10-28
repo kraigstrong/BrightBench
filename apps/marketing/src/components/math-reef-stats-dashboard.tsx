@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type FormEvent, useRef, useState } from 'react';
+import { type CSSProperties, type FormEvent, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { palette, radii, spacing } from '@education/design';
 
 import {
@@ -11,9 +11,9 @@ import {
   worldTitles,
 } from '@/lib/math-reef-dashboard';
 
-// Math Reef's anonymous analytics, read from GET /api/math-reef/stats. The access code is the
-// stats secret: it lives only in this component's state (a password field 1Password can fill),
-// is sent only as a Bearer header, and is gone when the page closes or reloads.
+// Math Reef's anonymous analytics, read from GET /api/math-reef/stats: one tab of the stats viewer
+// (stats-viewer.tsx). The viewer holds the key, which is sent only as a Bearer header, and locks
+// when it's rejected. The tab loads once on opening, then again as the filters change.
 
 type Filters = { from: string; to: string; channel: string; appVersion: string };
 
@@ -59,92 +59,83 @@ const card: CSSProperties = {
   padding: spacing.xl,
 };
 
-export function MathReefStatsDashboard() {
-  const [secret, setSecret] = useState('');
+/** The counts, with the response's status (`stats` is null unless it's OK). */
+async function fetchStats(params: URLSearchParams, secret: string, signal: AbortSignal) {
+  const response = await fetch(`/api/math-reef/stats?${params}`, {
+    cache: 'no-store',
+    headers: { Authorization: `Bearer ${secret}` },
+    signal,
+  });
+  return { status: response.status, stats: response.ok ? ((await response.json()) as StatsResponse) : null };
+}
+
+export function MathReefStatsDashboard({ secret, onUnauthorized }: { secret: string; onUnauthorized: () => void }) {
   const [filters, setFilters] = useState<Filters>({ from: '', to: '', channel: 'testflight', appVersion: '' });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ stats: StatsResponse; dashboard: Dashboard } | null>(null);
-  /** The request in flight. A newer one aborts it, so only the latest filters ever update the page. */
+  /** The request in flight. A newer one aborts it, so only the latest filters ever update the page,
+   * and so does the viewer locking, so a late answer changes nothing. */
   const pending = useRef<AbortController | null>(null);
 
-  async function load(code: string, next: Filters) {
+  /** State changes only in the callbacks, once the answer is in, so the first load can start from an effect. */
+  function request(next: Filters) {
     pending.current?.abort();
-    const request = new AbortController();
-    pending.current = request;
+    const controller = new AbortController();
+    pending.current = controller;
     const params = new URLSearchParams();
     if (next.from) params.set('from', next.from);
     if (next.to) params.set('to', next.to);
     if (next.channel !== 'all') params.set('channel', next.channel);
     if (next.appVersion.trim()) params.set('appVersion', next.appVersion.trim());
-    setLoading(true);
-    setError('');
-    try {
-      const response = await fetch(`/api/math-reef/stats?${params}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${code}` },
-        signal: request.signal,
+    fetchStats(params, secret, controller.signal)
+      .then(
+        ({ status, stats }) => {
+          if (controller.signal.aborted) return;
+          if (status === 401) {
+            onUnauthorized();
+          } else if (status === 400) {
+            setError('Check the dates: "to" can’t be before "from", and the range can be at most a year.');
+          } else if (!stats) {
+            setError(`Couldn’t load the counts (status ${status}). Try again in a moment.`);
+          } else {
+            setResult({ stats, dashboard: summarize(stats) });
+          }
+        },
+        () => {
+          if (controller.signal.aborted) return;
+          setError('Couldn’t reach brightbench.app. Check your connection and try again.');
+        },
+      )
+      .finally(() => {
+        if (pending.current === controller) {
+          pending.current = null;
+          setLoading(false);
+        }
       });
-      const stats = response.ok ? ((await response.json()) as StatsResponse) : null;
-      if (request.signal.aborted) return;
-      if (response.status === 401) {
-        setSecret('');
-        setResult(null);
-        setError("That access code didn't work.");
-      } else if (response.status === 400) {
-        setError('Check the dates: "to" can’t be before "from", and the range can be at most a year.');
-      } else if (!response.ok) {
-        setError(`Couldn’t load the counts (status ${response.status}). Try again in a moment.`);
-      } else if (stats) {
-        setResult({ stats, dashboard: summarize(stats) });
-      }
-    } catch {
-      if (request.signal.aborted) return;
-      setError('Couldn’t reach brightbench.app. Check your connection and try again.');
-    } finally {
-      if (pending.current === request) {
-        pending.current = null;
-        setLoading(false);
-      }
-    }
   }
 
-  function unlock(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const code = String(new FormData(event.currentTarget).get('password') ?? '').trim();
-    if (!code) return;
-    setSecret(code);
-    void load(code, filters);
+  function load(next: Filters) {
+    setLoading(true);
+    setError('');
+    request(next);
   }
+
+  const loadFirst = useEffectEvent(() => request(filters));
+  useEffect(() => {
+    loadFirst();
+    return () => pending.current?.abort();
+  }, []);
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void load(secret, filters);
+    load(filters);
   }
 
   function update(key: keyof Filters, value: string) {
     const next = { ...filters, [key]: value };
     setFilters(next);
-    if (key === 'channel' && secret) void load(secret, next);
-  }
-
-  if (!secret) {
-    return (
-      <form onSubmit={unlock} style={{ ...card, margin: '0 auto', maxWidth: 440 }}>
-        <h1 style={{ fontSize: 32, margin: 0 }}>Math Reef stats</h1>
-        <p style={{ color: palette.inkMuted, margin: 0 }}>Enter the access code to see the anonymous usage counts.</p>
-        {/* A username field helps password managers match the saved item. */}
-        <input type="text" name="username" autoComplete="username" value="math-reef-stats" readOnly hidden />
-        <label style={{ display: 'grid', gap: spacing.xs, fontWeight: 700 }}>
-          Access code
-          <input type="password" name="password" autoComplete="current-password" required style={field} />
-        </label>
-        {error && <p style={{ color: palette.danger, margin: 0 }}>{error}</p>}
-        <button type="submit" style={{ ...button, justifySelf: 'start' }} disabled={loading}>
-          {loading ? 'Loading…' : 'Show counts'}
-        </button>
-      </form>
-    );
+    if (key === 'channel') load(next);
   }
 
   const dashboard = result?.dashboard;
@@ -153,13 +144,6 @@ export function MathReefStatsDashboard() {
 
   return (
     <div style={{ display: 'grid', gap: spacing.lg }}>
-      <header style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.md, alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 32, margin: 0 }}>Math Reef stats</h1>
-        <button type="button" onClick={() => { pending.current?.abort(); setSecret(''); setResult(null); }} style={{ ...button, background: palette.surfaceMuted, color: palette.ink }}>
-          Lock
-        </button>
-      </header>
-
       <form onSubmit={applyFilters} style={{ display: 'flex', flexWrap: 'wrap', gap: spacing.sm, alignItems: 'end' }}>
         <label style={{ display: 'grid', gap: 4, fontSize: 14 }}>
           From
@@ -179,7 +163,7 @@ export function MathReefStatsDashboard() {
         </label>
         <label style={{ display: 'grid', gap: 4, fontSize: 14 }}>
           App version
-          <input placeholder="All" value={filters.appVersion} onChange={(event) => update('appVersion', event.target.value)} style={{ ...field, width: 90 }} />
+          <input placeholder="All" value={filters.appVersion} onChange={(event) => update('appVersion', event.target.value)} style={{ ...field, width: 90 }} data-1p-ignore />
         </label>
         <button type="submit" style={button} disabled={loading}>{loading ? 'Loading…' : 'Update'}</button>
       </form>
@@ -196,19 +180,16 @@ export function MathReefStatsDashboard() {
             <StatTile label="New installs" value={dashboard.installs} />
             <StatTile label="Played a round" value={dashboard.firstRounds} />
             <StatTile label="Rounds recorded" value={dashboard.rounds} />
-            <StatTile label="Saw the unlock screen" value={dashboard.paywallShown} />
+            <StatTile label="Hit a locked level" value={dashboard.paywallShown} />
             <StatTile
-              label="Unlocked"
-              value={dashboard.unlocked}
-              note={
-                dashboard.unlockRatio === null
-                  ? undefined
-                  : `${Math.round(dashboard.unlockRatio * 100)}% of the unlock-screen count (not a per-player rate)`
-              }
+              label="Grown-up opened unlock"
+              value={dashboard.unlockScreenShown}
+              note={lockedLevelShare(dashboard.unlockScreenRatio)}
             />
+            <StatTile label="Unlocked" value={dashboard.unlocked} note={lockedLevelShare(dashboard.unlockRatio)} />
           </div>
 
-          {dashboard.installs + dashboard.rounds + dashboard.paywallShown + dashboard.unlocked === 0 && (
+          {dashboard.installs + dashboard.rounds + dashboard.paywallShown + dashboard.unlockScreenShown + dashboard.unlocked === 0 && (
             <p style={{ ...card, margin: 0 }}>No counts for these filters yet.</p>
           )}
 
@@ -257,6 +238,10 @@ export function MathReefStatsDashboard() {
 
 function hasData(row: LevelRow) {
   return row.started + row.passed + row.finished + row.quit + row.abandoned > 0;
+}
+
+function lockedLevelShare(ratio: number | null): string | undefined {
+  return ratio === null ? undefined : `${Math.round(ratio * 100)}% of the locked-level count (not a per-player rate)`;
 }
 
 function StatTile({ label, value, note }: { label: string; value: number; note?: string }) {

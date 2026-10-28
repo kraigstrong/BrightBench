@@ -8,7 +8,7 @@ test('funnel pools offers, purchases and restores across builds, by where the un
     {context: null, counts: {'offer.shown.padlocked_level': 1, 'purchase.unlocked.conquered': 1, 'restore.not_found.settings': 2}},
   ]);
   const by = Object.fromEntries(funnel.sources.map(s => [s.source, s]));
-  assert.deepEqual(funnel.sources.map(s => s.source), ['padlocked_level', 'next_level', 'unlock_all', 'locked_world', 'conquered', 'settings']);
+  assert.deepEqual(funnel.sources.map(s => s.source), ['padlocked_level', 'next_level', 'unlock_all', 'locked_world', 'conquered', 'open_water_limit', 'settings']);
   assert.equal(by.padlocked_level!.shown, 6); assert.equal(by.padlocked_level!.first, 3);
   assert.equal(by.padlocked_level!.purchases.cancelled, 2); assert.equal(by.conquered!.purchases.unlocked, 1);
   assert.equal(by.settings!.restores.not_found, 2); assert.equal(by.next_level!.shown, 0);

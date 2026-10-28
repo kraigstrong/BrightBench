@@ -66,7 +66,7 @@ function isIntIn(value: unknown, min: number, max: number): value is number {
 }
 
 export function isMilestoneName(name: string): boolean {
-  if (['first_launch', 'first_round', 'paywall_shown', 'unlocked'].includes(name)) return true;
+  if (['first_launch', 'first_round', 'paywall_shown', 'unlock_screen_shown', 'unlocked'].includes(name)) return true;
   const level = /^level_(?:started|passed):(.+)$/.exec(name);
   if (level) return levelSet.has(level[1]!);
   const crown = /^crown:([a-z]+):(?:silver|gold)$/.exec(name);
@@ -271,7 +271,7 @@ function daysBetween(from: string, to: string): string[] | null {
 
 /**
  * `GET /api/math-reef/stats?from=YYYY-MM-DD&to=YYYY-MM-DD[&channel=][&appVersion=]`, behind
- * `Authorization: Bearer <MATH_REEF_STATS_SECRET>`. Sums the counters over the range; defaults to
+ * `Authorization: Bearer <STATS_SECRET>`. Sums the counters over the range; defaults to
  * the last 30 days.
  */
 export async function handleStats(request: Request, deps: StatsDeps): Promise<Response> {

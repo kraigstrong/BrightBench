@@ -9,7 +9,7 @@ Before making CI required on `main`:
 3. Require the branch to be up to date before merging.
 4. Keep production deployment and App Store submission as explicit human actions.
 
-CI enforces typechecking, warning-free lint, tests, the marketing build, affected Expo web exports, and a production dependency audit. The audit currently blocks critical advisories; high-severity transitive toolchain advisories remain visible in logs until upstream-compatible fixes are available.
+CI verifies the workspaces a change touches and their declared consumers (typechecking, warning-free lint, tests, and site builds), affected Expo web exports, and a production dependency audit. A change to root tooling (`.github/`, `package.json`, `package-lock.json`, `scripts/`, `tsconfig.base.json`, or `turbo.json`) verifies every workspace. The audit currently blocks critical advisories; high-severity transitive toolchain advisories remain visible in logs until upstream-compatible fixes are available.
 
 ## Web Deployment
 - Each app or site should have its own Vercel project
@@ -20,6 +20,7 @@ CI enforces typechecking, warning-free lint, tests, the marketing build, affecte
 ### Current Root Directories
 - `apps/marketing` → Next.js marketing site (brightbench.app)
 - `apps/bigger-fish-site` → Next.js site for Bigger Fish (biggerfish.app)
+- `apps/double-putt-site` → Next.js site for Double Putt (doubleputt.app)
 - `apps/fraction-finder` → Expo static web export
 - `apps/time-tutor` → Expo static web export
 
@@ -31,14 +32,19 @@ CI enforces typechecking, warning-free lint, tests, the marketing build, affecte
   - Framework preset: Next.js
   - Build command: default (`npm run build`, whose `prebuild` packs the press kit zip)
   - Domain: `biggerfish.app`
+- `double-putt-site`
+  - Framework preset: Next.js
+  - Build command: default (`npm run build`)
+  - Domain: `doubleputt.app` (`www.doubleputt.app` redirects to it)
 - `fraction-finder`
   - Build command: `npm run web:export -w fraction-finder`
   - Output directory: `apps/fraction-finder/dist`
 - `time-tutor`
-  - Build command: `npm run web:export -w time-tutor`
-  - Output directory: `apps/time-tutor/dist`
+  - Root Directory: `apps/time-tutor` (install command left to Vercel's monorepo detection)
+  - Build command: `npm run web:export`
+  - Output directory: `dist`
   - support/privacy links on `timetutor.app` are served by the Time Tutor web export at `/support` and `/privacy`
-  - include `apps/time-tutor/vercel.json` so clean URLs resolve exported `.html` routes in production
+  - `scripts/postprocess-web-export.mjs` copies the exported `privacy.html` and `support.html` to `privacy/index.html` and `support/index.html`, so those clean URLs resolve in production
 
 ## iOS Deployment
 - Each app should have its own bundle identifier
@@ -68,6 +74,17 @@ Shared code should not force every app to release together.
 - Use monorepo project linking rather than one combined deployment target
 - Project naming standard: use the workspace slug as the Vercel project name when possible
 - Current repo still needs dashboard or CLI linking per project
+- Only `main` deploys automatically. Each project's Root Directory has a `vercel.json` with `"git": { "deploymentEnabled": { "main": true, "**": false } }`, so a push to `main` deploys production and a push to any other branch creates no deployment. Give any new project the same file. Keep `**`, not `*`: branch names here contain slashes, `*` doesn't match `/`, and a branch that matches no pattern deploys.
+- Vercel reads `vercel.json` from the commit being pushed, so a branch cut before a project had the file keeps deploying that project until it merges `main`.
+- Every project has "Skip deployments when there are no changes to the root directory or its dependencies" on, so a push to `main` builds only the projects whose directory or workspace dependencies changed. Turn it on for any new project; it needs that project's Root Directory set to its workspace.
+- A change to any file outside every workspace (`docs/`, root Markdown, `.agents/`, `scripts/`, `package.json`, the lockfile) counts as a change to every project, so all of them build
+
+### Previews On Demand
+Vercel documents `git.deploymentEnabled` as applying to the deployments that commits trigger, so a preview you create yourself should still build. To get one for a branch:
+- Ask Claude to create it through the Vercel connector: `create_deployment` with the project's name and a GitHub `gitSource` (`org` `kraigstrong`, `repo` `BrightBench`, `ref` the branch).
+- Or open the project's Deployments page in the Vercel dashboard, choose Create Deployment and give the branch name.
+- Both build the branch's latest commit from GitHub. Each is one deployment for one project and counts against the daily limit, so ask only for the projects the branch changes.
+- Don't use `vercel deploy` from a checkout: it uploads the working tree, and nothing here keeps it from sending the Expo apps' `ios/Pods`, build output and the `.turbo` cache.
 
 ## Environment Variable Strategy
 - Do not hardcode future suite-wide domains in product code
@@ -107,3 +124,8 @@ Shared code should not force every app to release together.
 ### Bigger Fish Site
 1. `npm run verify -w bigger-fish-site`
 2. Deploy the `bigger-fish-site` workspace as its own Vercel project (named `bigger-fish-site`) with Root Directory set to `apps/bigger-fish-site`, and add the `biggerfish.app` domain to it
+
+### Double Putt Site
+1. `npm run verify -w double-putt-site`
+2. Deploys as its own Vercel project (named `double-putt-site`) with Root Directory set to `apps/double-putt-site`, serving `doubleputt.app`
+3. The game's analytics endpoint and stats report stay on brightbench.app (`apps/marketing`); brightbench.app's old `/doubleputt` and `/double-putt` pages redirect to doubleputt.app

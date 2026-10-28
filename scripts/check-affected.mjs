@@ -55,9 +55,9 @@ const workspaces = workspaceDirs.map(readWorkspace);
 const workspaceByName = new Map(workspaces.map((workspace) => [workspace.name, workspace]));
 
 const changedFiles = new Set([
-  ...gitLines(['diff', '--name-only', base + '...HEAD']),
-  ...gitLines(['diff', '--name-only']),
-  ...gitLines(['diff', '--cached', '--name-only']),
+  ...gitLines(['diff', '--name-only', '--no-renames', base + '...HEAD']),
+  ...gitLines(['diff', '--name-only', '--no-renames']),
+  ...gitLines(['diff', '--cached', '--name-only', '--no-renames']),
   ...gitLines(['ls-files', '--others', '--exclude-standard']),
 ]);
 
@@ -66,6 +66,7 @@ const fullPortfolioSignals = [
   'package.json',
   'package-lock.json',
   'scripts/',
+  'tsconfig.base.json',
   'turbo.json',
 ];
 const affectsAll = [...changedFiles].some((file) =>
@@ -111,6 +112,21 @@ console.log(
     ? 'Verifying: ' + verifiable.map((workspace) => workspace.name).join(', ')
     : 'No affected workspace exposes a verify script.',
 );
+
+const unverified = selectedWorkspaces.filter(
+  (workspace) =>
+    !workspace.scripts.verify &&
+    ['lint', 'test', 'typecheck'].some((script) => workspace.scripts[script]),
+);
+
+if (unverified.length) {
+  console.error(
+    '\nAdd a verify script to ' +
+      unverified.map((workspace) => workspace.name).join(', ') +
+      ': affected checks run only verify, so their typecheck, lint, and tests would be skipped.',
+  );
+  process.exit(1);
+}
 
 function run(command, commandArgs) {
   console.log('\n> ' + [command, ...commandArgs].join(' '));

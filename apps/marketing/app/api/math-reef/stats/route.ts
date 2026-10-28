@@ -1,13 +1,13 @@
 import { handleStats } from '@/lib/math-reef-analytics';
 import { redisCounterStore } from '@/lib/math-reef-redis';
 
-// Math Reef's summed analytics counters, behind MATH_REEF_STATS_SECRET.
+// Math Reef's summed analytics counters, behind STATS_SECRET (every game's stats share it).
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   return handleStats(request, {
     store: redisCounterStore,
-    statsSecret: process.env.MATH_REEF_STATS_SECRET ?? '',
+    statsSecret: process.env.STATS_SECRET ?? '',
   });
 }

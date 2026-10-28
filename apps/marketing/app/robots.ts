@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       allow: '/',
-      disallow: ['/api/', '/math-reef/stats'],
+      disallow: ['/api/', '/stats'],
       userAgent: '*',
     },
     sitemap: `${base}/sitemap.xml`,

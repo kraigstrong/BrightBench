@@ -29,8 +29,8 @@ gh issue list --state open --label "app:<app>" --limit 100 --json number,title,l
 ```
 
 `<app>` is `time-tutor`, `fraction-finder`, `letter-learner`, `marketing`,
-`bigger-fish-site`, `letter-bingo`, `place-value`, or `shared` for packages,
-tooling, and repo-wide work.
+`bigger-fish-site`, `double-putt-site`, `letter-bingo`, `place-value`, or
+`shared` for packages, tooling, and repo-wide work.
 
 When no app has been named yet — picking the next thing to do rather than
 working inside one app — read the whole portfolio instead, then narrow:
@@ -100,7 +100,8 @@ A work item produces one understandable outcome, can be verified independently, 
 ## Technical Standards
 
 - Product apps use Expo-managed React Native, Expo Router, and React Native Web.
-- The marketing sites (brightbench.app, and biggerfish.app in `apps/bigger-fish-site`) use Next.js App Router.
+- The marketing sites (brightbench.app, biggerfish.app in `apps/bigger-fish-site`, and doubleputt.app in
+  `apps/double-putt-site`) use Next.js App Router.
 - Use npm workspaces and Turbo.
 - Apps remain independently deployable.
 - Time Tutor is the visual source of truth.
@@ -134,11 +135,17 @@ Run the standard repository quality gate:
 npm run check
 ```
 
-Run the full CI-equivalent gate, including affected Expo exports and the
-production dependency audit:
+Run the CI gate: `verify` for changed workspaces and their consumers, affected
+Expo web exports, and the production dependency audit:
 
 ```sh
 npm run check:ci
+```
+
+Run the full-repository gate, `check` followed by `check:ci`:
+
+```sh
+npm run check:full
 ```
 
 Verify only changed workspaces and their consumers:
@@ -198,7 +205,7 @@ Examples: native dependencies, permissions, privacy, analytics, release configur
 
 Required evidence:
 
-- Full repository CI-equivalent checks via `npm run check:ci`.
+- Full repository checks via `npm run check:full`.
 - Independent review of the actual diff.
 - Physical-device or production validation where relevant.
 - Explicit record of remaining human release checks.

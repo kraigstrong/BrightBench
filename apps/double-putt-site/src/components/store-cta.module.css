@@ -1,0 +1,66 @@
+.badge {
+  display: inline-flex;
+  line-height: 0;
+  /* Apple asks for a quarter of the badge's height clear around it. */
+  margin: 14px;
+  margin-left: 0;
+}
+
+.soon {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 20px;
+}
+
+.chip,
+.pill {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 800;
+  gap: 9px;
+  height: 52px;
+  white-space: nowrap;
+}
+
+/* A status, not a button: nothing to tap until there's a beta link or the App Store. */
+.chip {
+  color: var(--dp-muted);
+  height: auto;
+}
+
+.chip::before {
+  background: var(--dp-putt);
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px rgb(255 201 74 / 0.22);
+  content: '';
+  height: 9px;
+  width: 9px;
+}
+
+/* The game's own Putt button: its yellow, ink lettering. */
+.pill {
+  background: var(--dp-putt);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 0.25);
+  color: var(--dp-ink);
+  font-weight: 900;
+  padding: 0 26px;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.pill:hover,
+.pill:focus-visible {
+  box-shadow: 0 8px 24px rgb(255 201 74 / 0.35);
+  transform: translateY(-1px);
+}
+
+.notice {
+  color: var(--dp-faint);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 640px;
+}
