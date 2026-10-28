@@ -186,8 +186,8 @@ export default function PressPage() {
             <section aria-labelledby="about" className={styles.block}>
               <h2 id="about">About the developer</h2>
               <p>
-                {game.name} is designed, built, and playtested by {game.developer}, an independent developer. Every
-                Adventure level is played and tuned by hand before it ships.
+                {game.name} is designed, built, and playtested by {game.developer}, who runs BrightBench, an independent
+                game studio.
               </p>
             </section>
 

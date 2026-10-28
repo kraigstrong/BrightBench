@@ -34,7 +34,7 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
-  { label: 'Developer', value: `${game.developer}, independent` },
+  { label: 'Developer', value: `${game.developer}, BrightBench (independent)` },
   { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear}` },
   { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later. Made for iPhone Duo.' },
   {
