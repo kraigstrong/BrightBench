@@ -5,7 +5,7 @@ import { LoopVideo } from '@/components/loop-video';
 import { SiteFooter, SiteHeader } from '@/components/site-chrome';
 import { StoreCta } from '@/components/store-cta';
 import { TrailerPlayer } from '@/components/trailer-player';
-import { beats, game, totalLevels, worlds } from '@/lib/game';
+import { adventure, beats, game, openWater, worlds } from '@/lib/game';
 import { siteOrigin, storeCta } from '@/lib/site';
 
 import styles from './page.module.css';
@@ -35,7 +35,7 @@ function structuredData() {
       description: game.oneLiner,
       name: `${game.name} trailer`,
       thumbnailUrl: `${siteOrigin()}/media/trailer-poster.jpg`,
-      uploadDate: '2026-10-12',
+      uploadDate: '2026-10-27',
     },
     url: siteOrigin(),
     ...(cta.kind === 'comingSoon' ? {} : { installUrl: cta.href }),
@@ -101,12 +101,11 @@ export default function HomePage() {
 
         <section aria-labelledby="worlds" className={styles.section}>
           <div className={styles.sectionHead}>
+            <p className={styles.mode}>{adventure.name}</p>
             <h2 className={styles.sectionTitle} id="worlds">
-              Five worlds. {totalLevels} levels.
+              {adventure.title}
             </h2>
-            <p className={styles.sectionLede}>
-              Each world changes the hunt. Clear its ten levels, then dive into the Deep End.
-            </p>
+            <p className={styles.sectionLede}>{adventure.lede}</p>
           </div>
           <div className={styles.worlds}>
             {worlds.map((world) => (
@@ -122,6 +121,34 @@ export default function HomePage() {
                   <h3 className={styles.worldName}>{world.name}</h3>
                   <p className={styles.worldMotto}>{world.motto}</p>
                   <p className={styles.worldLine}>{world.line}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section aria-labelledby="open-water" className={styles.section}>
+          <div className={styles.sectionHead}>
+            <p className={`${styles.mode} ${styles.openWaterMode}`}>{openWater.name}</p>
+            <h2 className={styles.sectionTitle} id="open-water">
+              {openWater.title}
+            </h2>
+            <p className={styles.sectionLede}>{openWater.lede}</p>
+          </div>
+          <div className={styles.worlds}>
+            {openWater.cards.map((card) => (
+              <article className={`${styles.world} ${styles[card.slug] ?? ''}`} key={card.slug}>
+                <div className={styles.worldMedia}>
+                  <LoopVideo
+                    className={styles.worldVideo}
+                    poster={`/media/modes/${card.slug}-poster.jpg`}
+                    src={`/media/modes/${card.slug}.mp4`}
+                  />
+                </div>
+                <div className={styles.worldCopy}>
+                  <h3 className={styles.worldName}>{card.name}</h3>
+                  <p className={styles.worldMotto}>{card.motto}</p>
+                  <p className={styles.worldLine}>{card.line}</p>
                 </div>
               </article>
             ))}
@@ -148,7 +175,7 @@ export default function HomePage() {
           <p className={styles.sectionLede}>{game.retryLine}</p>
           <StoreCta />
           <p className={styles.offer}>{game.offer}</p>
-          <p className={styles.promise}>No ads. No accounts. Plays offline.</p>
+          <p className={styles.promise}>No ads. No accounts. Plays offline. Made for iPhone Duo.</p>
         </section>
       </main>
       <SiteFooter />

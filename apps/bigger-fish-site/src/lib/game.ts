@@ -1,6 +1,8 @@
 // What the site says about Bigger Fish, in one place for the home page, the press kit, and metadata.
 // Bigger Fish is a native iOS app built outside this repo (kraigstrong/bigger-fish); keep these facts in step
-// with it: world names and mottos (ArcadeCampaign.swift), level counts, the iOS deployment target.
+// with it: world names and mottos (ArcadeCampaign.swift), level counts, what's free (ArcadeUnlock.swift and
+// GameTuning.swift's freeLevelsPerWorld and freeOpenWaterRunsPerDay), the iOS deployment target. Its App Store
+// listing (appstore/bigger-fish/ there) is the source for wording.
 
 export const game = {
   name: 'Bigger Fish',
@@ -9,7 +11,7 @@ export const game = {
   oneLiner:
     'A one-touch arcade game: eat smaller fish, dodge bigger ones, and outgrow them all.',
   /** What it costs. */
-  offer: 'The first world is free. One $4.99 purchase unlocks every level.',
+  offer: 'The first world is free, plus 5 Open Water runs a day. One $4.99 purchase unlocks it all.',
   /** The home page's lines under the logo. */
   pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
   /**
@@ -33,13 +35,18 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, independent` },
-  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear} (in beta on TestFlight until then)` },
-  { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later' },
-  { label: 'Price', value: 'First world free, plus the first two levels of every other world; one $4.99 purchase unlocks every level' },
+  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear}` },
+  { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later. Made for iPhone Duo.' },
+  {
+    label: 'Price',
+    value:
+      'Free to try: all of Shallow Reef, the first two levels of every other world, and 5 Open Water runs a day. One $4.99 purchase opens every world and Deep End and makes the Open Water unlimited.',
+  },
   { label: 'Genre', value: 'Arcade' },
   { label: 'Players', value: 'Single player' },
   { label: 'Controls', value: 'One touch, landscape' },
-  { label: 'Levels', value: `${totalLevels} across ${game.worldCount} worlds` },
+  { label: 'Modes', value: 'Adventure, and the Open Water, an endless run' },
+  { label: 'Levels', value: `${totalLevels} across ${game.worldCount} worlds in Adventure, every one built by hand` },
   { label: 'Languages', value: 'English' },
 ];
 
@@ -64,6 +71,34 @@ export const beats = [
     alt: 'The player fish face to face with a school of fish that have grown bigger than it.',
   },
 ] as const;
+
+/** Adventure, the first of the home screen's two ways to play. */
+export const adventure = {
+  name: 'Adventure',
+  title: `Five worlds. ${totalLevels} levels.`,
+  lede: 'A classic arcade challenge. Every level is built by hand and plays out the same way every time, so you learn the safe route and conquer each world. Then dive into its Deep End.',
+} as const;
+
+/** The Open Water, the second way to play, and the pearl shop that goes with it. */
+export const openWater = {
+  name: 'Open Water',
+  title: 'An endless run.',
+  lede: 'All five worlds, one after another, with a new level every time. How far can you get?',
+  cards: [
+    {
+      name: 'Gather pearls',
+      motto: 'Never far from a bigger fish.',
+      line: 'Pearls wait along the way, close to danger. Every one you take is yours to keep.',
+      slug: 'open-water',
+    },
+    {
+      name: 'Spend them on looks',
+      motto: 'Colors, patterns, hats, faces, trails.',
+      line: 'Dress up your fish in the pearl shop. Pearls are earned by playing, never sold.',
+      slug: 'pearl-shop',
+    },
+  ],
+} as const;
 
 export type World = {
   name: string;
@@ -120,20 +155,24 @@ export const worlds: World[] = [
 /** Press kit descriptions, from short to long. */
 export const descriptions = {
   short:
-    'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Outgrow them to survive.',
+    'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Conquer five worlds of hand-built levels in Adventure, or see how far you get in the endless Open Water.',
   long: [
     'Bigger Fish is a one-touch arcade game for iPhone and iPad about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
     'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead. Runs are over in seconds, and in the beta, players tried again after 98% of the runs they lost.',
-    'Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, follow the bubbles in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.',
+    `There are two ways to play. Adventure is a classic arcade challenge: ${totalLevels} hand-built levels that play out the same way every time, so each try teaches you more, until you find the safe route and conquer the world. Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, follow the bubbles in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.`,
+    'The Open Water is an endless run through all five worlds, with a brand-new level every time, until a bigger fish eats you. Gather pearls along the way and spend them in the pearl shop on colors, patterns, hats, faces and trails for your fish. Pearls are only earned by playing, never sold.',
   ],
 } as const;
 
 export const features = [
   'One-touch controls: hold anywhere to rise, let go to fall.',
   'A living food chain: every fish is eating and growing, just like you.',
-  'Five worlds, each with its own twist: jellyfish, kelp, fishing hooks, and the dark.',
-  `${totalLevels} levels, including a five-level Deep End in every world.`,
-  // 86% of the beta's runs ended within 10 seconds (same stats as `game.retryLine`).
-  'Short runs built for one more try: most last under ten seconds.',
+  `Adventure: ${totalLevels} hand-built levels across five worlds, each with its own twist (jellyfish, kelp, fishing hooks, and the dark), including a five-level Deep End in every world.`,
+  'The Open Water: an endless run through all five worlds, with a new level every time.',
+  'A pearl shop of colors, patterns, hats, faces and trails, paid for with pearls you gather in the Open Water. Pearls are never sold.',
+  // 86% of the beta's runs ended within 10 seconds (same stats as `game.retryLine`). The beta had only Adventure.
+  'Short runs built for one more try: most Adventure runs last under ten seconds.',
   'No ads, no accounts, and it plays offline.',
+  'Progress backs up to iCloud and follows you to your iPhone and iPad.',
+  'Made for iPhone Duo.',
 ] as const;
