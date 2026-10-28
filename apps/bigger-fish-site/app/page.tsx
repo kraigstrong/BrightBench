@@ -148,7 +148,6 @@ export default function HomePage() {
                 <div className={styles.worldCopy}>
                   <h3 className={styles.worldName}>{card.name}</h3>
                   <p className={styles.worldMotto}>{card.motto}</p>
-                  <p className={styles.worldLine}>{card.line}</p>
                 </div>
               </article>
             ))}
