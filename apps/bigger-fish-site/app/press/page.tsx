@@ -129,7 +129,8 @@ export default function PressPage() {
                 <AssetCaption asset={trailer} />
               </figure>
               <p className={styles.note}>
-                Clean gameplay loops from each world, with no interface or text, for your own edits:
+                Clean gameplay loops from each world and the Open Water, with no interface or text, and a tour of the
+                pearl shop, for your own edits:
               </p>
               <div className={styles.grid}>
                 {loops.map((asset) => (
@@ -185,8 +186,8 @@ export default function PressPage() {
             <section aria-labelledby="about" className={styles.block}>
               <h2 id="about">About the developer</h2>
               <p>
-                {game.name} is designed, built, and playtested by {game.developer}, an independent developer. Every level
-                is played and tuned by hand before it ships.
+                {game.name} is designed, built, and playtested by {game.developer}, who runs BrightBench, an independent
+                game studio.
               </p>
             </section>
 

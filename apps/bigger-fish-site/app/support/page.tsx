@@ -7,8 +7,8 @@ import { contactEmail } from '@/lib/site';
 
 import styles from './support.module.css';
 
-// Keep answers in step with the game (kraigstrong/bigger-fish): unlocking in ArcadeProgress.swift, the pause
-// menu's sound toggles in GameScene.swift, the iOS deployment target.
+// Keep answers in step with the game (kraigstrong/bigger-fish): what's free in ArcadeUnlock.swift, the sound
+// switches in SettingsView.swift and the pause menu (GameScene.swift), the iOS deployment target.
 
 export const metadata: Metadata = {
   alternates: { canonical: '/support' },
@@ -29,16 +29,27 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'What does it cost?',
     answer:
-      'The first world is free, and so are the first two levels of every other world. One $4.99 purchase unlocks the rest, including every Deep End.',
+      'Shallow Reef is free, and so are the first two levels of every other world and 5 Open Water runs a day. One $4.99 purchase unlocks the rest: every world and Deep End, and as many Open Water runs as you like.',
   },
   {
     question: 'How do new worlds open?',
     answer:
-      "Every world is open from the start, so you can try each one. Beat a world's tenth level to open its Deep End: five harder levels, each opening when you clear the one before.",
+      "In Adventure, every world is open from the start, so you can try each one. Beat a world's tenth level to open its Deep End: five harder levels, each opening when you clear the one before.",
+  },
+  {
+    question: 'What is the Open Water?',
+    answer:
+      "An endless run through all five worlds, with a new level every time, until a bigger fish eats you. Choose Open Water on the home screen. Without the purchase you get 5 runs a day, and a run counts once you take its first pearl.",
+  },
+  {
+    question: 'What are pearls for?',
+    answer:
+      "You gather pearls in the Open Water and spend them in the pearl shop (Shop on the home screen) on colors, patterns, hats, faces and trails for your fish. Looks don't change how the game plays. Pearls are only earned by playing; they're never sold.",
   },
   {
     question: 'How do I turn off the music or sound effects?',
-    answer: 'Pause during a level and switch Music or Effects off. The setting is remembered.',
+    answer:
+      'Tap the gear on the home screen, or pause during a run. Sound effects, Music, and Vibration each have their own switch, and the settings are remembered.',
   },
   {
     question: 'Does it need the internet?',
@@ -48,11 +59,11 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Is my progress saved?',
     answer:
-      'Yes. Progress is saved on your device and backed up to your iCloud account, so it carries over to your other iPhone or iPad, and to a new one.',
+      'Yes. Progress, pearls and looks are saved on your device and backed up to your iCloud account, so they carry over to your other iPhone or iPad, and to a new one.',
   },
   {
     question: 'What does it run on?',
-    answer: game.requirements,
+    answer: `${game.requirements} Made for iPhone Duo.`,
   },
 ];
 
