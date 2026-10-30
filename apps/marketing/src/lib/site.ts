@@ -207,7 +207,7 @@ export const productPages: ProductPage[] = [
       },
       {
         answer:
-          'Math Reef is an iPhone app. It also runs on iPad in iPhone mode.',
+          'Math Reef runs on iPhone and iPad, full screen on both, and fills either screen of iPhone Duo.',
         question: 'What does it run on?',
       },
     ],
@@ -226,7 +226,7 @@ export const productPages: ProductPage[] = [
       'Keep earlier skills fresh: rounds mix in a few questions from past levels.',
     ],
     metaDescription:
-      'Math Reef is a math game for kids in grades 1–5: addition, subtraction, multiplication, division, and exponents in short rounds with stars and crowns. Free to try on iPhone.',
+      'Math Reef is a math game for kids in grades 1–5: addition, subtraction, multiplication, division, and exponents in short rounds with stars and crowns. Free to try on iPhone and iPad.',
     modeItems: [
       { body: 'From +1 and making 10 to two-digit sums with carrying.', title: 'Addition' },
       { body: 'Counting back, doubles, and borrowing across tens.', title: 'Subtraction' },
