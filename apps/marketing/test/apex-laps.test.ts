@@ -3,9 +3,10 @@ import { sign } from 'node:crypto';
 import test from 'node:test';
 import { signedPayload, verifyGameCenterIdentity } from '../src/lib/apex-identity.ts';
 import {
-  bucketOf, friendLimits, handleFriendGhost, handleFriends, handleGhost, handleLaps, handleRival, handleStanding, histogram,
-  lapUpdates, pickRival, playerKey, playerToken, rivalPick, validateFriends, validateGhost, validateLaps, type ApexStore,
-  type FriendTime, type GhostUpload, type LapBatch, type Standing, type StoredGhost,
+  bucketOf, friendLimits, handleFriendGhost, handleFriends, handleGhost, handleLaps, handleRival, handleStanding,
+  handleStats, histogram, lapUpdates, pickRival, playerKey, playerToken, rivalPick, statsBoards, validateFriends,
+  validateGhost, validateLaps, type ApexStore, type FriendTime, type GhostUpload, type LapBatch, type LapStats,
+  type Standing, type StoredGhost,
 } from '../src/lib/apex-laps.ts';
 
 // A throwaway self-signed key and certificate standing in for Game Center's, for these tests only.
@@ -61,8 +62,15 @@ function memoryStore() {
   const bests = new Map<string, Map<string, number>>();
   const ghosts = new Map<string, StoredGhost>();
   const counted: {day: string; boards: string[]; fields: string[]}[] = [];
+  const daily = new Map<string, Record<string, number>>();
   const store: ApexStore = {
-    async countLaps(day, boards, updates) { counted.push({day, boards, fields: updates.map(u => u.field)}); return true; },
+    async countLaps(day, boards, updates) {
+      counted.push({day, boards, fields: updates.map(u => u.field)});
+      const counts = daily.get(day) ?? {};
+      daily.set(day, counts);
+      for (const {field, by} of updates) counts[field] = (counts[field] ?? 0) + by;
+      return true;
+    },
     async saveBest(board, player, ms, ghost) {
       const times = bests.get(board) ?? new Map<string, number>();
       bests.set(board, times);
@@ -89,6 +97,7 @@ function memoryStore() {
       for (const ms of (bests.get(board) ?? new Map<string, number>()).values()) counts.set(bucketOf(ms), (counts.get(bucketOf(ms)) ?? 0) + 1);
       return counts;
     },
+    async lapCounts(days) { return days.map(day => ({...daily.get(day)})); },
   };
   return {store, bests, counted};
 }
@@ -251,13 +260,16 @@ test('only known boards are accepted, so nobody can make the store grow with mad
   const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
   const madeUp = upload(); madeUp.track = 'made_up_circuit';
   assert.equal((await handleGhost(post('ghosts', madeUp), deps)).status, 400);
-  const futurePhysics = upload(); futurePhysics.physics = 2;
+  const futurePhysics = upload(); futurePhysics.physics = 3;
   assert.equal((await handleGhost(post('ghosts', futurePhysics), deps)).status, 400);
   assert.equal(bests.size, 0);
   assert.equal((await handleLaps(post('laps', {...lapBatch(), laps: [{...lapBatch().laps[0], track: 'made_up_circuit'}]}),
     {store, appKey: 'key'})).status, 400);
   assert.equal(counted.length, 0);
   for (const track of ['swirl', 'snake', 'mirage', 'island', 'harbor']) assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track}]}), true);
+  for (const track of ['ardennes', 'swirl', 'snake', 'mirage', 'island', 'harbor']) {
+    assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track, physics: 2}]}), true, `${track} p2`);
+  }
   const get = (path: string) => new Request(`https://example.test/api/apex/${path}?track=made_up_circuit&revision=1&physics=1&ms=28598`,
     {headers: {'X-App-Key': 'key'}});
   assert.equal((await handleRival(get('rival'), deps)).status, 400);
@@ -352,4 +364,41 @@ test('a friend\'s ghost is fetched by their token in a header, never an ID in th
   assert.equal((await get('T:_friend')).status, 400);
   assert.equal((await get(null)).status, 400);
   assert.equal((await get(playerToken('T:_friend'), 'made_up_circuit')).status, 400);
+});
+
+test('the stats route sums lap counters per board and day, behind the stats key', async () => {
+  const {store} = memoryStore();
+  const on = (day: string) => ({store, appKey: 'key', now: () => new Date(`${day}T12:00:00Z`)});
+  const lap = lapBatch().laps[0]!;
+  await handleLaps(post('laps', lapBatch()), on('2026-10-28'));
+  await handleLaps(post('laps', {...lapBatch(), laps: [{...lap, physics: 2, ms: 27_610, walls: 0},
+    {...lap, physics: 2, ms: 28_990, walls: 0}, {...lap, physics: 2, ms: 31_020, walls: 4}]}), on('2026-10-30'));
+  await store.saveBest('ardennes.r1.p2', 'someone', 27_610, {alias: 'Racer One', ms: 27_610, splits: [], ghost: trace(27_610)});
+  const get = (params: string, auth = 'Bearer secret') =>
+    new Request(`https://example.test/api/apex/stats${params}`, {headers: {Authorization: auth}});
+  const deps = {store, secret: 'secret', now: () => new Date('2026-10-30T20:00:00Z')};
+
+  assert.equal((await handleStats(get(''), {...deps, secret: ''})).status, 401);
+  assert.equal((await handleStats(get('', 'Bearer wrong'), deps)).status, 401);
+  assert.equal((await handleStats(get('', 'X-App-Key key'), deps)).status, 401);
+  for (const params of ['?to=bad', '?to=2026-02-30', '?from=2026-10-30&to=2026-10-29', '?from=2026-08-01&to=2026-10-30']) {
+    assert.equal((await handleStats(get(params), deps)).status, 400, params);
+  }
+  assert.equal((await handleStats(get('?from=2026-08-02&to=2026-10-30'), deps)).status, 200);
+
+  const report = await (await handleStats(get(''), deps)).json() as LapStats;
+  assert.deepEqual([report.from, report.to, report.days.length], ['2026-10-01', '2026-10-30', 30]);
+  assert.deepEqual(report.days.slice(0, 3), [{day: '2026-10-30', laps: {'ardennes.r1.p2': 3}},
+    {day: '2026-10-29', laps: {}}, {day: '2026-10-28', laps: {'ardennes.r1.p1': 1}}]);
+  assert.deepEqual(report.boards.map(b => b.board).slice(0, 2), ['ardennes.r1.p2', 'swirl.r1.p2']);
+  assert.deepEqual(report.boards.find(b => b.board === 'ardennes.r1.p2'), {board: 'ardennes.r1.p2', laps: 3, players: 1,
+    fastestMs: 27_500, medianMs: 28_750, walls: {0: 2, 1: 0, 2: 0, 3: 0, 5: 1, 10: 0, 20: 0, 10000: 0}});
+  assert.deepEqual(report.boards.find(b => b.board === 'swirl.r1.p1'), {board: 'swirl.r1.p1', laps: 0, players: 0,
+    fastestMs: null, medianMs: null, walls: {0: 0, 1: 0, 2: 0, 3: 0, 5: 0, 10: 0, 20: 0, 10000: 0}});
+});
+
+test('the stats report keeps a board the service has since dropped while it still has laps', () => {
+  const boards = statsBoards([{'gone.r1.p1|laps': 2, 'gone.r1.p1|ms.30000': 2}]);
+  assert.equal(boards.length, 13);
+  assert.equal(boards.at(-1), 'gone.r1.p1');
 });

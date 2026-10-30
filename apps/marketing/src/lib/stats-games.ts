@@ -4,6 +4,7 @@
 export const statsGames = [
   { id: 'bigger-fish', name: 'Bigger Fish' },
   { id: 'double-putt', name: 'Double Putt' },
+  { id: 'apex', name: 'Ghost Thread' },
   { id: 'math-reef', name: 'Math Reef' },
 ] as const;
 

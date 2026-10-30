@@ -41,6 +41,8 @@ export const bucketMs = 250;
  * deploy, before an app version that races it ships. Keep in sync with `TrackLayout.all` in the app. */
 export const apexBoards: readonly string[] = [
   'ardennes.r1.p1', 'swirl.r1.p1', 'snake.r1.p1', 'mirage.r1.p1', 'island.r1.p1', 'harbor.r1.p1',
+  // Physics 2: softer steering (steerRate 1.6). Builds before it still send p1 laps.
+  'ardennes.r1.p2', 'swirl.r1.p2', 'snake.r1.p2', 'mirage.r1.p2', 'island.r1.p2', 'harbor.r1.p2',
 ];
 
 export interface ApexStore {
@@ -59,6 +61,8 @@ export interface ApexStore {
   bests(board: string, players: string[]): Promise<(number | null)[]>;
   /** Every player's best on the board, counted by `bucketMs` bucket (keyed by the bucket's first millisecond). */
   distribution(board: string): Promise<Map<number, number>>;
+  /** Each day's lap counters (the `lapUpdates` fields and their totals), in the order asked; {} for a day with none. */
+  lapCounts(days: string[]): Promise<Record<string, number>[]>;
 }
 
 const record = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -329,5 +333,72 @@ export async function handleFriendGhost(request: Request, deps: { store: ApexSto
   try {
     const found = await deps.store.ghost(board, playerKey(token, deps.playerSalt));
     return found ? Response.json(found, {headers}) : status(204);
+  } catch { return status(503); }
+}
+
+/** One board in the stats report: laps in the range, with their lap times (quarter-second buckets, named by their first
+ * millisecond) and wall hits per lap (`wallBuckets`), and how many players have a best on it, all time. */
+export type BoardStats = {
+  board: string; laps: number; players: number; fastestMs: number | null; medianMs: number | null;
+  walls: Record<string, number>;
+};
+export type LapStats = {
+  from: string; to: string; boards: BoardStats[]; days: { day: string; laps: Record<string, number> }[]; notes: string[];
+};
+
+const physicsOf = (board: string) => Number(board.split('.p').at(-1));
+
+/** Every board the service accepts, and any it has since dropped that still has laps in the range: newest physics
+ * first, then in `apexBoards` order. */
+export function statsBoards(counts: Record<string, number>[]) {
+  const seen = counts.flatMap(day => Object.keys(day).map(field => field.split('|')[0]!));
+  return [...new Set([...apexBoards, ...seen])].sort((a, b) => physicsOf(b) - physicsOf(a));
+}
+
+/** Sums the range's daily counters per board; `players` holds each board's player count, in `boards` order. */
+export function lapStats(days: string[], counts: Record<string, number>[], boards: string[], players: number[]) {
+  const totals = new Map<string, number>();
+  for (const day of counts) for (const [field, n] of Object.entries(day)) totals.set(field, (totals.get(field) ?? 0) + Number(n));
+  const stats: BoardStats[] = boards.map((board, i) => {
+    const field = (name: string) => totals.get(`${board}|${name}`) ?? 0;
+    const times = [...totals].flatMap(([f, n]) => f.startsWith(`${board}|ms.`) ? [[Number(f.slice(board.length + 4)), n]] : [])
+      .sort((a, b) => a[0]! - b[0]!);
+    const laps = field('laps');
+    let seen = 0;
+    const median = times.find(([, n]) => (seen += n!) >= Math.ceil(laps / 2));
+    return {board, laps, players: players[i] ?? 0, fastestMs: times[0]?.[0] ?? null, medianMs: median?.[0] ?? null,
+      walls: Object.fromEntries(wallBuckets.map(b => [String(b), field(`walls.${b}`)]))};
+  });
+  const perDay = days.map((day, i) => ({day, laps: Object.fromEntries(Object.entries(counts[i] ?? {})
+    .flatMap(([f, n]) => f.endsWith('|laps') ? [[f.slice(0, -5), Number(n)]] : []))}));
+  return {boards: stats, days: perDay.reverse()};
+}
+
+const isDay = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d))
+  && new Date(d).toISOString().slice(0, 10) === d;
+
+/** Kraig's view of the lap counters (the Ghost Thread tab of brightbench.app/stats), behind the stats key every game's
+ * stats share: `?from=&to=` are UTC days, the last 30 by default, at most `retentionDays`. */
+export async function handleStats(request: Request, deps: { store: ApexStore; secret: string; now?: () => Date }) {
+  if (!authorized((request.headers.get('authorization') ?? '').replace(/^Bearer /, ''), deps.secret)) return status(401);
+  const params = new URL(request.url).searchParams;
+  const to = params.get('to') ?? (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
+  const from = params.get('from') ?? (isDay(to) ? new Date(Date.parse(to) - 29 * 86400000).toISOString().slice(0, 10) : '');
+  if (!isDay(from) || !isDay(to)) return status(400);
+  const count = (Date.parse(to) - Date.parse(from)) / 86400000 + 1;
+  if (count < 1 || count > retentionDays) return status(400);
+  const days = Array.from({length: count}, (_, i) => new Date(Date.parse(from) + i * 86400000).toISOString().slice(0, 10));
+  try {
+    const counts = await deps.store.lapCounts(days);
+    const boards = statsBoards(counts);
+    // A board's player count is everyone with a best on it; rank's `players` counts exactly that.
+    const players = await Promise.all(boards.map(async b => (await deps.store.rank(b, limits.minMs)).players));
+    const report: LapStats = {from, to, ...lapStats(days, counts, boards, players), notes: [
+      'Laps are counted by the UTC day they arrived: laps, not people.',
+      'Players are Game Center players with a best on the board, all time; laps from players not signed in count, but they don\'t.',
+      'Lap times are quarter-second buckets, shown by their start.',
+      'Xcode builds\' laps count too: the counters keep no build or channel. Autopilot laps never upload.',
+    ]};
+    return Response.json(report, {headers});
   } catch { return status(503); }
 }

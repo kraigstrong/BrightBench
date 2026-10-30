@@ -37,13 +37,13 @@ Each falls back to its default listing in `src/lib/site.ts`.
 ## Stats viewer
 
 `/stats` is the private view of every game's analytics: sign in once with the stats key, then a tab each for Bigger
-Fish, Double Putt and Math Reef (`src/lib/stats-games.ts` lists them). `/stats?game=bigger-fish`, `double-putt` or
-`math-reef` opens that tab, and the address follows the tab chosen. A tab loads its report the first time it's opened
+Fish, Double Putt, Ghost Thread and Math Reef (`src/lib/stats-games.ts` lists them). `/stats?game=bigger-fish`,
+`double-putt`, `apex` or `math-reef` opens that tab, and the address follows the tab chosen. A tab loads its report the first time it's opened
 and keeps it, filters and all, until the page is locked. The key lives only in the page's memory and goes only in an
 `Authorization` header, never a URL or browser storage; a rejected key locks the page. It's kept out of search
 (`noindex` and `robots.txt`) and out of the sitemap.
 
-- `STATS_SECRET`: the one private key for reading every game's stats (`GET /api/{bigger-fish,double-putt,math-reef}/stats`).
+- `STATS_SECRET`: the one private key for reading every game's stats (`GET /api/{bigger-fish,double-putt,apex,math-reef}/stats`).
   Never put it in an app. Until it's set, the stats endpoints answer 401.
 
 The sign-in form calls the key a password, so 1Password fills it: a 1Password login for `brightbench.app` with username
@@ -233,7 +233,7 @@ curl -s "https://brightbench.app/api/double-putt/stats?from=2026-10-01&to=2026-1
 
 ## Apex lap service
 
-Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses six routes. Logic and validation live in
+Apex (the one-touch racer, kraigstrong/apex-rivals; client in `Apex/ApexOnline.swift`) uses six routes, and the stats page a seventh. Logic and validation live in
 `src/lib/apex-laps.ts`, Game Center identity checks in `src/lib/apex-identity.ts`, storage in `src/lib/apex-redis.ts`,
 tests in `test/apex-laps.test.ts`. Everything is per **board**: a circuit at one revision, driven with one physics
 version (`ardennes.r1.p1`), because lap times only compare within one. Only the boards in `apexBoards`
@@ -264,6 +264,10 @@ version ships.**
   Nothing is stored.
 - `GET /api/apex/ghosts?track=&revision=&physics=`: one friend's best lap and ghost, named by their token in the
   `X-Apex-Friend` header, for racing them; 204 when they have none. Nothing is stored.
+- `GET /api/apex/stats?from=&to=`: the Ghost Thread tab of `/stats`, behind `STATS_SECRET` like every game's stats
+  (UTC days, the last 30 by default, at most 90). Sums the daily counters per board (laps, fastest and median lap,
+  wall hits) and per day, with each board's player count. Debug builds' laps are in the counters too, since they keep
+  no build or channel.
 
 The rival and standing GETs learn who's asking (to leave out their own best) from the `X-Apex-Player` header: SHA-256
 of `apex:` and the team player ID, so a raw ID never appears in a URL; the store only ever sees that token salted
@@ -280,6 +284,7 @@ Configuration:
 - `APEX_APP_KEY`: match `ApexOnline.appKey` in the app (`apex-laps-v1`). A bot filter, not authentication.
 - `APEX_PLAYER_SALT`: a real secret for hashing player IDs. Never change it once live (players' bests would split),
   and never put it in an app. Without it, ghost uploads return 503.
+- `STATS_SECRET`: the stats key, shared by every game (see Stats viewer). Never put it in an app.
 
 Configure Vercel rate limiting on all of `/api/apex/*` before the app turns the service on (`ApexOnline.isEnabled`). No
 request or error logging in these routes.

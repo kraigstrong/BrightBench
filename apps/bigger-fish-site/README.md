@@ -5,7 +5,7 @@ itself is a native iOS app in its own repository (`kraigstrong/bigger-fish`); th
 
 | Page | What it's for |
 | --- | --- |
-| `/` | The pitch: a gameplay loop, the three beats of the game, its five worlds, the trailer |
+| `/` | The pitch: a gameplay loop, the three beats of the game, its two ways to play (Adventure's five worlds and the Open Water), the trailer |
 | `/press` | The press kit: fact sheet, descriptions, trailer and gameplay loops, screenshots, logos, key art, and a zip of everything. This is the link for Apple featuring nominations. |
 | `/support` | FAQ and the support email (the App Store listing's Support URL) |
 | `/privacy` | The privacy policy (the App Store listing's Privacy Policy URL) |
@@ -28,14 +28,22 @@ Everything that changes at launch is an environment variable (see `.env.example`
   Apple's trademark line to the footer). With `NEXT_PUBLIC_BIGGER_FISH_PREORDER=true` it shows a pre-order link
   instead, since Apple doesn't host its pre-order badge.
 - `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_ID` adds Safari's Smart App Banner.
-- `NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL` adds a "Join the beta" button before launch.
+- `NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL` adds a "Join the beta" button before launch. It has no default: the
+  public group the site used to link (Marketing site) stopped getting builds at 1.0, and the site describes 1.1.
 
 ## Media
 
-- `public/media/bigger-fish-trailer.mp4`: the trailer (1920 × 886, 60 fps, 0:30, with the game's music). Every shot
-  is real play, recorded from the game a frame at a time with the interface hidden
-  (`scripts/bigger-fish-footage.sh` in kraigstrong/bigger-fish), with captions in Avenir Next. The same cut at 30 fps,
-  without the release date, is the App Store preview. `trailer-poster.jpg` is its frame at 0:06.
+- `public/media/bigger-fish-trailer.mp4`: the 1.1 trailer (1920 × 886, 60 fps, 0:30, with the game's music): the
+  core loop, Adventure's worlds, an Open Water run, and the pearl shop. Every shot is real play, recorded from the
+  game a frame at a time (`scripts/bigger-fish-trailer.sh` in kraigstrong/bigger-fish builds it, as
+  `build/trailer/bigger-fish-trailer.mp4`), with captions in Avenir Next. The same cut at 30 fps, without the release
+  date, is the App Store preview. `trailer-poster.jpg` is its frame at 0:06.
+- `public/media/modes/open-water.mp4` and `pearl-shop.mp4`, beside the Open Water on the home page, 1280 × 588 like
+  the world loops. The Open Water's sells the high score: the end of a run through a crowded Sunset Cove, its fish
+  and pearl counts showing, until a bigger fish eats it and the run's "New best!" card comes up (45 fish). It's
+  `FOOTAGE_CARD=1 scripts/bigger-fish-footage.sh open-water.1009 collector 47 60` in kraigstrong/bigger-fish, the
+  whole frame at 30 fps, and its poster is the card. The pearl shop's is cut from the trailer's footage
+  (`build/footage/` after the trailer script): `shop-tour` from 2.8 s, cropped clear of the camera cutout.
 - `public/media/hero.mp4`, `public/media/worlds/shallow-reef.mp4`, and the Shallow Reef and Jelly Bloom screenshots:
   rendered straight from the game's SpriteKit scenes at iPhone 17 Pro resolution (2622 × 1206) with the interface
   hidden, by a scratch Xcode test that plays each level with a simple bot. They show real levels, not mock-ups.
@@ -46,6 +54,9 @@ Everything that changes at launch is an environment variable (see `.env.example`
   and `midnight-zone.png` are the App Store captures (`scripts/bigger-fish-store-capture.sh kelp-shadows midnight-light`).
 - `public/screenshots/sunset-cove.png` and `sunset-cove-hooks.png`: the same size, from the game's store capture
   (`scripts/bigger-fish-store-capture.sh sunset-hooks` in kraigstrong/bigger-fish, on the iPhone 17 Pro simulator).
+- `public/screenshots/open-water.png`, `home-screen.png` and `pearl-shop.png`: 1.1's App Store captures
+  (`scripts/bigger-fish-store-capture.sh open-water home shop`, moments added in kraigstrong/bigger-fish#256, on the
+  iPhone 17 Pro Max simulator), scaled down.
 - `public/media/worlds/jelly-bloom.mp4` and `sunset-cove.mp4`: cut from iPhone screen
   recordings of real play (2622 × 1206) to 1280 × 588 like the others, silent. The pause button is cropped off the
   right and the level's name blended out at the top left, so the boats along the top stay in frame. Each ends
