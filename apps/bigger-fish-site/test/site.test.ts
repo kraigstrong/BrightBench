@@ -5,7 +5,7 @@ import test from 'node:test';
 
 import { buildPressKit, factSheet } from '../scripts/build-press-kit.ts';
 import { createZip, zipEntryNames } from '../scripts/zip.ts';
-import { beats, facts, game, totalLevels, worlds } from '../src/lib/game.ts';
+import { beats, facts, game, openWater, totalLevels, worlds } from '../src/lib/game.ts';
 import { pressKitFiles, screenshots, zipPath } from '../src/lib/press-assets.ts';
 import { appStoreId, contactEmail, productionOrigin, readEnv, siteOrigin, storeCta } from '../src/lib/site.ts';
 
@@ -35,12 +35,12 @@ test('the canonical origin is the configured one, then biggerfish.app in product
 
 test('before launch it says coming soon, offering the beta only for a real https link', () => {
   assert.deepEqual(storeCta({}), { betaHref: undefined, kind: 'comingSoon' });
-  // By default, the public TestFlight group, whatever this deployment sets.
+  // By default, no beta: the site's TestFlight group stopped getting builds at 1.0, and the site describes 1.1.
   const defaults = withoutEnv(
     ['NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL', 'NEXT_PUBLIC_BIGGER_FISH_TESTFLIGHT_URL', 'NEXT_PUBLIC_BIGGER_FISH_PREORDER'],
     readEnv,
   );
-  assert.match((storeCta(defaults) as { betaHref?: string }).betaHref ?? '', /^https:\/\/testflight\.apple\.com\/join\//);
+  assert.deepEqual(storeCta(defaults), { betaHref: undefined, kind: 'comingSoon' });
   assert.deepEqual(storeCta({ testFlightUrl: 'https://testflight.apple.com/join/abc' }), {
     betaHref: 'https://testflight.apple.com/join/abc',
     kind: 'comingSoon',
@@ -72,6 +72,11 @@ test('the facts match the game: five worlds of ten levels and a five-level Deep 
   assert.equal(worlds.length, game.worldCount);
   assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 5 worlds`)));
   assert.ok(facts.some((fact) => fact.label === 'Release' && fact.value.startsWith('November 3, 2026')));
+  // What's free: GameTuning.freeLevelsPerWorld and freeOpenWaterRunsPerDay in the game.
+  const price = facts.find((fact) => fact.label === 'Price')?.value ?? '';
+  assert.match(price, /first two levels of every other world/);
+  assert.match(price, /5 Open Water runs a day/);
+  assert.match(game.offer, /5 Open Water runs a day/);
   // Apple asks marketing to say "iPhone", not "iOS", except for system requirements.
   assert.ok(!game.pitch.join(' ').includes('iOS') && !game.oneLiner.includes('iOS'));
 });
@@ -87,6 +92,7 @@ test('every image and video the pages use is in public/', () => {
       `media/worlds/${world.slug}.mp4`,
       `media/worlds/${world.slug}-poster.jpg`,
     ]),
+    ...openWater.cards.flatMap((card) => [`media/modes/${card.slug}.mp4`, `media/modes/${card.slug}-poster.jpg`]),
     ...pressKitFiles.flatMap((asset) => [asset.file, ...(asset.poster ? [asset.poster.slice(1)] : [])]),
   ];
   for (const file of files) assert.ok(existsSync(join(publicDir, file)), `missing public/${file}`);

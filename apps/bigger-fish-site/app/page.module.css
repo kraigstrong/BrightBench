@@ -149,6 +149,19 @@
   font-size: clamp(18px, 1.6vw, 21px);
 }
 
+/* Which of the home screen's two ways to play a section is about, over its title, in the trailer's colors for it. */
+.mode {
+  color: #6eded6;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.openWaterMode {
+  color: #80baff;
+}
+
 .visuallyHidden {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
@@ -254,6 +267,14 @@
 
 .midnight-zone {
   --accent: #7ff0ff;
+}
+
+.open-water {
+  --accent: #80baff;
+}
+
+.pearl-shop {
+  --accent: #f4ecff;
 }
 
 .worldMedia {
