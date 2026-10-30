@@ -71,7 +71,9 @@ test('the facts match the game: five worlds of ten levels and a five-level Deep 
   );
   assert.equal(worlds.length, game.worldCount);
   assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 5 worlds`)));
-  assert.ok(facts.some((fact) => fact.label === 'Release' && fact.value.startsWith('November 3, 2026')));
+  // From launch day the press kit says it's out, not in beta.
+  const release = facts.find((fact) => fact.label === 'Release')?.value ?? '';
+  assert.ok(release.startsWith('November 3, 2026') && !/beta|TestFlight/i.test(release));
   // What's free: GameTuning.freeLevelsPerWorld and freeOpenWaterRunsPerDay in the game.
   const price = facts.find((fact) => fact.label === 'Price')?.value ?? '';
   assert.match(price, /first two levels of every other world/);
