@@ -90,4 +90,9 @@ export const apexStore: ApexStore = {
     const counts = await client().hgetall<Record<string, number>>(histogramKey(board)) ?? {};
     return new Map(Object.entries(counts).map(([bucket, count]) => [Number(bucket), Number(count)]));
   },
+  async lapCounts(days) {
+    const pipeline = client().pipeline();
+    for (const day of days) pipeline.hgetall(countsKey(day));
+    return (await pipeline.exec<(Record<string, number> | null)[]>()).map(counts => counts ?? {});
+  },
 };
