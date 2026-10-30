@@ -251,13 +251,16 @@ test('only known boards are accepted, so nobody can make the store grow with mad
   const deps = {store, appKey: 'key', playerSalt: 'salt', bundleID: 'com.kraigstrong.apex', verify: verifyWithTestCertificate};
   const madeUp = upload(); madeUp.track = 'made_up_circuit';
   assert.equal((await handleGhost(post('ghosts', madeUp), deps)).status, 400);
-  const futurePhysics = upload(); futurePhysics.physics = 2;
+  const futurePhysics = upload(); futurePhysics.physics = 3;
   assert.equal((await handleGhost(post('ghosts', futurePhysics), deps)).status, 400);
   assert.equal(bests.size, 0);
   assert.equal((await handleLaps(post('laps', {...lapBatch(), laps: [{...lapBatch().laps[0], track: 'made_up_circuit'}]}),
     {store, appKey: 'key'})).status, 400);
   assert.equal(counted.length, 0);
   for (const track of ['swirl', 'snake', 'mirage', 'island', 'harbor']) assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track}]}), true);
+  for (const track of ['ardennes', 'swirl', 'snake', 'mirage', 'island', 'harbor']) {
+    assert.equal(validateLaps({...lapBatch(), laps: [{...lapBatch().laps[0], track, physics: 2}]}), true, `${track} p2`);
+  }
   const get = (path: string) => new Request(`https://example.test/api/apex/${path}?track=made_up_circuit&revision=1&physics=1&ms=28598`,
     {headers: {'X-App-Key': 'key'}});
   assert.equal((await handleRival(get('rival'), deps)).status, 400);
