@@ -40,10 +40,12 @@ needs a new deploy:
   `build/trailer/bigger-fish-trailer.mp4`), with captions in Avenir Next. It ends on "Out now on iPhone and iPad"
   (kraigstrong/bigger-fish#199). The same cut at 30 fps, without that line, is the App Store preview.
   `trailer-poster.jpg` is its frame at 0:06.
-- `public/media/modes/open-water.mp4` and `pearl-shop.mp4`, beside the Open Water on the home page: cut from the
-  trailer's footage (`build/footage/` after the script above), 1280 × 588 like the world loops. The Open Water's is
-  `open-water.1003-collector-16.5-21.5` (a run crossing from Shallow Reef into Jelly Bloom), cropped clear of the
-  fish and pearl counts at the top; the pearl shop's is `shop-tour` from 2.8 s, cropped clear of the camera cutout.
+- `public/media/modes/open-water.mp4` and `pearl-shop.mp4`, beside the Open Water on the home page, 1280 × 588 like
+  the world loops. The Open Water's sells the high score: the end of a run through a crowded Sunset Cove, its fish
+  and pearl counts showing, until a bigger fish eats it and the run's "New best!" card comes up (45 fish). It's
+  `FOOTAGE_CARD=1 scripts/bigger-fish-footage.sh open-water.1009 collector 47 60` in kraigstrong/bigger-fish, the
+  whole frame at 30 fps, and its poster is the card. The pearl shop's is cut from the trailer's footage
+  (`build/footage/` after the trailer script): `shop-tour` from 2.8 s, cropped clear of the camera cutout.
 - `public/media/hero.mp4`, `public/media/worlds/shallow-reef.mp4`, and the Shallow Reef and Jelly Bloom screenshots:
   rendered straight from the game's SpriteKit scenes at iPhone 17 Pro resolution (2622 × 1206) with the interface
   hidden, by a scratch Xcode test that plays each level with a simple bot. They show real levels, not mock-ups.

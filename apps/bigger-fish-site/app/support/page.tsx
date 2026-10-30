@@ -39,7 +39,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'What is the Open Water?',
     answer:
-      "An endless run through all five worlds, with a new level every time, until a bigger fish eats you. Choose Open Water on the home screen. Without the purchase you get 5 runs a day, and a run counts once you take its first pearl.",
+      "An endless run through all five worlds, with a new level every time, until a bigger fish eats you. Choose Open Water on the home screen. Your score is the fish you eat, and your best run shows on the home screen. Without the purchase you get 5 runs a day, and a run counts once you take its first pearl.",
   },
   {
     question: 'What are pearls for?',

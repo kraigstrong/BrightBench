@@ -13,7 +13,7 @@ export const game = {
   /** What it costs. */
   offer: 'The first world is free, plus 5 Open Water runs a day. One $4.99 purchase unlocks it all.',
   /** The home page's lines under the logo. */
-  pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
+  pitch: ['Eat smaller fish. Dodge bigger ones.', 'Beat every level. Then beat your best.'],
   /**
    * The home page's closing line. From the TestFlight beta's anonymous stats, Sep 18 to Oct 17, 2026: 3,076 of
    * 3,143 lost runs ended in a retry (97.9%). It counts runs, not people, so keep "of lost runs".
@@ -45,7 +45,7 @@ export const facts: { label: string; value: string }[] = [
   { label: 'Genre', value: 'Arcade' },
   { label: 'Players', value: 'Single player' },
   { label: 'Controls', value: 'One touch, landscape' },
-  { label: 'Modes', value: 'Adventure, and the Open Water, an endless run' },
+  { label: 'Modes', value: 'Adventure, an old-school arcade challenge, and the Open Water, an endless run for a high score' },
   { label: 'Levels', value: `${totalLevels} across ${game.worldCount} worlds in Adventure, every one built by hand` },
   { label: 'Languages', value: 'English' },
 ];
@@ -72,24 +72,29 @@ export const beats = [
   },
 ] as const;
 
-/** Adventure, the first of the home screen's two ways to play. */
+/**
+ * Adventure, the first of the home screen's two ways to play: sold on its difficulty (Kraig, 2026-10-29: market the
+ * "old school challenge mode"). A conquered world's crown shows on the world map, and each level keeps your best time.
+ */
 export const adventure = {
   name: 'Adventure',
-  title: `Five worlds. ${totalLevels} levels.`,
-  lede: 'A classic arcade challenge: hand-built levels that play out the same way every time.',
+  title: 'Old-school hard.',
+  lede: `Five worlds, ${totalLevels} hand-built levels. Each one plays out the same way every time, so every loss teaches you the route. Conquer a world to earn its crown, then go back for a faster time.`,
 } as const;
 
 /**
- * The Open Water, the second way to play, and the pearl shop that goes with it. The home page keeps these short
- * (its copy budget is in AGENTS.md); the support page and press kit explain them in full.
+ * The Open Water, the second way to play, sold on its high score: a run's score is the fish it eats, and the game
+ * keeps your best (there are no leaderboards, so it's your own best). The Shark fin and Champion glow are earned in
+ * one run (GameTuning.pearlShop in the game), never bought. The home page keeps these short (its copy budget is in
+ * AGENTS.md); the support page and press kit explain them in full.
  */
 export const openWater = {
   name: 'Open Water',
-  title: 'An endless run.',
-  lede: 'All five worlds, a new level every time.',
+  title: 'Chase your high score.',
+  lede: 'An endless run through all five worlds, with a new level every time. Every fish you eat counts. One bigger fish ends it.',
   cards: [
-    { name: 'Gather pearls', motto: 'Never far from a bigger fish.', slug: 'open-water' },
-    { name: 'Spend them on looks', motto: 'Pearls are earned by playing, never sold.', slug: 'pearl-shop' },
+    { name: 'Beat your best', motto: 'Eat 50 fish in one run to earn the Shark fin, 100 for the Champion glow.', slug: 'open-water' },
+    { name: 'Gather pearls for looks', motto: 'Earned by playing, never sold.', slug: 'pearl-shop' },
   ],
 } as const;
 
@@ -148,20 +153,21 @@ export const worlds: World[] = [
 /** Press kit descriptions, from short to long. */
 export const descriptions = {
   short:
-    'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Conquer five worlds of hand-built levels in Adventure, or see how far you get in the endless Open Water.',
+    'Bigger Fish is a one-touch arcade game for iPhone and iPad. Hold anywhere to rise, let go to fall, and eat every fish smaller than you. The catch: they grow too. Conquer five worlds of old-school hard, hand-built levels in Adventure, or chase your high score in the endless Open Water.',
   long: [
     'Bigger Fish is a one-touch arcade game for iPhone and iPad about the food chain, and how quickly it turns. You start small. Hold anywhere on the screen to rise, let go to fall, and swim into anything smaller than you. Each meal makes you bigger, so the fish that threatened you a moment ago become your next target.',
     'But you are not the only one eating. Every fish around you is growing too, and it only takes one bigger fish to end your run. Eat fast, and stay one size ahead. Runs are over in seconds, and in the beta, players tried again after 98% of the runs they lost.',
-    `There are two ways to play. Adventure is a classic arcade challenge: ${totalLevels} hand-built levels that play out the same way every time, so each try teaches you more, until you find the safe route and conquer the world. Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, follow the bubbles in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.`,
-    'The Open Water is an endless run through all five worlds, with a brand-new level every time, until a bigger fish eats you. Gather pearls along the way and spend them in the pearl shop on colors, patterns, hats, faces and trails for your fish. Pearls are only earned by playing, never sold.',
+    `There are two ways to play. Adventure is old-school hard: ${totalLevels} hand-built levels that play out the same way every time, so each try teaches you more, until you find the safe route and conquer the world. Every level keeps your best time, and every world you conquer earns a crown. Across five worlds the hunt keeps changing: bounce off jellyfish in Jelly Bloom, follow the bubbles in Kelp Forest, steer clear of baited hooks in Sunset Cove, and follow a narrow headlamp through the Midnight Zone, where every glowing lure might belong to something bigger. Each world has ten levels, then a Deep End of five more.`,
+    'The Open Water is an endless run through all five worlds, with a brand-new level every time, until a bigger fish eats you. Every fish you eat counts toward your high score, and the biggest runs earn looks no one can buy: the Shark fin for 50 fish in one run, the Champion glow for 100. Gather pearls along the way and spend them in the pearl shop on colors, patterns, hats, faces and trails for your fish. Pearls are only earned by playing, never sold.',
   ],
 } as const;
 
 export const features = [
   'One-touch controls: hold anywhere to rise, let go to fall.',
   'A living food chain: every fish is eating and growing, just like you.',
-  `Adventure: ${totalLevels} hand-built levels across five worlds, each with its own twist (jellyfish, kelp, fishing hooks, and the dark), including a five-level Deep End in every world.`,
-  'The Open Water: an endless run through all five worlds, with a new level every time.',
+  `Adventure, old-school hard: ${totalLevels} hand-built levels across five worlds, each with its own twist (jellyfish, kelp, fishing hooks, and the dark), including a five-level Deep End in every world.`,
+  'The Open Water: an endless run through all five worlds, with a new level every time, for a high score.',
+  'Personal bests: your best time on every Adventure level and your best Open Water run, backed up to iCloud.',
   'A pearl shop of colors, patterns, hats, faces and trails, paid for with pearls you gather in the Open Water. Pearls are never sold.',
   // 86% of the beta's runs ended within 10 seconds (same stats as `game.retryLine`). The beta had only Adventure.
   'Short runs built for one more try: most Adventure runs last under ten seconds.',

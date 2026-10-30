@@ -41,6 +41,8 @@ export const bucketMs = 250;
  * deploy, before an app version that races it ships. Keep in sync with `TrackLayout.all` in the app. */
 export const apexBoards: readonly string[] = [
   'ardennes.r1.p1', 'swirl.r1.p1', 'snake.r1.p1', 'mirage.r1.p1', 'island.r1.p1', 'harbor.r1.p1',
+  // Physics 2: softer steering (steerRate 1.6). Builds before it still send p1 laps.
+  'ardennes.r1.p2', 'swirl.r1.p2', 'snake.r1.p2', 'mirage.r1.p2', 'island.r1.p2', 'harbor.r1.p2',
 ];
 
 export interface ApexStore {

@@ -39,15 +39,15 @@ const loop = (slug: string, title: string, detail: string, folder = 'worlds'): P
 
 // Shallow Reef, Kelp Forest and Midnight Zone are rendered from the game. Jelly Bloom and Sunset Cove are cut from
 // screen recordings of real play on an iPhone, cropped clear of the pause button with the level's name blended out.
-// The Open Water's is rendered from the game, cropped clear of its fish and pearl counts; the pearl shop's is a
-// recording of its screen. The home page shows the last two beside the Open Water.
+// The Open Water's is rendered from the game with its fish and pearl counts, ending on a run's "New best!" card; the
+// pearl shop's is a recording of its screen. The home page shows the last two beside the Open Water.
 export const loops: PressAsset[] = [
   loop('shallow-reef', 'Shallow Reef', 'MP4, 1280 × 588, 0:05, silent, no interface'),
   loop('jelly-bloom', 'Jelly Bloom', 'MP4, 1280 × 588, 0:03, silent, no interface'),
   loop('kelp-forest', 'Kelp Forest', 'MP4, 1280 × 588, 0:06, silent, no interface'),
   loop('sunset-cove', 'Sunset Cove', 'MP4, 1280 × 588, 0:04, silent, no interface'),
   loop('midnight-zone', 'Midnight Zone', 'MP4, 1280 × 588, 0:05, silent, no interface'),
-  loop('open-water', 'Open Water', 'MP4, 1280 × 588, 0:05, silent, no interface', 'modes'),
+  loop('open-water', 'Open Water', "MP4, 1280 × 588, 0:08, silent, with the score and a run's result card", 'modes'),
   loop('pearl-shop', 'Pearl shop', 'MP4, 1280 × 588, 0:05, silent, the shop screen', 'modes'),
 ];
 
