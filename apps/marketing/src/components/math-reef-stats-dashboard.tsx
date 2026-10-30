@@ -70,7 +70,7 @@ async function fetchStats(params: URLSearchParams, secret: string, signal: Abort
 }
 
 export function MathReefStatsDashboard({ secret, onUnauthorized }: { secret: string; onUnauthorized: () => void }) {
-  const [filters, setFilters] = useState<Filters>({ from: '', to: '', channel: 'testflight', appVersion: '' });
+  const [filters, setFilters] = useState<Filters>({ from: '', to: '', channel: 'appstore', appVersion: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [result, setResult] = useState<{ stats: StatsResponse; dashboard: Dashboard } | null>(null);
