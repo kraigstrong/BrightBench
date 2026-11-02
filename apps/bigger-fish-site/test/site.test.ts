@@ -71,7 +71,7 @@ test('the facts match the game: five worlds of ten levels and a five-level Deep 
   );
   assert.equal(worlds.length, game.worldCount);
   assert.ok(facts.some((fact) => fact.value.includes(`${totalLevels} across 5 worlds`)));
-  assert.ok(facts.some((fact) => fact.label === 'Release' && fact.value.startsWith('November 3, 2026')));
+  assert.ok(facts.some((fact) => fact.label === 'Release' && fact.value.startsWith('Mid-November 2026')));
   // What's free: GameTuning.freeLevelsPerWorld and freeOpenWaterRunsPerDay in the game.
   const price = facts.find((fact) => fact.label === 'Price')?.value ?? '';
   assert.match(price, /first two levels of every other world/);

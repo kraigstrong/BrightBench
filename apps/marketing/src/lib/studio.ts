@@ -52,7 +52,7 @@ export const games: Game[] = [
     pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
     facts: ['5 worlds', '75 levels', 'iPhone and iPad'],
     // The App Store release day (game.releaseDay there). Switch this at launch.
-    status: 'Coming November 3',
+    status: 'Coming mid-November',
     icon: '/games/bigger-fish/icon.png',
     keyArt: '/games/bigger-fish/key-art.png',
     video: {
