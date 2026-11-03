@@ -67,7 +67,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'How do I start a circuit over?',
     answer:
-      'In a race on that circuit, open the gear menu and choose Clear best lap. It clears your best lap and its ghost on this device. To remove it from other players’ rivals and standings too, email us your Game Center nickname.',
+      'In a race on that circuit, open the gear menu and choose Clear best lap. It clears your best lap and its ghost on this device; your best on the online boards stays until a faster lap of yours replaces it.',
   },
   {
     question: 'Does it need an internet connection?',
