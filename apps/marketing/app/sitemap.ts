@@ -17,6 +17,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/privacy',
     '/math-reef/privacy',
     '/math-reef/support',
+    '/ghost-thread',
+    '/ghost-thread/privacy',
+    '/ghost-thread/support',
     '/learn',
   ];
 

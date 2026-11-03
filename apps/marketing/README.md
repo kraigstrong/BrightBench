@@ -286,5 +286,16 @@ Configuration:
   and never put it in an app. Without it, ghost uploads return 503.
 - `STATS_SECRET`: the stats key, shared by every game (see Stats viewer). Never put it in an app.
 
-Configure Vercel rate limiting on all of `/api/apex/*` before the app turns the service on (`ApexOnline.isEnabled`). No
-request or error logging in these routes.
+Vercel rate-limits all of `/api/apex/*` to 60 requests a minute per IP (the firewall rule "Apex lap service rate
+limit", live since 2026-11-01; `vercel firewall rules list --project bright-bench-marketing` shows it). No request or
+error logging in these routes. The Ghost Thread privacy policy (`/ghost-thread/privacy`) describes all of this: change
+it with the routes.
+
+## Ghost Thread's pages
+
+Ghost Thread has no site of its own, so its page (`/ghost-thread`, in the studio's dark look), privacy policy and
+support (`/ghost-thread/privacy`, `/ghost-thread/support`) are here, and are its App Store URLs. `src/lib/ghost-thread.ts`
+holds its facts and its call to action: the public TestFlight beta until `appStoreUrl` is set, then Apple's badge.
+Each circuit on the page laps its ideal line as the game's unlock screen does, drawn from the game itself: its
+`SiteArtTests` writes `circuits.json` (copied to `src/lib/ghost-thread-circuits.json`) and the logo
+(`public/games/ghost-thread/logo.png`). Copy them again when a circuit is added or changed.

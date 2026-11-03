@@ -56,6 +56,9 @@ export function StudioFooter() {
                 <a href={game.url}>{game.name}</a>
               </li>
             ))}
+            <li>
+              <Link href="/ghost-thread">Ghost Thread</Link>
+            </li>
           </ul>
         </div>
         <div>
