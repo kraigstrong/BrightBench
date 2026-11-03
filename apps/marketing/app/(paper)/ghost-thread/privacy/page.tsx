@@ -52,7 +52,7 @@ const sections: { title: string; body: string[] }[] = [
     title: 'How It Is Kept and Used',
     body: [
       'Laps are kept only as daily totals for each circuit: how many laps were driven, how their times were spread, and how often cars hit the walls. Individual laps, their sector times, and the version that sent them are not stored, and the totals are deleted after 90 days.',
-      'Best laps and their ghosts make up the online boards, so they are kept with no time limit; a faster lap of yours replaces yours. To have yours removed, email us your Game Center nickname, and any earlier one you raced under, and we will delete your best laps and ghosts on every circuit. Times on Game Center’s own leaderboards are kept by Apple.',
+      'Best laps and their ghosts make up the online boards, so they are kept with no time limit; a faster lap of yours replaces yours. Times on Game Center’s own leaderboards are kept by Apple.',
       'All of it is used only to run and improve Ghost Thread. It is never used for advertising or tracking, and never sold or shared.',
       'Ghost Thread plays without an internet connection. Laps that cannot be sent wait on the device, up to 500, and are sent the next time you open the game or finish a lap with a connection.',
     ],
