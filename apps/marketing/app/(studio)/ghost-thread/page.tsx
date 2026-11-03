@@ -147,7 +147,7 @@ export default function GhostThreadPage() {
           {circuitCount} circuits.
         </h2>
         <p className={styles.lede}>
-          Each one original, with the feel of a famous Formula 1 track. A good lap is about 30 seconds. The yellow
+          Each one original, with its own character. A good lap is about 30 seconds. The yellow
           thread is each one&apos;s ideal line, lapped at the speed it allows.
         </p>
         <ul className={styles.circuits}>
