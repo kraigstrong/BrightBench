@@ -28,6 +28,13 @@ export const ghostThread = {
     poster: '/games/ghost-thread/hero-poster.jpg',
     alt: 'Your car racing into a hairpin on Swirl, your blue ghost and the gold rival ghost just ahead.',
   },
+  /** The session summary after a lap, where it stands among every player's best: the App Store's fourth screenshot, cropped to it. */
+  standing: {
+    src: '/games/ghost-thread/standing.jpg',
+    width: 1600,
+    height: 1042,
+    alt: "A session's summary after a lap on Ardennes: a new personal best of 26.573 and a new gold medal, standing in the top 3%, 7th of 241, over a chart of every player's best lap, the ones it beats lit.",
+  },
 } as const;
 
 /** The public TestFlight group's link, for players who find the page before the App Store does. */

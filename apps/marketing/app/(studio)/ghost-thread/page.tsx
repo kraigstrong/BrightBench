@@ -147,6 +147,28 @@ export default function GhostThreadPage() {
         </ol>
       </section>
 
+      <section aria-labelledby="standing" className={`${styles.section} ${styles.standing}`}>
+        <div className={styles.standingCopy}>
+          <h2 className={styles.sectionTitle} id="standing">
+            See where you stand.
+          </h2>
+          <p className={styles.lede}>
+            Every lap counts. End a session and your best lap takes its place among every player&apos;s on that
+            circuit: your place, how near the top you are, and everyone&apos;s times laid out, the players you beat
+            lit.
+          </p>
+          <p className={styles.body}>Then race again, or share the lap and dare your friends to beat it.</p>
+        </div>
+        <Image
+          alt={ghostThread.standing.alt}
+          className={styles.standingShot}
+          height={ghostThread.standing.height}
+          sizes="(max-width: 960px) 100vw, 640px"
+          src={ghostThread.standing.src}
+          width={ghostThread.standing.width}
+        />
+      </section>
+
       <section aria-labelledby="circuits" className={styles.section}>
         <h2 className={styles.sectionTitle} id="circuits">
           {circuitCount} circuits.

@@ -126,6 +126,27 @@
   padding: clamp(40px, 6vw, 72px) var(--gutter) 0;
 }
 
+/* The screenshot beside its words, as the game shows it at the end of a session. */
+.standing {
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+}
+
+.standingCopy {
+  display: grid;
+  gap: 16px;
+}
+
+.standingShot {
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
 .sectionTitle {
   font-size: clamp(34px, 4.2vw, 52px);
   font-style: italic;
@@ -264,7 +285,8 @@
 }
 
 @media (max-width: 960px) {
-  .hero {
+  .hero,
+  .standing {
     grid-template-columns: 1fr;
   }
 
