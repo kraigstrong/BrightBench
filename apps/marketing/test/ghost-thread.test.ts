@@ -46,3 +46,9 @@ test("the game's logo and icon are in public/", () => {
     assert.ok(existsSync(new URL(path, publicDir)), `missing ${path}`);
   }
 });
+
+test("the hero's gameplay loop and its poster are in public/", () => {
+  for (const path of [ghostThread.video.src, ghostThread.video.poster]) {
+    assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `missing ${path}`);
+  }
+});

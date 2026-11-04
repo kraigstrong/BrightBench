@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { AppStoreBadgeLink } from '@/components/app-store-badge-link';
 import { CircuitThread } from '@/components/circuit-thread';
+import { LoopVideo } from '@/components/loop-video';
 import { circuits, ghostThread, ghostThreadCta } from '@/lib/ghost-thread';
 import { getPublicSiteOrigin } from '@/lib/site';
 import { studio } from '@/lib/studio';
@@ -96,7 +97,6 @@ function GetIt() {
 }
 
 export default function GhostThreadPage() {
-  const [hero] = circuits;
   return (
     <div className={styles.page}>
       <script
@@ -119,9 +119,14 @@ export default function GhostThreadPage() {
           </p>
           <GetIt />
         </div>
-        <div className={styles.heroCircuit}>
-          <CircuitThread circuit={hero} />
-          <p className={styles.heroName}>{hero.name}</p>
+        <div className={styles.heroVideo}>
+          <LoopVideo
+            className={styles.heroLoop}
+            eager
+            label={ghostThread.video.alt}
+            poster={ghostThread.video.poster}
+            src={ghostThread.video.src}
+          />
         </div>
       </section>
 

@@ -93,27 +93,29 @@
   opacity: 0.85;
 }
 
-.heroCircuit {
-  background: var(--panel);
+/* The game's screen, its own shape (a 6.9-inch iPhone's), so nothing of the road ahead is cropped. */
+.heroVideo {
+  aspect-ratio: 2868 / 1320;
+  background: var(--grass);
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  display: grid;
-  gap: 10px;
-  padding: clamp(20px, 3vw, 36px);
+  overflow: hidden;
 }
 
-.heroName,
+.heroLoop {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
 .circuitName {
   font-size: 22px;
   font-style: italic;
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-}
-
-.heroName {
-  text-align: center;
 }
 
 .section {

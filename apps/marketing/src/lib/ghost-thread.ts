@@ -19,6 +19,15 @@ export const ghostThread = {
   /** The one in-app purchase (non-consumable, Family Sharing on): every circuit, and every circuit added later. */
   unlock: { name: 'All Circuits', price: '$1.99' },
   contactEmail: 'support@brightbench.app',
+  /**
+   * The hero's gameplay loop, 60 fps and silent: your ghost and the gold rival into Swirl's hairpin, drawn by the game a
+   * frame at a time (its `scripts/store-capture.sh --footage ghosts`), so it never stutters.
+   */
+  video: {
+    src: '/games/ghost-thread/hero.mp4',
+    poster: '/games/ghost-thread/hero-poster.jpg',
+    alt: 'Your car racing into a hairpin on Swirl, your blue ghost and the gold rival ghost just ahead.',
+  },
 } as const;
 
 /** The public TestFlight group's link, for players who find the page before the App Store does. */
