@@ -70,6 +70,10 @@ export type ProductCard = {
   availability: 'coming-soon' | 'in-progress' | 'live';
   blurb: string;
   href: string;
+  /** Its App Store icon, 256 pixels square: an app with its own page has one, for the home page's Learn door. */
+  icon?: string;
+  /** Its logo card (1200×630, its name over its own gameplay), laid on the home page's Learn door as each game's is on Play. */
+  keyArt?: string;
   name: string;
   status: string;
 };
@@ -138,6 +142,8 @@ export const productCards: ProductCard[] = [
     blurb:
       'Practice analog, digital, and elapsed time with clean, tactile interactions.',
     href: '/products/time-tutor',
+    icon: '/apps/time-tutor/icon.png',
+    keyArt: '/apps/time-tutor/key-art.png',
     name: 'Time Tutor',
     status: 'Live on the App Store',
   },
@@ -148,6 +154,8 @@ export const productCards: ProductCard[] = [
     blurb:
       'Swim into the right answer: math practice from first sums to exponents for grades 1–5.',
     href: '/products/math-reef',
+    icon: '/apps/math-reef/icon.png',
+    keyArt: '/apps/math-reef/key-art.png',
     name: 'Math Reef',
     status: 'Live on the App Store',
   },

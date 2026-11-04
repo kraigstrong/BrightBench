@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { Fragment, type CSSProperties } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -50,16 +50,24 @@ function OutArrow() {
   );
 }
 
-/** An address that wraps after its slash rather than mid-word, as brightbench.app/ghost-thread must in its tile. */
-function Address({ domain }: { domain: string }) {
-  const [host, ...path] = domain.split('/');
-  if (!path.length) return domain;
-  return (
-    <>
-      {host}/<wbr />
-      {path.join('/')}
-    </>
-  );
+/**
+ * The learning apps with a card to lay on the Learn door, two of them as on Play. The first listed lies on top: Time
+ * Tutor's screen is at its card's right, where the top card would cover it, and Math Reef's name and fish are at its
+ * left, clear of the corner the top card covers.
+ */
+const learnCards = featuredProductCards
+  .flatMap(({ keyArt, name }) => (keyArt ? [{ keyArt, name }] : []))
+  .slice(0, 2)
+  .reverse();
+
+/** A tile's line that wraps between words but never at a word's own hyphen, as "mid-November" would. */
+function Words({ text }: { text: string }) {
+  return text.split(' ').map((word, index) => (
+    <Fragment key={index}>
+      {index > 0 ? ' ' : null}
+      {word.includes('-') ? <span className={styles.noBreak}>{word}</span> : word}
+    </Fragment>
+  ));
 }
 
 export default function StudioHomePage() {
@@ -109,7 +117,7 @@ export default function StudioHomePage() {
                   <span className={styles.titleText}>
                     <span className={styles.titleName}>{game.name}</span>{' '}
                     <span className={styles.titleMeta}>
-                      <Address domain={game.domain} />
+                      <Words text={game.status} />
                     </span>
                   </span>
                   {game.url.startsWith('/') ? <Arrow /> : <OutArrow />}
@@ -122,15 +130,12 @@ export default function StudioHomePage() {
         <section aria-labelledby="door-learn" className={`${styles.door} ${styles.learn}`}>
           <div className={styles.doorMain}>
             <div className={styles.learnMedia}>
-              <div className={styles.learnFox}>
-                <Image
-                  alt=""
-                  fill
-                  priority
-                  sizes="(max-width: 860px) 90vw, 520px"
-                  src="/mascots/brightbench-fox-sitting.png"
-                />
-              </div>
+              {/* Each app's card, laid as the games' are on Play; every app is listed below. */}
+              {learnCards.map((app) => (
+                <div className={styles.keyArt} key={app.name}>
+                  <Image alt="" fill priority sizes="(max-width: 860px) 56vw, 330px" src={app.keyArt} />
+                </div>
+              ))}
             </div>
             <div className={styles.doorCopy}>
               <h2 className={styles.doorTitle} id="door-learn">
@@ -151,7 +156,11 @@ export default function StudioHomePage() {
                   className={styles.title}
                   href={app.href}
                   style={{ '--accent': app.accent } as CSSProperties}>
-                  <span aria-hidden="true" className={styles.titleDot} />
+                  {app.icon ? (
+                    <Image alt="" className={styles.titleIcon} height={40} src={app.icon} width={40} />
+                  ) : (
+                    <span aria-hidden="true" className={styles.titleDot} />
+                  )}
                   <span className={styles.titleText}>
                     <span className={styles.titleName}>{app.name}</span>{' '}
                     <span className={styles.titleMeta}>{app.status}</span>
