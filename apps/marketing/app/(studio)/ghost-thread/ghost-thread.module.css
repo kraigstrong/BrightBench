@@ -93,17 +93,23 @@
   opacity: 0.85;
 }
 
-.heroCircuit {
-  background: var(--panel);
+/* The game's screen, its own shape (a 6.9-inch iPhone's), so nothing of the road ahead is cropped. */
+.heroVideo {
+  aspect-ratio: 2868 / 1320;
+  background: var(--grass);
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  display: grid;
-  gap: 10px;
-  padding: clamp(20px, 3vw, 36px);
+  overflow: hidden;
 }
 
-.heroName,
+.heroLoop {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
 .circuitName {
   font-size: 22px;
   font-style: italic;
@@ -112,16 +118,33 @@
   text-transform: uppercase;
 }
 
-.heroName {
-  text-align: center;
-}
-
 .section {
   display: grid;
   gap: 24px;
   margin: 0 auto;
   max-width: var(--page-width);
   padding: clamp(40px, 6vw, 72px) var(--gutter) 0;
+}
+
+/* The screenshot beside its words, as the game shows it at the end of a session. */
+.standing {
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+}
+
+.standingCopy {
+  display: grid;
+  gap: 16px;
+}
+
+.standingShot {
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: block;
+  height: auto;
+  width: 100%;
 }
 
 .sectionTitle {
@@ -262,7 +285,8 @@
 }
 
 @media (max-width: 960px) {
-  .hero {
+  .hero,
+  .standing {
     grid-template-columns: 1fr;
   }
 

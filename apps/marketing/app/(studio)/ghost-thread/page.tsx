@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { AppStoreBadgeLink } from '@/components/app-store-badge-link';
 import { CircuitThread } from '@/components/circuit-thread';
+import { LoopVideo } from '@/components/loop-video';
 import { circuits, ghostThread, ghostThreadCta } from '@/lib/ghost-thread';
 import { getPublicSiteOrigin } from '@/lib/site';
 import { studio } from '@/lib/studio';
@@ -96,7 +97,6 @@ function GetIt() {
 }
 
 export default function GhostThreadPage() {
-  const [hero] = circuits;
   return (
     <div className={styles.page}>
       <script
@@ -119,9 +119,14 @@ export default function GhostThreadPage() {
           </p>
           <GetIt />
         </div>
-        <div className={styles.heroCircuit}>
-          <CircuitThread circuit={hero} />
-          <p className={styles.heroName}>{hero.name}</p>
+        <div className={styles.heroVideo}>
+          <LoopVideo
+            className={styles.heroLoop}
+            eager
+            label={ghostThread.video.alt}
+            poster={ghostThread.video.poster}
+            src={ghostThread.video.src}
+          />
         </div>
       </section>
 
@@ -140,6 +145,28 @@ export default function GhostThreadPage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section aria-labelledby="standing" className={`${styles.section} ${styles.standing}`}>
+        <div className={styles.standingCopy}>
+          <h2 className={styles.sectionTitle} id="standing">
+            See where you stand.
+          </h2>
+          <p className={styles.lede}>
+            Every lap counts. End a session and your best lap takes its place among every player&apos;s on that
+            circuit: your place, how near the top you are, and everyone&apos;s times laid out, the players you beat
+            lit.
+          </p>
+          <p className={styles.body}>Then race again, or share the lap and dare your friends to beat it.</p>
+        </div>
+        <Image
+          alt={ghostThread.standing.alt}
+          className={styles.standingShot}
+          height={ghostThread.standing.height}
+          sizes="(max-width: 960px) 100vw, 640px"
+          src={ghostThread.standing.src}
+          width={ghostThread.standing.width}
+        />
       </section>
 
       <section aria-labelledby="circuits" className={styles.section}>
