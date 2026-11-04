@@ -171,132 +171,88 @@
   transform: translateY(-1px);
 }
 
+/* Two moments of practice, as kids see them: Math Reef's worked answer on a wide screen, Time Tutor's clock on a phone
+   in front of it, a note on what each one teaches, and the fox at the foot. */
 .heroArt {
   align-self: center;
-  align-items: center;
-  display: flex;
-  justify-content: center;
-}
-
-.heroIllustration {
-  align-items: center;
-  display: flex;
-  justify-content: center;
+  aspect-ratio: 1.12;
+  justify-self: end;
   position: relative;
-  width: min(34rem, 100%);
+  width: min(36rem, 100%);
 }
 
-.heroPanel,
-.heroArch,
-.heroNotebook,
-.heroPath,
-.heroPathDots,
-.heroAccentStar,
-.heroAccentPill {
+.heroReef,
+.heroPhone {
+  background: #12355b;
+  border: 0.45rem solid #12355b;
+  box-shadow: 0 24px 48px rgba(18, 53, 91, 0.18);
+  overflow: hidden;
   position: absolute;
 }
 
-.heroPanel {
-  background: rgba(255, 255, 255, 0.34);
-  border: 1px solid rgba(18, 53, 91, 0.07);
-  border-radius: 2.25rem;
-  bottom: 14%;
-  height: 13.5rem;
-  left: 14%;
-  transform: rotate(-5deg);
-  width: 21rem;
+.heroReef img,
+.heroPhone img {
+  object-fit: cover;
+  object-position: left top;
 }
 
-.heroArch {
-  background: rgba(233, 122, 95, 0.16);
-  border-radius: 999px 999px 48% 48% / 72% 72% 28% 28%;
-  height: 16.5rem;
-  left: 18%;
-  top: 16%;
-  width: 10.5rem;
-}
-
-.heroNotebook {
-  background: rgba(241, 189, 99, 0.16);
-  border-radius: 1.3rem;
-  bottom: 17%;
-  height: 5rem;
-  right: 12%;
-  width: 11rem;
-}
-
-.heroPath {
-  border: 1.5px solid rgba(111, 165, 216, 0.28);
-  border-color: transparent transparent rgba(111, 165, 216, 0.28) transparent;
-  border-radius: 999px;
-  height: 6.5rem;
-  position: absolute;
-  right: 12%;
-  top: 14%;
-  transform: rotate(8deg);
-  width: 9.5rem;
-}
-
-.heroPathDots {
-  bottom: 17%;
-  left: 21%;
-  position: absolute;
-  width: 1.6rem;
-}
-
-.heroPathDots::before,
-.heroPathDots::after {
-  background: rgba(241, 189, 99, 0.16);
-  border-radius: 999px;
-  content: '';
-  display: block;
-  height: 0.22rem;
-  position: absolute;
-  width: 0.22rem;
-}
-
-.heroPathDots::before {
+/* A little narrower than the screen, from its left edge: the round's close button stays out of frame. */
+.heroReef {
+  aspect-ratio: 1.9;
+  border-radius: 1.4rem;
   left: 0;
+  rotate: -3deg;
+  top: 10%;
+  width: 80%;
 }
 
-.heroPathDots::after {
-  left: 0.72rem;
+.heroPhone {
+  aspect-ratio: 540 / 980;
+  border-radius: 1.6rem;
+  bottom: 2%;
+  right: 0;
+  rotate: 3deg;
+  width: 34%;
 }
 
-.heroAccentStar {
-  color: #7b8fd5;
-  font-size: 1.05rem;
-  left: 27%;
-  top: 17%;
-}
-
-.heroAccentStar::before {
-  content: '✦';
-}
-
-.heroAccentPill {
-  background: rgba(46, 139, 139, 0.18);
+.heroNote {
+  background: #fff9f2;
+  border: 1px solid #decdb9;
   border-radius: 999px;
-  height: 1rem;
-  left: 69%;
-  top: 24%;
-  transform: rotate(-28deg);
-  width: 4.25rem;
+  box-shadow: 0 8px 18px rgba(18, 53, 91, 0.1);
+  color: #12355b;
+  font-size: 0.86rem;
+  font-weight: 800;
+  margin: 0;
+  padding: 0.4rem 0.85rem;
+  position: absolute;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.heroNoteReef {
+  left: 5%;
+  top: 1%;
+}
+
+/* Across the phone's foot, clear of the fox. */
+.heroNoteClock {
+  bottom: 6%;
+  right: 8%;
 }
 
 .heroFoxFrame {
-  height: 24rem;
-  position: relative;
-  transform: translate(0.8rem, 0.15rem);
-  width: 20rem;
+  bottom: 10%;
+  height: 40%;
+  left: 3%;
+  position: absolute;
+  width: 30%;
   z-index: 1;
 }
 
 .heroFox {
-  height: 100%;
   object-fit: contain;
-  object-position: center center;
-  width: 100%;
+  object-position: bottom center;
 }
 
 .section {
@@ -334,10 +290,194 @@
   max-width: 38rem;
 }
 
-.cardGrid {
+/* A live app: its screens beside what it teaches. Each wears its own color, as its page does. */
+.appFeature {
+  align-items: center;
+  background: #fff9f2;
+  border: 1.5px solid var(--card-accent);
+  border-radius: 1.85rem;
+  box-shadow: 0 16px 34px rgba(18, 53, 91, 0.08);
+  display: grid;
+  gap: clamp(1.5rem, 3.5vw, 2.75rem);
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  padding: clamp(1.15rem, 3vw, 2.25rem);
+}
+
+/* A wide app's screens stand at the right, so the two apps alternate down the page. */
+.appWide {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+}
+
+.appWide .appScreens {
+  order: 2;
+}
+
+.appScreens {
+  display: grid;
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+}
+
+/* Upright screens stand side by side, the middle one raised. */
+.appTall {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+}
+
+.appTall .appScreens {
+  align-items: start;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-top: 1.1rem;
+}
+
+.appTall .appScreen:nth-child(2) {
+  translate: 0 -1.1rem;
+}
+
+.appScreen {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+.appScreenFrame {
+  background: #12355b;
+  border: 0.32rem solid #12355b;
+  border-radius: 1.15rem;
+  box-shadow: 0 14px 30px rgba(18, 53, 91, 0.14);
+  overflow: hidden;
+  position: relative;
+}
+
+.appTall .appScreenFrame {
+  aspect-ratio: 540 / 980;
+}
+
+/* A wide screen, a little narrower than the App Store's, from its left edge: every world and answer is in frame, and
+   the settings and close buttons at the right aren't. */
+.appWide .appScreenFrame {
+  aspect-ratio: 1.92;
+  border-radius: 1rem;
+}
+
+.appScreenFrame img {
+  object-fit: cover;
+  object-position: left top;
+}
+
+.appScreenCaption {
+  color: #12355b;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.appCopy {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.appIdentity {
+  align-items: center;
+  display: flex;
+  gap: 0.9rem;
+}
+
+.appIcon {
+  border-radius: 22%;
+  box-shadow: 0 6px 16px rgba(18, 53, 91, 0.16);
+  flex: none;
+}
+
+.appName {
+  font-size: clamp(1.75rem, 2.6vw, 2.2rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.appMeta {
+  color: color-mix(in srgb, var(--card-accent) 70%, #12355b 30%);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin: 0.2rem 0 0;
+  text-transform: uppercase;
+}
+
+.appDetail {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.appLabel {
+  color: #12355b;
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.appList {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.appList li {
+  color: #4f6275;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  padding-left: 1.4rem;
+  position: relative;
+}
+
+/* A check in the app's color. */
+.appList li::before {
+  border-bottom: 2.5px solid var(--card-accent);
+  border-left: 2.5px solid var(--card-accent);
+  content: '';
+  height: 0.34rem;
+  left: 0.15rem;
+  position: absolute;
+  rotate: -45deg;
+  top: 0.42rem;
+  width: 0.7rem;
+}
+
+.appModes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.appModes li {
+  background: color-mix(in srgb, var(--card-accent) 14%, #fff9f2);
+  border-radius: 999px;
+  color: #12355b;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 0.32rem 0.8rem;
+}
+
+.appCtaRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.2rem;
+  margin-top: 0.3rem;
+}
+
+.appMore {
+  color: #12355b;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--card-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 .suiteCard {
@@ -363,25 +503,6 @@
   transform: translateY(-3px);
 }
 
-.liveCard {
-  box-shadow: 0 16px 34px rgba(18, 53, 91, 0.1);
-}
-
-.cardAccent {
-  background: var(--card-accent);
-  border-radius: 999px;
-  height: 0.6rem;
-  width: 3.5rem;
-}
-
-.cardTitle {
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  margin: 0;
-}
-
 /* The title link stretches over the whole card, so the card is one click target. */
 .cardLink {
   color: inherit;
@@ -401,14 +522,6 @@
 .suiteCard:has(.cardLink:focus-visible) {
   outline: 3px solid var(--card-accent);
   outline-offset: 3px;
-}
-
-.cardBody {
-  color: #5b6c7d;
-  font-size: 0.97rem;
-  line-height: 1.65;
-  margin: 0;
-  min-height: 5.1rem;
 }
 
 .guideGrid {
@@ -439,21 +552,6 @@
   text-decoration-color: #e97a5f;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
-}
-
-.cardFooter {
-  display: grid;
-  gap: 0.8rem;
-  margin-top: auto;
-  padding-top: 0.1rem;
-}
-
-.status {
-  color: var(--card-accent);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .appStoreButton {
@@ -630,9 +728,33 @@
   padding: 0.9rem 1rem;
 }
 
+.roadmapApp {
+  align-items: start;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.roadmapDot {
+  background: var(--card-accent);
+  border: 3px solid #fff9f2;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(18, 53, 91, 0.12);
+  flex: none;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  width: 1.1rem;
+}
+
 .roadmapName {
   color: #12355b;
   font-weight: 800;
+}
+
+.roadmapBlurb {
+  color: #5b6c7d;
+  font-size: 0.93rem;
+  line-height: 1.5;
+  margin: 0.15rem 0 0;
 }
 
 .roadmapStatus {
@@ -756,7 +878,6 @@
 }
 
 @media (max-width: 1120px) {
-  .cardGrid,
   .guideGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -787,42 +908,18 @@
   }
 
   .heroArt {
-    justify-content: flex-start;
+    justify-self: start;
+    width: min(32rem, 100%);
   }
 
-  .heroIllustration {
-    width: min(26rem, 100%);
+  .appFeature,
+  .appTall,
+  .appWide {
+    grid-template-columns: 1fr;
   }
 
-  .heroPanel {
-    height: 11rem;
-    left: 11%;
-    width: 17rem;
-  }
-
-  .heroArch {
-    height: 13rem;
-    left: 15%;
-    width: 8.6rem;
-  }
-
-  .heroNotebook {
-    height: 4.2rem;
-    width: 9rem;
-  }
-
-  .heroPath {
-    right: 11%;
-    width: 8rem;
-  }
-
-  .heroFoxFrame {
-    height: 18rem;
-    width: 15rem;
-  }
-
-  .heroFox {
-    width: 100%;
+  .appWide .appScreens {
+    order: 0;
   }
 
   .approachGrid {
@@ -872,7 +969,6 @@
     max-width: 100%;
   }
 
-  .cardGrid,
   .guideGrid {
     grid-template-columns: 1fr;
   }
