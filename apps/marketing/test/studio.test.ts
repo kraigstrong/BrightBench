@@ -6,14 +6,17 @@ import { games } from '../src/lib/studio.ts';
 
 const publicDir = new URL('../public/', import.meta.url);
 
-test('Play lists Bigger Fish and Double Putt, each linking to its own site', () => {
+test('Play lists Bigger Fish, Double Putt and Ghost Thread, each linking to its own site', () => {
   assert.deepEqual(
     games.map((game) => game.url),
-    ['https://biggerfish.app', 'https://doubleputt.app'],
+    ['https://biggerfish.app', 'https://doubleputt.app', '/ghost-thread'],
   );
   for (const game of games) {
-    assert.equal(new URL(game.url).hostname, game.domain, `${game.name} shows the address it links to`);
-    assert.equal(new URL(game.trailerUrl).hostname, game.domain, `${game.name}'s trailer is on its own site`);
+    const url = new URL(game.url, 'https://brightbench.app');
+    assert.equal(`${url.hostname}${url.pathname.replace(/\/$/, '')}`, game.domain, `${game.name} shows the address it links to`);
+    if (game.trailerUrl) {
+      assert.equal(new URL(game.trailerUrl).hostname, url.hostname, `${game.name}'s trailer is on its own site`);
+    }
   }
 });
 
