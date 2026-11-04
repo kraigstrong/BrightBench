@@ -9,7 +9,7 @@ import styles from './play.module.css';
 
 const title = 'Games for iPhone and iPad | BrightBench';
 const description =
-  'Family-friendly games from BrightBench: Bigger Fish, a one-touch arcade game, and Double Putt, a mini golf puzzle game. No ads, no accounts, and they play offline.';
+  'Family-friendly games from BrightBench: Bigger Fish, a one-touch arcade game, Double Putt, a mini golf puzzle game, and Ghost Thread, a one-touch racing game. No ads, no accounts, and they play offline.';
 
 export const metadata: Metadata = {
   alternates: { canonical: '/play' },
@@ -79,12 +79,14 @@ export default function PlayPage() {
               <a className={styles.visit} href={game.url}>
                 Visit {game.domain}
               </a>
-              <a className={styles.trailer} href={game.trailerUrl}>
-                <svg aria-hidden="true" height="14" viewBox="0 0 24 24" width="14">
-                  <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
-                </svg>
-                Watch the {game.name} trailer
-              </a>
+              {game.trailerUrl ? (
+                <a className={styles.trailer} href={game.trailerUrl}>
+                  <svg aria-hidden="true" height="14" viewBox="0 0 24 24" width="14">
+                    <path d="M8 5.5v13l11-6.5z" fill="currentColor" />
+                  </svg>
+                  Watch the {game.name} trailer
+                </a>
+              ) : null}
             </div>
           </div>
         </section>
