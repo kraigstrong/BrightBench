@@ -50,6 +50,18 @@ function OutArrow() {
   );
 }
 
+/** An address that wraps after its slash rather than mid-word, as brightbench.app/ghost-thread must in its tile. */
+function Address({ domain }: { domain: string }) {
+  const [host, ...path] = domain.split('/');
+  if (!path.length) return domain;
+  return (
+    <>
+      {host}/<wbr />
+      {path.join('/')}
+    </>
+  );
+}
+
 export default function StudioHomePage() {
   return (
     <>
@@ -70,7 +82,8 @@ export default function StudioHomePage() {
         <section aria-labelledby="door-play" className={`${styles.door} ${styles.play}`}>
           <div className={styles.doorMain}>
             <div className={styles.playMedia}>
-              {games.map((game) => (
+              {/* Two cards on the table, as the share image lays them (opengraph-image.tsx); every game is listed below. */}
+              {games.slice(0, 2).map((game) => (
                 <div className={styles.keyArt} key={game.slug}>
                   <Image alt="" fill priority sizes="(max-width: 860px) 56vw, 330px" src={game.keyArt} />
                 </div>
@@ -95,9 +108,11 @@ export default function StudioHomePage() {
                   <Image alt="" className={styles.titleIcon} height={40} src={game.icon} width={40} />
                   <span className={styles.titleText}>
                     <span className={styles.titleName}>{game.name}</span>{' '}
-                    <span className={styles.titleMeta}>{game.domain}</span>
+                    <span className={styles.titleMeta}>
+                      <Address domain={game.domain} />
+                    </span>
                   </span>
-                  <OutArrow />
+                  {game.url.startsWith('/') ? <Arrow /> : <OutArrow />}
                 </a>
               </li>
             ))}

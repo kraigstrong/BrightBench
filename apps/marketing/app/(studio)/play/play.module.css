@@ -105,6 +105,16 @@
     linear-gradient(165deg, #2f6e43 0%, #163322 50%, #10231a 100%);
 }
 
+/* Ghost Thread's trackside: mown grass running into the night, with the logo's thread yellow. */
+.ghost-thread {
+  --g-accent: #ffd11a;
+  --g-accent-ink: #0b1d33;
+  --g-muted: #c6d8c2;
+  background:
+    radial-gradient(60% 80% at 90% 10%, rgb(255 209 26 / 0.14) 0%, transparent 70%),
+    linear-gradient(165deg, #3f7536 0%, #1c3b22 50%, #0b1d33 100%);
+}
+
 /* A wide game fills the card's left side, edge to edge, and fades into its words, as biggerfish.app's hero does. */
 .landscape {
   align-items: stretch;
