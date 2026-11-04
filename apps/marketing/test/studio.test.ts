@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
 
+import { featuredProductCards } from '../src/lib/site.ts';
 import { games } from '../src/lib/studio.ts';
 
 const publicDir = new URL('../public/', import.meta.url);
@@ -24,6 +25,19 @@ test('every game picture and loop is in public/', () => {
   for (const game of games) {
     for (const path of [game.icon, game.keyArt, game.video.poster, game.video.src]) {
       assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `${game.name} is missing ${path}`);
+    }
+  }
+});
+
+test("the Learn door has every listed app's icon and card, as Play has each game's", () => {
+  assert.deepEqual(
+    featuredProductCards.map((app) => app.name),
+    ['Time Tutor', 'Math Reef'],
+  );
+  for (const app of featuredProductCards) {
+    for (const path of [app.icon, app.keyArt]) {
+      assert.ok(path, `${app.name} has no icon or card`);
+      assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `${app.name} is missing ${path}`);
     }
   }
 });

@@ -93,7 +93,8 @@
   background: radial-gradient(70% 90% at 50% 40%, #1b4672 0%, #0b1d33 100%);
 }
 
-/* Each game as its own card, in its own key art: two cards laid on the table, the second over the first's corner. */
+/* Each game, or app, as its own card, in its own key art: two cards laid on the table, the second over the first's
+   corner. */
 .keyArt {
   aspect-ratio: 1200 / 630;
   border: 1px solid rgb(255 255 255 / 0.16);
@@ -123,22 +124,14 @@
 
 .learnMedia {
   background:
-    radial-gradient(60% 75% at 50% 62%, #fbe0c8 0%, rgb(251 224 200 / 0) 100%),
+    radial-gradient(60% 75% at 50% 50%, #fbe0c8 0%, rgb(251 224 200 / 0) 100%),
     linear-gradient(180deg, #f6efe3 0%, #fff9f2 100%);
 }
 
-/* The whole picture, scaled so the fox (the middle 70% of its height, a little high) fills the frame with a little
-   room above its ears and below its paws, and nudged down to sit centred. */
-.learnFox {
-  inset: 0;
-  position: absolute;
-  scale: 1.19;
-  transition: scale 400ms ease;
-  translate: 0 5.8%;
-}
-
-.learnFox img {
-  object-fit: contain;
+/* On the paper table, a card's edge and shadow are ink. */
+.learnMedia .keyArt {
+  border-color: rgb(18 53 91 / 0.12);
+  box-shadow: 0 16px 36px rgb(18 53 91 / 0.24);
 }
 
 .doorCopy {
@@ -207,10 +200,6 @@
 .doorMain:hover .keyArt:nth-child(2) {
   rotate: 6deg;
   translate: 3% 2%;
-}
-
-.doorMain:hover .learnFox {
-  scale: 1.23;
 }
 
 .learn .doorCta:focus-visible {
@@ -288,6 +277,10 @@
   font-size: 14px;
 }
 
+.noBreak {
+  white-space: nowrap;
+}
+
 .title .arrow,
 .title .outArrow {
   color: var(--door-muted);
@@ -312,7 +305,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .keyArt,
-  .learnFox,
   .doorCta {
     transition: none;
   }

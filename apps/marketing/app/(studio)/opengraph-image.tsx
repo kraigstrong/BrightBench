@@ -14,8 +14,8 @@ const playLine = games.map((game) => game.name).join(' · ');
 const learnLine = featuredProductCards.map((app) => app.name).join(' · ');
 
 /**
- * Where each game's card lies in the Play door, as on the page: the second over the first's far corner, clear of its
- * name (the left half of each card's art).
+ * Where each card lies in its door, as on the page: the second over the first's far corner, clear of its name (the
+ * left half of each card's art).
  */
 const cardPlacements = [
   { left: 182, rotate: -5, top: 22 },
@@ -23,12 +23,22 @@ const cardPlacements = [
 ];
 const cardSize = { height: 110, width: 210 };
 
+type Card = { key: string; src: string };
+
+/** The learning apps' cards, the first listed on top, as the page lays them (page.tsx). */
+const learnKeyArts = featuredProductCards
+  .flatMap(({ keyArt, name }) => (keyArt ? [{ keyArt, name }] : []))
+  .slice(0, cardPlacements.length)
+  .reverse();
+
 export default async function Image() {
-  const [keyArts, fox, fonts] = await Promise.all([
+  const [playCards, learnCards, fonts] = await Promise.all([
     Promise.all(
-      games.slice(0, cardPlacements.length).map(async (game) => ({ slug: game.slug, src: await publicImage(game.keyArt) })),
+      games
+        .slice(0, cardPlacements.length)
+        .map(async (game): Promise<Card> => ({ key: game.slug, src: await publicImage(game.keyArt) })),
     ),
-    publicImage('/mascots/brightbench-fox-sitting.png'),
+    Promise.all(learnKeyArts.map(async (app): Promise<Card> => ({ key: app.name, src: await publicImage(app.keyArt) }))),
     Promise.all([
       nunito(900, `${studio.name}${studio.tagline}PlayLearn`),
       nunito(800, `${playLine}${learnLine}`),
@@ -67,30 +77,13 @@ export default async function Image() {
               position: 'relative',
               width: 522,
             }}>
-            {keyArts.map((art, index) => (
-              <img
-                alt=""
-                height={cardSize.height}
-                key={art.slug}
-                src={art.src}
-                style={{
-                  border: '1px solid rgba(255, 255, 255, 0.18)',
-                  borderRadius: 10,
-                  boxShadow: '0 12px 28px rgba(0, 0, 0, 0.5)',
-                  left: cardPlacements[index]?.left,
-                  position: 'absolute',
-                  top: cardPlacements[index]?.top,
-                  transform: `rotate(${cardPlacements[index]?.rotate}deg)`,
-                }}
-                width={cardSize.width}
-              />
-            ))}
+            {cardImages(playCards, { border: 'rgba(255, 255, 255, 0.18)', shadow: '0 12px 28px rgba(0, 0, 0, 0.5)' })}
             <Door line={playLine} lineColor={night.muted} title="Play" titleColor={night.cream} />
           </div>
 
           <div
             style={{
-              background: `radial-gradient(70% 90% at 72% 60%, #fbe0c8 0%, ${night.paper} 100%)`,
+              background: `radial-gradient(70% 90% at 60% 35%, #fbe0c8 0%, ${night.paper} 100%)`,
               borderRadius: 30,
               display: 'flex',
               height: 270,
@@ -98,7 +91,7 @@ export default async function Image() {
               position: 'relative',
               width: 522,
             }}>
-            <img alt="" height={260} src={fox} style={{ position: 'absolute', right: -34, top: 18 }} width={390} />
+            {cardImages(learnCards, { border: 'rgba(18, 53, 91, 0.12)', shadow: '0 12px 28px rgba(18, 53, 91, 0.26)' })}
             <Door line={learnLine} lineColor="#5b6c7d" title="Learn" titleColor={night.ink} />
           </div>
         </div>
@@ -106,6 +99,28 @@ export default async function Image() {
     ),
     { ...size, fonts: fonts.flat() },
   );
+}
+
+/** A door's two cards, laid on its table: a list of pictures, since the image renderer takes no component returning one. */
+function cardImages(cards: Card[], { border, shadow }: { border: string; shadow: string }) {
+  return cards.map((card, index) => (
+    <img
+      alt=""
+      height={cardSize.height}
+      key={card.key}
+      src={card.src}
+      style={{
+        border: `1px solid ${border}`,
+        borderRadius: 10,
+        boxShadow: shadow,
+        left: cardPlacements[index]?.left,
+        position: 'absolute',
+        top: cardPlacements[index]?.top,
+        transform: `rotate(${cardPlacements[index]?.rotate}deg)`,
+      }}
+      width={cardSize.width}
+    />
+  ));
 }
 
 /** A door's name and what's behind it, in its bottom-left corner. */
