@@ -20,8 +20,8 @@ export const game = {
    */
   retryLine: 'In the beta, players tried again after 98% of lost runs.',
   developer: 'Kraig Strong',
-  /** When it comes to the App Store, announced before launch (App Review ran past the planned November 3). */
-  releaseDay: 'mid-November',
+  /** The day it came out on the App Store (App Review ran past the planned November 3). */
+  releaseDay: 'November 5',
   releaseYear: 2026,
   platform: 'iPhone and iPad',
   requirements: 'iPhone with iOS 17 or later, or iPad with iPadOS 17 or later. Plays in landscape.',
@@ -35,7 +35,7 @@ export const totalLevels = game.worldCount * (game.levelsPerWorld + game.deepEnd
 /** The press kit's fact sheet (its website and contact come from the site's settings). */
 export const facts: { label: string; value: string }[] = [
   { label: 'Developer', value: `${game.developer}, BrightBench (independent)` },
-  { label: 'Release', value: `Mid-November ${game.releaseYear}` },
+  { label: 'Release', value: `${game.releaseDay}, ${game.releaseYear}, on the App Store` },
   { label: 'Platform', value: 'iPhone and iPad, iOS 17 and iPadOS 17 or later. Made for iPhone Duo.' },
   {
     label: 'Price',
