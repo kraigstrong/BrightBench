@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as StoreReview from 'expo-store-review';
+import { AppState } from 'react-native';
 
 import {
   REVIEW_REQUEST_STORAGE_KEY,
@@ -10,12 +12,25 @@ import {
   normalizeReviewRequestState,
   recordFinishedRound,
   recordReviewRequested,
+  requestReviewIfDue,
   shouldRequestReview,
   type ReviewRequestState,
 } from '@/lib/review-request';
 
 const getItemMock = AsyncStorage.getItem as jest.Mock;
 const setItemMock = AsyncStorage.setItem as jest.Mock;
+const isAvailableAsyncMock = StoreReview.isAvailableAsync as jest.Mock;
+const requestReviewMock = StoreReview.requestReview as jest.Mock;
+
+const PENDING_REVIEW = JSON.stringify({
+  lastRequestAt: null,
+  pending: true,
+  requestCount: 0,
+});
+
+function setAppState(value: unknown) {
+  Object.defineProperty(AppState, 'currentState', { configurable: true, value });
+}
 
 const NOW = Date.UTC(2026, 10, 6);
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -187,5 +202,69 @@ describe('review request storage', () => {
       REVIEW_REQUEST_STORAGE_KEY,
       JSON.stringify({ lastRequestAt: NOW, pending: false, requestCount: 1 }),
     );
+  });
+});
+
+describe('requesting a review', () => {
+  const originalAppState = AppState.currentState;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getItemMock.mockImplementation((key: string) =>
+      Promise.resolve(key === REVIEW_REQUEST_STORAGE_KEY ? PENDING_REVIEW : null),
+    );
+    setItemMock.mockImplementation(() => Promise.resolve());
+    isAvailableAsyncMock.mockResolvedValue(true);
+    setAppState('active');
+  });
+
+  afterAll(() => {
+    setAppState(originalAppState);
+    getItemMock.mockImplementation(() => Promise.resolve(null));
+    setItemMock.mockImplementation(() => Promise.resolve());
+  });
+
+  it('asks StoreKit once the request is recorded', async () => {
+    await expect(requestReviewIfDue(() => false)).resolves.toBe(true);
+
+    expect(setItemMock).toHaveBeenCalledWith(
+      REVIEW_REQUEST_STORAGE_KEY,
+      expect.stringContaining('"requestCount":1'),
+    );
+    expect(requestReviewMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['Settings closes', { cancel: true, appState: 'active' }],
+    ['the app leaves the foreground', { cancel: false, appState: 'background' }],
+  ])(
+    'does not show the sheet when %s while the request is being recorded',
+    async (_trigger, { cancel, appState }) => {
+      let cancelled = false;
+      setItemMock.mockImplementation(() => {
+        cancelled = cancel;
+        setAppState(appState);
+        return Promise.resolve();
+      });
+
+      await expect(requestReviewIfDue(() => cancelled)).resolves.toBe(false);
+
+      // The ask is spent (recorded) but never shown: failing safe.
+      expect(setItemMock).toHaveBeenCalledWith(
+        REVIEW_REQUEST_STORAGE_KEY,
+        expect.stringContaining('"requestCount":1'),
+      );
+      expect(requestReviewMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it('does not ask when the request cannot be saved', async () => {
+    setItemMock.mockRejectedValue(new Error('disk full'));
+
+    await expect(recordReviewRequested(NOW)).resolves.toBe(false);
+    await expect(requestReviewIfDue(() => false)).resolves.toBe(false);
+
+    expect(setItemMock).toHaveBeenCalled();
+    expect(requestReviewMock).not.toHaveBeenCalled();
   });
 });

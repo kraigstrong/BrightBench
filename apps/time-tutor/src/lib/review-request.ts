@@ -115,11 +115,13 @@ export async function loadReviewRequestState(): Promise<ReviewRequestState> {
   }
 }
 
+/** Returns whether the write landed; storage errors are swallowed. */
 async function saveReviewRequestState(state: ReviewRequestState) {
   try {
     await AsyncStorage.setItem(REVIEW_REQUEST_STORAGE_KEY, JSON.stringify(state));
+    return true;
   } catch {
-    // Review timing is best-effort; a failed write just means no prompt.
+    return false;
   }
 }
 
@@ -139,7 +141,11 @@ export async function isReviewRequestDue(now: number = Date.now()) {
   return shouldRequestReview(await loadReviewRequestState(), now);
 }
 
-/** Returns whether a request was recorded (and so should be made). */
+/**
+ * Returns whether a request was recorded (and so may be made). A request that
+ * couldn't be saved isn't made: unsaved, it would stay due on every visit and
+ * slip past the two-request and 90-day limits.
+ */
 export async function recordReviewRequested(now: number = Date.now()) {
   const state = await loadReviewRequestState();
   const next = applyDidRequest(state, now);
@@ -148,8 +154,7 @@ export async function recordReviewRequested(now: number = Date.now()) {
     return false;
   }
 
-  await saveReviewRequestState(next);
-  return true;
+  return saveReviewRequestState(next);
 }
 
 /**
@@ -176,6 +181,13 @@ export async function requestReviewIfDue(isCancelled: () => boolean) {
     }
 
     if (!(await recordReviewRequested())) {
+      return false;
+    }
+
+    // Settings may have closed, or the app left the foreground, while the
+    // record was saving. Fail safe: that spends this ask without showing the
+    // sheet, rather than risk it landing on a child's screen.
+    if (isCancelled() || AppState.currentState !== 'active') {
       return false;
     }
 
