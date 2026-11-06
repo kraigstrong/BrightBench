@@ -75,22 +75,7 @@ export type ProductCard = {
   /** Its logo card (1200×630, its name over its own gameplay), laid on the home page's Learn door as each game's is on Play. */
   keyArt?: string;
   name: string;
-  /** How Learn shows a live app: the skill it teaches and screens of kids practicing it. */
-  showcase?: AppShowcase;
   status: string;
-};
-
-/** A screen from an app, as kids see it: the moment of practice it shows, for anyone who can't see it, and its name. */
-export type AppScreen = { alt: string; caption: string; src: string };
-
-export type AppShowcase = {
-  /** "Telling time": what it teaches, beside its grades. */
-  skill: string;
-  /** What its page's modes are called in it: "Modes", "Worlds". */
-  modesLabel: string;
-  /** Upright phone screens (540×980) or wide ones (2868×1320, as the App Store has them). */
-  orientation: 'portrait' | 'landscape';
-  screens: AppScreen[];
 };
 
 type BaseDiscoveryPage = {
@@ -160,28 +145,6 @@ export const productCards: ProductCard[] = [
     icon: '/apps/time-tutor/icon.png',
     keyArt: '/apps/time-tutor/key-art.png',
     name: 'Time Tutor',
-    showcase: {
-      modesLabel: 'Modes',
-      orientation: 'portrait',
-      screens: [
-        {
-          alt: 'Explore Time: an analog clock set to 3:30, with the same time in digital below it.',
-          caption: 'Explore Time',
-          src: '/apps/time-tutor/screens/explore-time.png',
-        },
-        {
-          alt: 'Read the Clock: an analog clock showing 4:10, with hour and minute pickers to enter the time.',
-          caption: 'Read the Clock',
-          src: '/apps/time-tutor/screens/read-the-clock-410.png',
-        },
-        {
-          alt: 'Elapsed Time: how much time passes from 4:00 PM to 9:10 PM, answered in hours and minutes.',
-          caption: 'Elapsed Time',
-          src: '/apps/time-tutor/screens/elapsed-time.png',
-        },
-      ],
-      skill: 'Telling time',
-    },
     status: 'Live on the App Store',
   },
   {
@@ -194,23 +157,6 @@ export const productCards: ProductCard[] = [
     icon: '/apps/math-reef/icon.png',
     keyArt: '/apps/math-reef/key-art.png',
     name: 'Math Reef',
-    showcase: {
-      modesLabel: 'Worlds',
-      orientation: 'landscape',
-      screens: [
-        {
-          alt: 'The reef: five worlds, Addition, Subtraction, Multiplication, Division and Exponents, with the stars and crowns earned in each.',
-          caption: 'Five worlds, from first sums to exponents',
-          src: '/apps/math-reef/screens/reef-map.jpg',
-        },
-        {
-          alt: 'An Exponents round: 7² answered right, with the working shown, 7² = 7 × 7 = 49.',
-          caption: 'What the small number means',
-          src: '/apps/math-reef/screens/squares.jpg',
-        },
-      ],
-      skill: 'Math facts',
-    },
     status: 'Live on the App Store',
   },
   {
@@ -349,7 +295,7 @@ export const productPages: ProductPage[] = [
     ],
   },
   {
-    audience: 'Grades 1–3',
+    audience: 'Grades 1-3',
     audienceFit:
       'kids who need clock skills to feel more visual, more concrete, and less frustrating',
     faqItems: [

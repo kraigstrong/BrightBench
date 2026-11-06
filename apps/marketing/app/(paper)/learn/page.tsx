@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { getProductPageBySlug, learnPages, productCards, siteMeta } from '@/lib/site';
+import { learnPages, productCards, siteMeta } from '@/lib/site';
 import styles from './learn.module.css';
 
 const title = 'Learning Apps for Kids | BrightBench';
@@ -48,19 +48,11 @@ const approachItems = [
   },
 ] as const;
 
-/** The apps kids can use today, each with its page's account of what it teaches. */
-const liveApps = productCards.flatMap((card) => {
-  const page = getProductPageBySlug(card.href.replace(/^\/products\//, ''));
-  const { icon, showcase } = card;
-  return card.availability === 'live' && icon && showcase && page?.kind === 'app'
-    ? [{ card, icon, page, showcase }]
-    : [];
-});
-
-/** The apps still being made, in the order they're coming. */
-const upcomingApps = productCards.filter((card) => card.availability !== 'live');
-
-const appStoreBadge = 'https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg';
+const roadmapItems = [
+  { name: 'Fraction Finder', status: 'In progress' },
+  { name: 'Letter Bingo', status: 'Planned' },
+  { name: 'Place Value', status: 'Planned' },
+] as const;
 
 /** The guides teach telling time, alongside Time Tutor: they wear its color. */
 const guideAccent = productCards.find((card) => card.name === 'Time Tutor')?.accent;
@@ -117,37 +109,32 @@ export default function LearnPage() {
           </div>
         </div>
 
-        {/* Two moments of practice, as kids see them in the apps: a worked answer and a clock to read. */}
-        <div className={styles.heroArt}>
-          <div className={styles.heroReef}>
-            <Image
-              alt="Math Reef after a wrong answer to 7 × 9: the worked math, 7 × 9 = 63."
-              fill
-              priority
-              sizes="(max-width: 900px) 88vw, 500px"
-              src="/apps/math-reef/screens/worked-math.jpg"
-            />
-          </div>
-          <div className={styles.heroPhone}>
-            <Image
-              alt="Time Tutor’s Read the Clock: an analog clock showing 3:25, with pickers to enter the time."
-              fill
-              priority
-              sizes="(max-width: 900px) 38vw, 215px"
-              src="/apps/time-tutor/screens/read-the-clock.png"
-            />
-          </div>
-          <p className={`${styles.heroNote} ${styles.heroNoteReef}`}>A miss shows the worked math</p>
-          <p className={`${styles.heroNote} ${styles.heroNoteClock}`}>Read an analog clock</p>
-          <div aria-hidden="true" className={styles.heroFoxFrame}>
-            <Image alt="" className={styles.heroFox} fill sizes="150px" src="/mascots/brightbench-fox-sitting.png" />
+        <div className={styles.heroArt} aria-hidden="true">
+          <div className={styles.heroIllustration}>
+            <div className={styles.heroPanel} />
+            <div className={styles.heroArch} />
+            <div className={styles.heroNotebook} />
+            <div className={styles.heroPath} />
+            <div className={styles.heroPathDots} />
+            <div className={styles.heroAccentStar} />
+            <div className={styles.heroAccentPill} />
+            <div className={styles.heroFoxFrame}>
+              <Image
+                alt=""
+                className={styles.heroFox}
+                fill
+                priority
+                sizes="(max-width: 900px) 224px, 304px"
+                src="/mascots/brightbench-fox-sitting.png"
+              />
+            </div>
           </div>
         </div>
       </section>
 
       <section className={styles.suiteSection} id="product-suite">
         <div className={styles.suiteHeader}>
-          <div className={styles.eyebrow}>The apps</div>
+          <div className={styles.eyebrow}>Product suite</div>
           <h2 className={styles.sectionTitle}>Focused apps for key skills</h2>
           <p className={styles.sectionText}>
             Each BrightBench app is built around one concept and one goal:
@@ -155,84 +142,43 @@ export default function LearnPage() {
           </p>
         </div>
 
-        {liveApps.map(({ card, icon, page, showcase }) => (
-          <article
-            aria-labelledby={`${page.slug}-name`}
-            className={`${styles.appFeature} ${
-              showcase.orientation === 'landscape' ? styles.appWide : styles.appTall
-            }`}
-            key={card.name}
-            style={{ '--card-accent': card.accent } as CSSProperties}>
-            <div className={styles.appScreens}>
-              {showcase.screens.map((screen) => (
-                <figure className={styles.appScreen} key={screen.src}>
-                  <div className={styles.appScreenFrame}>
+        <div className={styles.cardGrid}>
+          {productCards.map((product) => (
+            <article
+              className={`${styles.suiteCard} ${
+                product.availability === 'live' ? styles.liveCard : ''
+              }`}
+              key={product.name}
+              style={{ '--card-accent': product.accent } as CSSProperties}>
+              <div className={styles.cardAccent} />
+              <h3 className={styles.cardTitle}>
+                <Link className={styles.cardLink} href={product.href}>
+                  {product.name}
+                </Link>
+              </h3>
+              <p className={styles.cardBody}>{product.blurb}</p>
+              <div className={styles.cardFooter}>
+                {product.availability === 'live' && product.appStoreUrl ? (
+                  <a
+                    className={styles.appStoreButton}
+                    href={product.appStoreUrl}
+                    rel="noreferrer"
+                    target="_blank">
                     <Image
-                      alt={screen.alt}
-                      fill
-                      sizes={
-                        showcase.orientation === 'landscape'
-                          ? '(max-width: 900px) 92vw, 560px'
-                          : '(max-width: 900px) 30vw, 190px'
-                      }
-                      src={screen.src}
-                    />
-                  </div>
-                  <figcaption className={styles.appScreenCaption}>{screen.caption}</figcaption>
-                </figure>
-              ))}
-            </div>
-
-            <div className={styles.appCopy}>
-              <div className={styles.appIdentity}>
-                <Image alt="" className={styles.appIcon} height={64} src={icon} width={64} />
-                <div>
-                  <h3 className={styles.appName} id={`${page.slug}-name`}>
-                    {card.name}
-                  </h3>
-                  <p className={styles.appMeta}>
-                    {page.audience} · {showcase.skill}
-                  </p>
-                </div>
-              </div>
-              <p className={styles.sectionText}>{page.intro[0]}</p>
-              <div className={styles.appDetail}>
-                <h4 className={styles.appLabel}>What kids practice</h4>
-                <ul className={styles.appList}>
-                  {page.learningItems.slice(0, 4).map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className={styles.appDetail}>
-                <h4 className={styles.appLabel}>{showcase.modesLabel}</h4>
-                <ul aria-label={`${card.name} ${showcase.modesLabel.toLowerCase()}`} className={styles.appModes}>
-                  {page.modeItems.map((mode) => (
-                    <li key={mode.title}>{mode.title}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className={styles.appCtaRow}>
-                {card.appStoreUrl ? (
-                  <a className={styles.appStoreButton} href={card.appStoreUrl} rel="noreferrer" target="_blank">
-                    <Image
-                      alt={`Download ${card.name} on the App Store`}
+                      alt={`Download ${product.name} on the App Store`}
                       className={styles.appStoreBadge}
                       height={40}
-                      src={appStoreBadge}
+                      src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
                       unoptimized
                       width={120}
                     />
                   </a>
                 ) : null}
-                <Link className={styles.appMore} href={card.href}>
-                  More about {card.name}
-                  <span aria-hidden="true"> →</span>
-                </Link>
+                <div className={styles.status}>{product.status}</div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className={styles.section}>
@@ -305,25 +251,16 @@ export default function LearnPage() {
             </div>
           </div>
           <div className={styles.roadmapRows}>
-            {upcomingApps.map((app) => (
-              <div
-                className={styles.roadmapRow}
-                key={app.name}
-                style={{ '--card-accent': app.accent } as CSSProperties}>
-                <div className={styles.roadmapApp}>
-                  <span aria-hidden="true" className={styles.roadmapDot} />
-                  <div>
-                    <div className={styles.roadmapName}>{app.name}</div>
-                    <p className={styles.roadmapBlurb}>{app.blurb}</p>
-                  </div>
-                </div>
+            {roadmapItems.map((item) => (
+              <div className={styles.roadmapRow} key={item.name}>
+                <div className={styles.roadmapName}>{item.name}</div>
                 <div
                   className={`${styles.roadmapStatus} ${
-                    app.availability === 'in-progress'
+                    item.status === 'In progress'
                       ? styles.roadmapInProgress
                       : styles.roadmapPlanned
                   }`}>
-                  {app.status}
+                  {item.status}
                 </div>
               </div>
             ))}
