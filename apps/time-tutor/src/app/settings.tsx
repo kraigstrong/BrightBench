@@ -18,9 +18,14 @@ import { Card } from '@education/ui';
 import { APP_VERSION } from '@/config/app-info';
 import { palette, typography } from '@/design/theme';
 import { getFeatureAvailability } from '@/lib/feature-availability';
-import { getSiteUrl } from '@/lib/site-links';
+import { requestReviewIfDue } from '@/lib/review-request';
+import { getSiteUrl, getTimeTutorWriteReviewUrl } from '@/lib/site-links';
 import { useAppState } from '@/state/app-state';
 import type { TimeFormat } from '@/types/time';
+
+// The rating sheet follows the parent check rather than stacking on it: it waits
+// for the check's modal to finish dismissing, then a beat more.
+const REVIEW_AFTER_GATE_DELAY_MS = 500;
 
 const timeFormatOptions: {
   description: string;
@@ -50,46 +55,78 @@ export default function SettingsScreen() {
   const timeFormat24Availability = getFeatureAvailability('time-format-24-hour');
   const [gateAnswer, setGateAnswer] = React.useState('');
   const [gateError, setGateError] = React.useState('');
-  const [pendingExternalUrl, setPendingExternalUrl] = React.useState<string | null>(null);
+  const [isGateVisible, setIsGateVisible] = React.useState(false);
   const [gatePrompt, setGatePrompt] = React.useState(() => createParentalGatePrompt());
+  const [grownUpLinksUnlocked, setGrownUpLinksUnlocked] = React.useState(false);
   const isNativeIos = Platform.OS === 'ios';
+  // Web and Android have no parent check; native iOS shows the links only
+  // after a grown-up passes it, for the rest of this visit to Settings.
+  const showGrownUpLinks = !isNativeIos || grownUpLinksUnlocked;
+  const isMountedRef = React.useRef(true);
+  const reviewAfterGateRef = React.useRef(false);
+  const reviewTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      reviewAfterGateRef.current = false;
+
+      if (reviewTimerRef.current) {
+        clearTimeout(reviewTimerRef.current);
+        reviewTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const openExternalLink = React.useCallback((url: string) => {
     Linking.openURL(url).catch(() => {});
   }, []);
 
   const closeGate = React.useCallback(() => {
-    setPendingExternalUrl(null);
+    setIsGateVisible(false);
     setGateAnswer('');
     setGateError('');
   }, []);
 
-  const handleHelpLinkPress = React.useCallback(
-    (url: string) => {
-      if (!isNativeIos) {
-        openExternalLink(url);
-        return;
-      }
-
-      setGatePrompt(createParentalGatePrompt());
-      setGateAnswer('');
-      setGateError('');
-      setPendingExternalUrl(url);
-    },
-    [isNativeIos, openExternalLink],
-  );
+  const openGate = React.useCallback(() => {
+    setGatePrompt(createParentalGatePrompt());
+    setGateAnswer('');
+    setGateError('');
+    setIsGateVisible(true);
+  }, []);
 
   const submitGate = React.useCallback(() => {
-    if (gateAnswer.trim() === String(gatePrompt.answer) && pendingExternalUrl) {
+    if (gateAnswer.trim() === String(gatePrompt.answer)) {
       closeGate();
-      openExternalLink(pendingExternalUrl);
+      setGrownUpLinksUnlocked(true);
+      reviewAfterGateRef.current = true;
       return;
     }
 
     setGateAnswer('');
     setGateError('Please ask a parent to try again.');
     setGatePrompt(createParentalGatePrompt());
-  }, [closeGate, gateAnswer, gatePrompt.answer, openExternalLink, pendingExternalUrl]);
+  }, [closeGate, gateAnswer, gatePrompt.answer]);
+
+  // iOS only: Modal's onDismiss fires once the parent check is fully gone.
+  const handleGateDismiss = React.useCallback(() => {
+    if (!reviewAfterGateRef.current) {
+      return;
+    }
+
+    reviewAfterGateRef.current = false;
+
+    if (reviewTimerRef.current) {
+      clearTimeout(reviewTimerRef.current);
+    }
+
+    reviewTimerRef.current = setTimeout(() => {
+      reviewTimerRef.current = null;
+      requestReviewIfDue(() => !isMountedRef.current).catch(() => {});
+    }, REVIEW_AFTER_GATE_DELAY_MS);
+  }, []);
 
   return (
     <>
@@ -144,24 +181,43 @@ export default function SettingsScreen() {
         </Card>
 
         <Card style={styles.sectionCard}>
-          <Text style={styles.helpEyebrow}>Help</Text>
+          <Text style={styles.eyebrow}>For grown-ups</Text>
           <View style={styles.linksColumn}>
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => handleHelpLinkPress(getSiteUrl('/support'))}
-              style={styles.linkRow}
-              testID="settings-support-link">
-              <Text style={styles.linkLabel}>Support</Text>
-              <Text style={styles.linkArrow}>↗</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="link"
-              onPress={() => handleHelpLinkPress(getSiteUrl('/privacy'))}
-              style={styles.linkRow}
-              testID="settings-privacy-link">
-              <Text style={styles.linkLabel}>Privacy Policy</Text>
-              <Text style={styles.linkArrow}>↗</Text>
-            </Pressable>
+            {showGrownUpLinks ? (
+              <>
+                {isNativeIos ? (
+                  <ExternalLinkRow
+                    accessibilityLabel="Rate Time Tutor on the App Store"
+                    label="Rate Time Tutor"
+                    onPress={() => openExternalLink(getTimeTutorWriteReviewUrl())}
+                    testID="settings-rate-link"
+                  />
+                ) : null}
+                <ExternalLinkRow
+                  accessibilityLabel="Support"
+                  label="Support"
+                  onPress={() => openExternalLink(getSiteUrl('/support'))}
+                  testID="settings-support-link"
+                />
+                <ExternalLinkRow
+                  accessibilityLabel="Privacy Policy"
+                  label="Privacy Policy"
+                  onPress={() => openExternalLink(getSiteUrl('/privacy'))}
+                  testID="settings-privacy-link"
+                />
+              </>
+            ) : (
+              <Pressable
+                accessibilityHint="Opens a parent check."
+                accessibilityLabel="Show grown-up links"
+                accessibilityRole="button"
+                onPress={openGate}
+                style={styles.linkRow}
+                testID="settings-grown-ups-unlock">
+                <Text style={styles.linkLabel}>Show grown-up links</Text>
+                <Text style={styles.linkArrow}>›</Text>
+              </Pressable>
+            )}
           </View>
         </Card>
 
@@ -175,14 +231,15 @@ export default function SettingsScreen() {
 
       <Modal
         animationType="fade"
+        onDismiss={handleGateDismiss}
         onRequestClose={closeGate}
         transparent
-        visible={pendingExternalUrl !== null}>
+        visible={isGateVisible}>
         <View style={styles.gateBackdrop}>
           <View style={styles.gateCard}>
             <Text style={styles.gateTitle}>Parent Check</Text>
             <Text style={styles.gateDescription}>
-              Ask a parent to answer this before opening a website.
+              Ask a parent to answer this to see the grown-up links.
             </Text>
             <Text style={styles.gateQuestion} testID="parental-gate-question">
               {gatePrompt.prompt}
@@ -264,6 +321,30 @@ function createParentalGatePrompt() {
   };
 }
 
+function ExternalLinkRow({
+  accessibilityLabel,
+  label,
+  onPress,
+  testID,
+}: {
+  accessibilityLabel: string;
+  label: string;
+  onPress: () => void;
+  testID: string;
+}) {
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="link"
+      onPress={onPress}
+      style={styles.linkRow}
+      testID={testID}>
+      <Text style={styles.linkLabel}>{label}</Text>
+      <Text style={styles.linkArrow}>↗</Text>
+    </Pressable>
+  );
+}
+
 function SelectableOption({
   description,
   disabled = false,
@@ -342,14 +423,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginTop: -6,
-  },
-  helpEyebrow: {
-    color: palette.inkMuted,
-    fontFamily: typography.bodyFamily,
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-    textTransform: 'uppercase',
   },
   toggleRow: {
     alignItems: 'center',

@@ -106,9 +106,11 @@ describe('time tutor screens', () => {
 
     expect(screen.getByText('Settings')).toBeTruthy();
     expect(screen.getByText('Time format')).toBeTruthy();
-    expect(screen.getByText('Help')).toBeTruthy();
-    expect(screen.getByText('Support')).toBeTruthy();
-    expect(screen.getByText('Privacy Policy')).toBeTruthy();
+    // Native iOS (the jest default): Support and Privacy sit behind the parent check.
+    expect(screen.getByText('For grown-ups')).toBeTruthy();
+    expect(screen.getByText('Show grown-up links')).toBeTruthy();
+    expect(screen.queryByText('Support')).toBeNull();
+    expect(screen.queryByText('Privacy Policy')).toBeNull();
     expect(screen.getByText('Version 1.1.0')).toBeTruthy();
   });
 

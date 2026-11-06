@@ -39,3 +39,11 @@ export function getSiteUrl(path: SitePath, options: SiteUrlOptions = {}) {
 export function getTimeTutorAppStoreUrl() {
   return process.env.EXPO_PUBLIC_TIME_TUTOR_APP_STORE_URL || DEFAULT_APP_STORE_URL;
 }
+
+/** Opens the App Store listing straight to its "Write a Review" sheet. */
+export function getTimeTutorWriteReviewUrl() {
+  const url = new URL(getTimeTutorAppStoreUrl());
+  url.searchParams.set('action', 'write-review');
+
+  return url.toString();
+}
