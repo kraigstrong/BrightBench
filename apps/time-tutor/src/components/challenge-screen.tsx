@@ -44,11 +44,13 @@ import {
 import {
   calculateChallengeAccuracy,
   calculateChallengeStars,
+  countMasteredModes,
   getChallengeIntervalForDifficulty,
   isChallengeModeMastered,
   shouldUpdateBestStars,
 } from '@/lib/challenge-progression';
 import { useChallengeCountdown } from '@/lib/challenge-countdown';
+import { recordFinishedRound } from '@/lib/review-request';
 import {
   buildWrongAnswerFlashAnimation,
   buildWrongAnswerShakeAnimation,
@@ -261,6 +263,15 @@ export function ChallengeScreen<TPrompt, TAnswer>({
       setChallengeBestStars(progressMode, difficulty, earnedStars);
     }
 
+    // Queues an App Store rating request for the grown-up area in Settings once
+    // the learner holds a crown. Nothing is shown here, mid-play.
+    if (Platform.OS === 'ios') {
+      const hasCrown =
+        countMasteredModes({ ...challengeProgress, [progressMode]: nextProgress }) > 0;
+
+      recordFinishedRound({ earnedStars, hasCrown }).catch(() => {});
+    }
+
     // The haptic/sound for this fires from onRevealComplete once the
     // ChallengeResultsOverlay's bar-fill animation actually finishes, not
     // here — this effect only runs once the numbers are known.
@@ -275,6 +286,7 @@ export function ChallengeScreen<TPrompt, TAnswer>({
     });
   }, [
     attempts,
+    challengeProgress,
     currentInterval,
     difficulty,
     progress,
