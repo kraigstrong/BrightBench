@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { AppStoreBadgeLink } from '@/components/app-store-badge-link';
 import { LoopVideo } from '@/components/loop-video';
 import { games, studio } from '@/lib/studio';
 
@@ -76,6 +77,9 @@ export default function PlayPage() {
               ))}
             </ul>
             <div className={styles.ctaRow}>
+              {game.appStoreUrl ? (
+                <AppStoreBadgeLink href={game.appStoreUrl} label={`Download ${game.name} on the App Store`} />
+              ) : null}
               <a className={styles.visit} href={game.url}>
                 Visit {game.domain}
               </a>

@@ -19,12 +19,13 @@ export function AppStoreBadgeLink({
       rel="noreferrer"
       style={{ display: 'inline-flex', lineHeight: 0 }}
       target="_blank">
+      {/* Apple's artwork is 120 × 40: a wider box would pad it with empty space and push it off its edge. */}
       <Image
         alt={label}
         height={40}
         src={APP_STORE_BADGE_SRC}
         unoptimized
-        width={160}
+        width={120}
       />
     </a>
   );
