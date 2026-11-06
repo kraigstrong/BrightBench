@@ -1,0 +1,306 @@
+/* Ghost Thread in its own colors: the trackside's mown grass, the HUD's dark panels, the logo's thread yellow and the
+   game's red buttons. */
+.page {
+  --grass: #4a8040;
+  --grass-light: #548f47;
+  --panel: rgb(0 0 0 / 0.55);
+  --thread: #ffd11a;
+  --red: #e61f1a;
+}
+
+.hero {
+  align-items: center;
+  /* The grass stripes lean as the track list's do, under a dark wash at the foot so the next section takes over. */
+  background:
+    linear-gradient(180deg, transparent 70%, rgb(11 29 51 / 0.9) 100%),
+    repeating-linear-gradient(110deg, var(--grass) 0 70px, var(--grass-light) 70px 140px);
+  display: grid;
+  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  padding: clamp(32px, 6vw, 80px) max(var(--gutter), calc((100% - var(--page-width)) / 2)) clamp(48px, 7vw, 96px);
+}
+
+.heroCopy {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+
+.eyebrow {
+  align-items: center;
+  display: flex;
+  font-size: 15px;
+  font-weight: 900;
+  gap: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.icon {
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.3);
+}
+
+.logo {
+  max-width: 600px;
+  width: 100%;
+}
+
+.logo img {
+  height: auto;
+  width: 100%;
+}
+
+.tagline {
+  font-size: clamp(26px, 3vw, 36px);
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.pitch {
+  display: grid;
+  font-size: clamp(18px, 1.6vw, 21px);
+}
+
+.cta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 8px;
+}
+
+.beta {
+  background: var(--red);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgb(230 31 26 / 0.35);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  padding: 14px 26px;
+  transition: transform 150ms ease;
+}
+
+.beta:hover {
+  transform: translateY(-1px);
+}
+
+.ctaNote {
+  font-size: 16px;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* The game's screen, its own shape (a 6.9-inch iPhone's), so nothing of the road ahead is cropped. */
+.heroVideo {
+  aspect-ratio: 2868 / 1320;
+  background: var(--grass);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.heroLoop {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.circuitName {
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.section {
+  display: grid;
+  gap: 24px;
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: clamp(40px, 6vw, 72px) var(--gutter) 0;
+}
+
+/* The screenshot beside its words, as the game shows it at the end of a session. */
+.standing {
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+}
+
+.standingCopy {
+  display: grid;
+  gap: 16px;
+}
+
+.standingShot {
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: clamp(34px, 4.2vw, 52px);
+  font-style: italic;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: clamp(18px, 1.6vw, 21px);
+  max-width: 760px;
+}
+
+.body {
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.beats,
+.circuits,
+.features {
+  display: grid;
+  gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.beats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.beat,
+.feature,
+.circuit {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+}
+
+.beat {
+  align-content: start;
+}
+
+.beatNumber {
+  align-items: center;
+  background: var(--thread);
+  border-radius: 999px;
+  color: #000;
+  display: inline-flex;
+  font-size: 17px;
+  font-weight: 900;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.beatTitle,
+.featureTitle {
+  font-size: 24px;
+}
+
+.circuits {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.circuit {
+  align-content: start;
+  background: var(--panel);
+}
+
+.circuit svg {
+  aspect-ratio: 5 / 3;
+  margin-bottom: 6px;
+}
+
+.circuitName {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.free {
+  background: var(--thread);
+  border-radius: 999px;
+  color: #000;
+  font-size: 12px;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+}
+
+.circuitFacts {
+  color: var(--faint);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.features {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.closing {
+  justify-items: center;
+  padding-bottom: clamp(56px, 8vw, 96px);
+  text-align: center;
+}
+
+.closing .cta {
+  justify-content: center;
+}
+
+.closingTitle {
+  font-size: clamp(40px, 5vw, 64px);
+  font-style: italic;
+}
+
+.promise {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.links {
+  display: flex;
+  font-weight: 800;
+  gap: 22px;
+}
+
+.links a {
+  color: var(--cream);
+  text-decoration: underline;
+  text-decoration-color: rgb(255 255 255 / 0.3);
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 960px) {
+  .hero,
+  .standing {
+    grid-template-columns: 1fr;
+  }
+
+  .beats,
+  .circuits,
+  .features {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .beats,
+  .circuits,
+  .features {
+    grid-template-columns: 1fr;
+  }
+}

@@ -20,8 +20,8 @@ export const game = {
    */
   retryLine: 'In the beta, players tried again after 98% of lost runs.',
   developer: 'Kraig Strong',
-  /** The App Store release day, announced before launch. */
-  releaseDay: 'November 3',
+  /** The day it came out on the App Store (App Review ran past the planned November 3). */
+  releaseDay: 'November 5',
   releaseYear: 2026,
   platform: 'iPhone and iPad',
   requirements: 'iPhone with iOS 17 or later, or iPad with iPadOS 17 or later. Plays in landscape.',

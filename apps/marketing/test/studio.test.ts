@@ -2,18 +2,22 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
 
+import { featuredProductCards } from '../src/lib/site.ts';
 import { games } from '../src/lib/studio.ts';
 
 const publicDir = new URL('../public/', import.meta.url);
 
-test('Play lists Bigger Fish and Double Putt, each linking to its own site', () => {
+test('Play lists Bigger Fish, Double Putt and Ghost Thread, each linking to its own site', () => {
   assert.deepEqual(
     games.map((game) => game.url),
-    ['https://biggerfish.app', 'https://doubleputt.app'],
+    ['https://biggerfish.app', 'https://doubleputt.app', '/ghost-thread'],
   );
   for (const game of games) {
-    assert.equal(new URL(game.url).hostname, game.domain, `${game.name} shows the address it links to`);
-    assert.equal(new URL(game.trailerUrl).hostname, game.domain, `${game.name}'s trailer is on its own site`);
+    const url = new URL(game.url, 'https://brightbench.app');
+    assert.equal(`${url.hostname}${url.pathname.replace(/\/$/, '')}`, game.domain, `${game.name} shows the address it links to`);
+    if (game.trailerUrl) {
+      assert.equal(new URL(game.trailerUrl).hostname, url.hostname, `${game.name}'s trailer is on its own site`);
+    }
   }
 });
 
@@ -21,6 +25,19 @@ test('every game picture and loop is in public/', () => {
   for (const game of games) {
     for (const path of [game.icon, game.keyArt, game.video.poster, game.video.src]) {
       assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `${game.name} is missing ${path}`);
+    }
+  }
+});
+
+test("the Learn door has every listed app's icon and card, as Play has each game's", () => {
+  assert.deepEqual(
+    featuredProductCards.map((app) => app.name),
+    ['Time Tutor', 'Math Reef'],
+  );
+  for (const app of featuredProductCards) {
+    for (const path of [app.icon, app.keyArt]) {
+      assert.ok(path, `${app.name} has no icon or card`);
+      assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `${app.name} is missing ${path}`);
     }
   }
 });

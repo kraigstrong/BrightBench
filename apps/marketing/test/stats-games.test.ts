@@ -7,7 +7,7 @@ import { defaultStatsGame, parseStatsGame, statsGames } from '../src/lib/stats-g
 test('every game has a tab of its own, Bigger Fish first', () => {
   assert.deepEqual(
     statsGames.map((game) => game.id),
-    ['bigger-fish', 'double-putt', 'math-reef'],
+    ['bigger-fish', 'double-putt', 'apex', 'math-reef'],
   );
   assert.equal(new Set(statsGames.map((game) => game.name)).size, statsGames.length);
   assert.equal(defaultStatsGame, 'bigger-fish');

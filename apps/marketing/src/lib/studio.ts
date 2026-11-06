@@ -1,6 +1,9 @@
 // What brightbench.app says about the studio and its games, for the home page and Play.
 // Each game has its own site, which is where its facts come from: keep these in step with
-// apps/bigger-fish-site/src/lib/game.ts and apps/double-putt-site/src/lib/site.ts.
+// apps/bigger-fish-site/src/lib/game.ts and apps/double-putt-site/src/lib/site.ts. Ghost Thread's site is its page
+// here, and its facts come straight from src/lib/ghost-thread.ts.
+
+import { circuits, ghostThread } from './ghost-thread.ts';
 
 export const studio = {
   name: 'BrightBench',
@@ -20,11 +23,12 @@ export const sparkPath =
 export type Game = {
   slug: string;
   name: string;
-  /** The game's own site, the one place it's sold from. */
+  /** The game's own site, the one place it's sold from; a path for a game whose site is its page here. */
   url: string;
   /** Its site's address as shown: "biggerfish.app". */
   domain: string;
-  trailerUrl: string;
+  /** Its trailer, on its own site; a game without one there has no Watch link. */
+  trailerUrl?: string;
   /** "A one-touch arcade game", finishing "… for iPhone and iPad". */
   genre: string;
   tagline: string;
@@ -52,7 +56,7 @@ export const games: Game[] = [
     pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
     facts: ['5 worlds', '75 levels', 'iPhone and iPad'],
     // The App Store release day (game.releaseDay there). Switch this at launch.
-    status: 'Coming November 3',
+    status: 'Coming mid-November',
     icon: '/games/bigger-fish/icon.png',
     keyArt: '/games/bigger-fish/key-art.png',
     video: {
@@ -82,5 +86,22 @@ export const games: Game[] = [
       src: '/games/double-putt/hero.mp4',
     },
     alt: 'Reflection: two matching greens side by side, one swing rolling both balls toward their cups.',
+  },
+  {
+    slug: 'ghost-thread',
+    name: ghostThread.name,
+    url: '/ghost-thread',
+    domain: 'brightbench.app/ghost-thread',
+    genre: 'A one-touch racing game',
+    tagline: ghostThread.tagline,
+    pitch: ['Hold to steer up. Let go to steer down.', 'Find the straightest line through every corner.'],
+    facts: [`${circuits.length} circuits`, `${circuits.length * 4} medals`, 'iPhone and iPad'],
+    // In TestFlight beta, with a public link. Switch this at launch.
+    status: 'In beta',
+    icon: '/games/ghost-thread/icon.png',
+    // Its page's share image (app/(studio)/ghost-thread/opengraph-image.tsx), saved as a picture.
+    keyArt: '/games/ghost-thread/key-art.png',
+    video: { orientation: 'landscape', poster: ghostThread.video.poster, src: ghostThread.video.src },
+    alt: ghostThread.video.alt,
   },
 ];

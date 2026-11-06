@@ -1,0 +1,56 @@
+/* The game's colors: a soft white road, and the logo's thread yellow. */
+.thread {
+  --thread: #ffd11a;
+  display: block;
+  height: auto;
+  overflow: visible;
+  width: 100%;
+}
+
+.road,
+.edge,
+.still,
+.trail {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.road {
+  stroke: rgb(255 255 255 / 0.12);
+  stroke-width: 9px;
+}
+
+.edge {
+  stroke: rgb(255 255 255 / 0.45);
+  stroke-width: 2.5px;
+}
+
+.trail {
+  stroke: var(--thread);
+}
+
+.car {
+  fill: var(--thread);
+}
+
+.carCore {
+  fill: #fff;
+}
+
+.still {
+  display: none;
+  stroke: var(--thread);
+  stroke-width: 2.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trail,
+  .car {
+    display: none;
+  }
+
+  .still {
+    display: inline;
+  }
+}

@@ -3,6 +3,7 @@
 import { type ComponentType, type CSSProperties, type FormEvent, type KeyboardEvent, useState } from 'react';
 import { palette, radii, spacing } from '@education/design';
 
+import ApexStats from '@/components/apex-stats';
 import BiggerFishStats from '@/components/bigger-fish-stats';
 import DoublePuttStats from '@/components/double-putt-stats';
 import { MathReefStatsDashboard } from '@/components/math-reef-stats-dashboard';
@@ -17,6 +18,7 @@ type PanelProps = { secret: string; onUnauthorized: () => void };
 const panels: Record<StatsGameId, ComponentType<PanelProps>> = {
   'bigger-fish': BiggerFishStats,
   'double-putt': DoublePuttStats,
+  apex: ApexStats,
   'math-reef': MathReefStatsDashboard,
 };
 

@@ -26,7 +26,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'How do I turn the sound off?',
     answer:
-      'Tap the gear on the reef map and switch Sound off. Sound plays even when the phone is on silent, so a child playing on a parent’s phone still hears it. The volume buttons always work.',
+      'Tap the gear on the reef map. Sound effects, Music, and Vibration each have their own switch. Sound plays even when the phone is on silent, so a child playing on a parent’s phone still hears it. The volume buttons always work.',
   },
   {
     question: 'Does it need the internet?',
@@ -50,7 +50,8 @@ const faqs: { question: string; answer: string }[] = [
   },
   {
     question: 'What does it run on?',
-    answer: 'iPhone with iOS 17 or later. The game plays in landscape.',
+    answer:
+      'iPhone or iPad with iOS 17 or later. The game plays in landscape and fills the screen, including either screen of iPhone Duo.',
   },
 ];
 
