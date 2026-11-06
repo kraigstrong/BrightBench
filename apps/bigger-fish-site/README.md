@@ -22,7 +22,8 @@ from the files listed in `src/lib/press-assets.ts`. The zip is generated, never 
 
 ## Launch day
 
-Everything that changes at launch is an environment variable (see `.env.example`):
+The store links are environment variables (see `.env.example`). Next.js bakes them in when it builds, so a change
+needs a new deploy:
 
 - `NEXT_PUBLIC_BIGGER_FISH_APP_STORE_URL` swaps "Coming to iPhone and iPad <release day>" for Apple's App Store badge (and adds
   Apple's trademark line to the footer). With `NEXT_PUBLIC_BIGGER_FISH_PREORDER=true` it shows a pre-order link
@@ -36,8 +37,9 @@ Everything that changes at launch is an environment variable (see `.env.example`
 - `public/media/bigger-fish-trailer.mp4`: the 1.1 trailer (1920 × 886, 60 fps, 0:30, with the game's music): the
   core loop, Adventure's worlds, an Open Water run, and the pearl shop. Every shot is real play, recorded from the
   game a frame at a time (`scripts/bigger-fish-trailer.sh` in kraigstrong/bigger-fish builds it, as
-  `build/trailer/bigger-fish-trailer.mp4`), with captions in Avenir Next. The same cut at 30 fps, without the release
-  date, is the App Store preview. `trailer-poster.jpg` is its frame at 0:06.
+  `build/trailer/bigger-fish-trailer.mp4`), with captions in Avenir Next. It ends on "Out now on iPhone and iPad"
+  (kraigstrong/bigger-fish#199). The same cut at 30 fps, without that line, is the App Store preview.
+  `trailer-poster.jpg` is its frame at 0:06.
 - `public/media/modes/open-water.mp4` and `pearl-shop.mp4`, beside the Open Water on the home page, 1280 × 588 like
   the world loops. The Open Water's sells the high score: the end of a run through a crowded Sunset Cove, its fish
   and pearl counts showing, until a bigger fish eats it and the run's "New best!" card comes up (45 fish). It's

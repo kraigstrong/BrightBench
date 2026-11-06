@@ -23,8 +23,10 @@ export const sparkPath =
 export type Game = {
   slug: string;
   name: string;
-  /** The game's own site, the one place it's sold from; a path for a game whose site is its page here. */
+  /** The game's own site; a path for a game whose site is its page here. */
   url: string;
+  /** Its App Store page, once it's there: Play shows Apple's Download badge, which is licensed only for an app on the store. */
+  appStoreUrl?: string;
   /** Its site's address as shown: "biggerfish.app". */
   domain: string;
   /** Its trailer, on its own site; a game without one there has no Watch link. */
@@ -55,8 +57,9 @@ export const games: Game[] = [
     tagline: 'Eat fast. Stay alive.',
     pitch: ['Eat smaller fish. Dodge bigger ones.', 'Win the food race.'],
     facts: ['5 worlds', '75 levels', 'iPhone and iPad'],
-    // The App Store release day (game.releaseDay there). Switch this at launch.
-    status: 'Coming mid-November',
+    // Out on the App Store since November 5, 2026 (game.releaseDay there).
+    status: 'Live on the App Store',
+    appStoreUrl: 'https://apps.apple.com/app/bigger-fish-eat-grow/id6819553069',
     icon: '/games/bigger-fish/icon.png',
     keyArt: '/games/bigger-fish/key-art.png',
     video: {
