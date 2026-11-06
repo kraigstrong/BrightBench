@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import test from 'node:test';
 
-import { featuredProductCards } from '../src/lib/site.ts';
+import { featuredProductCards, productCards } from '../src/lib/site.ts';
 import { games } from '../src/lib/studio.ts';
 
 const publicDir = new URL('../public/', import.meta.url);
@@ -39,6 +39,18 @@ test('every game picture and loop is in public/', () => {
   for (const game of games) {
     for (const path of [game.icon, game.keyArt, game.video.poster, game.video.src]) {
       assert.ok(existsSync(new URL(path.replace(/^\//, ''), publicDir)), `${game.name} is missing ${path}`);
+    }
+  }
+});
+
+test('Learn shows every live app at work: screens in public/, each described for anyone who cannot see it', () => {
+  const live = productCards.filter((app) => app.availability === 'live');
+  assert.ok(live.length > 0);
+  for (const app of live) {
+    assert.ok(app.showcase, `${app.name} is live but has no screens on Learn`);
+    for (const screen of app.showcase.screens) {
+      assert.ok(existsSync(new URL(screen.src.replace(/^\//, ''), publicDir)), `${app.name} is missing ${screen.src}`);
+      assert.ok(screen.alt.length > 20 && screen.caption, `${screen.src} needs a description and a caption`);
     }
   }
 });
