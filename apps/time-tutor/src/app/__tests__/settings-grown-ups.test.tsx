@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, within } from '@testing-library/react-native';
 import * as StoreReview from 'expo-store-review';
 import React from 'react';
-import { AppState, Linking, Modal, Platform } from 'react-native';
+import { AppState, KeyboardAvoidingView, Linking, Modal, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import SettingsScreen from '@/app/settings';
@@ -168,6 +168,32 @@ describe('settings grown-up links', () => {
       expect(screen.queryByTestId('settings-rate-link')).toBeNull();
       expect(screen.queryByTestId('settings-support-link')).toBeNull();
       expect(screen.queryByTestId('settings-privacy-link')).toBeNull();
+    });
+
+    // A number pad has no return key: if Cancel and Continue end up under it,
+    // a parent is stuck. The card must ride above the keypad, error included,
+    // and a tap on Continue must not be spent just dismissing the keypad.
+    it('keeps the whole parent check, buttons included, above the number pad', () => {
+      renderSettings();
+
+      fireEvent.press(screen.getByTestId('settings-grown-ups-unlock'));
+      answerGate(currentGateAnswer() + 1);
+
+      expect(screen.UNSAFE_getByType(KeyboardAvoidingView).props.behavior).toBe('padding');
+
+      const scroll = screen.getByTestId('parental-gate-scroll');
+      expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+      expect(
+        within(screen.getByTestId('parental-gate-keyboard-avoider')).getByTestId(
+          'parental-gate-scroll',
+        ),
+      ).toBeTruthy();
+
+      const card = within(scroll);
+      expect(card.getByTestId('parental-gate-input')).toBeTruthy();
+      expect(card.getByTestId('parental-gate-error')).toBeTruthy();
+      expect(card.getByTestId('parental-gate-cancel')).toBeTruthy();
+      expect(card.getByTestId('parental-gate-continue')).toBeTruthy();
     });
 
     it('reveals Rate, Support, and Privacy after a correct answer', () => {

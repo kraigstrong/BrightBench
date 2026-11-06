@@ -1,16 +1,19 @@
 import { router } from 'expo-router';
 import React from 'react';
 import {
+  KeyboardAvoidingView,
   Linking,
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppShell } from '@/components/app-shell';
 import { BackButton, HeaderBar } from '@/components/header-bar';
@@ -53,6 +56,10 @@ export default function SettingsScreen() {
     timeFormat,
   } = useAppState();
   const timeFormat24Availability = getFeatureAvailability('time-format-24-hour');
+  const insets = useSafeAreaInsets();
+  // Even padding keeps the parent check centred, clear of the notch and home
+  // indicator, when it has to scroll on a small phone.
+  const gateVerticalPadding = Math.max(insets.top, insets.bottom, 24);
   const [gateAnswer, setGateAnswer] = React.useState('');
   const [gateError, setGateError] = React.useState('');
   const [isGateVisible, setIsGateVisible] = React.useState(false);
@@ -235,53 +242,67 @@ export default function SettingsScreen() {
         onRequestClose={closeGate}
         transparent
         visible={isGateVisible}>
-        <View style={styles.gateBackdrop}>
-          <View style={styles.gateCard}>
-            <Text style={styles.gateTitle}>Parent Check</Text>
-            <Text style={styles.gateDescription}>
-              Ask a parent to answer this to see the grown-up links.
-            </Text>
-            <Text style={styles.gateQuestion} testID="parental-gate-question">
-              {gatePrompt.prompt}
-            </Text>
-            <TextInput
-              accessibilityLabel="Parental gate answer"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="number-pad"
-              onChangeText={(text) => {
-                setGateAnswer(text);
-                if (gateError) {
-                  setGateError('');
-                }
-              }}
-              placeholder="Enter answer"
-              placeholderTextColor={palette.inkMuted}
-              style={styles.gateInput}
-              testID="parental-gate-input"
-              value={gateAnswer}
-            />
-            {gateError ? (
-              <Text style={styles.gateError} testID="parental-gate-error">
-                {gateError}
+        {/* The number pad has no return key, so the whole card, buttons
+            included, has to stay above it, even after the error line. */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.gateBackdrop}
+          testID="parental-gate-keyboard-avoider">
+          <ScrollView
+            alwaysBounceVertical={false}
+            contentContainerStyle={[
+              styles.gateScrollContent,
+              { paddingVertical: gateVerticalPadding },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            testID="parental-gate-scroll">
+            <View style={styles.gateCard}>
+              <Text style={styles.gateTitle}>Parent Check</Text>
+              <Text style={styles.gateDescription}>
+                Ask a parent to answer this to see the grown-up links.
               </Text>
-            ) : null}
-            <View style={styles.gateActions}>
-              <Pressable
-                onPress={closeGate}
-                style={styles.gateSecondaryButton}
-                testID="parental-gate-cancel">
-                <Text style={styles.gateSecondaryButtonText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                onPress={submitGate}
-                style={styles.gatePrimaryButton}
-                testID="parental-gate-continue">
-                <Text style={styles.gatePrimaryButtonText}>Continue</Text>
-              </Pressable>
+              <Text style={styles.gateQuestion} testID="parental-gate-question">
+                {gatePrompt.prompt}
+              </Text>
+              <TextInput
+                accessibilityLabel="Parental gate answer"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="number-pad"
+                onChangeText={(text) => {
+                  setGateAnswer(text);
+                  if (gateError) {
+                    setGateError('');
+                  }
+                }}
+                placeholder="Enter answer"
+                placeholderTextColor={palette.inkMuted}
+                style={styles.gateInput}
+                testID="parental-gate-input"
+                value={gateAnswer}
+              />
+              {gateError ? (
+                <Text style={styles.gateError} testID="parental-gate-error">
+                  {gateError}
+                </Text>
+              ) : null}
+              <View style={styles.gateActions}>
+                <Pressable
+                  onPress={closeGate}
+                  style={styles.gateSecondaryButton}
+                  testID="parental-gate-cancel">
+                  <Text style={styles.gateSecondaryButtonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  onPress={submitGate}
+                  style={styles.gatePrimaryButton}
+                  testID="parental-gate-continue">
+                  <Text style={styles.gatePrimaryButtonText}>Continue</Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
-        </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
@@ -570,9 +591,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   gateBackdrop: {
-    alignItems: 'center',
     backgroundColor: 'rgba(18, 53, 91, 0.34)',
     flex: 1,
+  },
+  gateScrollContent: {
+    alignItems: 'center',
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
