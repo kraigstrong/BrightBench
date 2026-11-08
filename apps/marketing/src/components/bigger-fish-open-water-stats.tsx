@@ -5,7 +5,7 @@ const percentage = (x:number|null) => x === null ? '—' : `${(x*100).toFixed(1)
 const share = (part:number,whole:number) => whole ? part/whole : null;
 const round = (x:number|null,digits=1) => x === null ? '—' : x.toFixed(digits);
 const worldNames: Record<string,string> = {'shallow-reef':'Shallow Reef','jelly-bloom':'Jelly Bloom','kelp-forest':'Kelp Forest','sunset-cove':'Sunset Cove','midnight-zone':'Midnight Zone'};
-const endingNames: Record<string,string> = {predator:'Eaten',tentacles:'Stung',hook:'Hooked',urchin:'Urchin',quit:'Quit',abandoned:'Left unfinished'};
+const endingNames: Record<string,string> = {predator:'Eaten',tentacles:'Stung',hook:'Hooked',stuck:'Too small',urchin:'Urchin',quit:'Quit',abandoned:'Left unfinished'};
 // Fewer runs than this reach a level and its bar is faded as too few to trust.
 const fewRuns = 5;
 // A histogram's buckets as "up to N" ranges, the empty ones at either end left off.

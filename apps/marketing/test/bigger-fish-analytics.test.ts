@@ -22,6 +22,13 @@ test('a run lost to a baited hook (Sunset Cove, 1.0) is accepted; an unknown cau
   const unknown=sample();const r3=unknown.events[0]!;if(r3.kind==='run'){r3.cause='shark';delete (r3.summary as {fatalRatio?:number}).fatalRatio;}
   assert.equal(validateBatch(unknown),false);
 });
+test('a round ended too small to win (every fish left bigger, Bigger Fish after 1.1.0) is accepted, without fatalRatio',()=>{
+  const stuck=sample();const run=stuck.events[0]!;
+  if(run.kind==='run'){run.cause='stuck';delete (run.summary as {fatalRatio?:number}).fatalRatio;}
+  assert.equal(validateBatch(stuck),true);
+  const withRatio=sample();const r2=withRatio.events[0]!;if(r2.kind==='run')r2.cause='stuck';
+  assert.equal(validateBatch(withRatio),false,'only a death to a bigger fish carries fatalRatio');
+});
 test('reject inconsistent counts, fatal metadata and nonfinite/out-of-range metrics',()=>{
   for(const change of [{seconds:-1},{nearEqualMeals:4},{cleanupSeconds:13},{fatalRatio:Infinity},{firstNoPathSeconds:5}]){
     const b=sample();if(b.events[0]!.kind==='run')Object.assign(b.events[0]!.summary,change);
