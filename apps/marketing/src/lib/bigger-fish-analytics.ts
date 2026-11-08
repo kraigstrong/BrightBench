@@ -87,9 +87,10 @@ function summary(x: unknown): x is Summary {
     && ['available','no_path_in_snapshot','unknown'].includes(String(s.path)) && number(s.playerRadius, 100000)
     && number(s.remaining, 10000, true) && number(s.edible, s.remaining as number, true) && number(s.largestRatio, 1000);
 }
-/** How a run can be lost: eaten by a bigger fish, stung by jellyfish tentacles, an urchin (retired), or caught on a
- * baited hook (Sunset Cove, from 1.0). A batch with any other cause is rejected whole. */
-const deathCauses = ['predator', 'tentacles', 'urchin', 'hook'];
+/** How a run can be lost: eaten by a bigger fish, stung by jellyfish tentacles, an urchin (retired), caught on a
+ * baited hook (Sunset Cove, from 1.0), or stuck: too small to eat any fish left, so the game ends the round (Bigger
+ * Fish after 1.1.0). A batch with any other cause is rejected whole. */
+const deathCauses = ['predator', 'tentacles', 'urchin', 'hook', 'stuck'];
 export function validateBatch(x: unknown): x is Batch {
   if (!record(x) || !keys(x, ['schema','appVersion','build','channel','events']) || x.schema !== 1) return false;
   if (typeof x.appVersion !== 'string' || !/^\d{1,3}\.\d{1,3}(\.\d{1,3})?$/.test(x.appVersion) || typeof x.build !== 'string' || !/^\d{1,9}$/.test(x.build)) return false;
